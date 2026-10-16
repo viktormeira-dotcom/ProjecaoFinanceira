@@ -10,9 +10,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (xlsx) para Leitura e Exportação de Excel/CSV -->
+    <!-- SheetJS (xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- jsPDF e autoTable para exportação PDF -->
+    <!-- jsPDF e autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -20,11 +20,6 @@
         .anim-enabled * {
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.3s ease !important;
         }
-        .anim-disabled * {
-            transition: none !important;
-            animation: none !important;
-        }
-
         body.theme-dark { background-color: #0b0f17; color: #f3f4f6; }
         .theme-dark .bg-card { background-color: #111827; }
         .theme-dark .bg-subcard { background-color: #1f2937; }
@@ -52,10 +47,9 @@
                     <i data-lucide="wallet" class="w-8 h-8"></i>
                 </div>
                 <h1 class="text-2xl font-extrabold text-primary">Projeção Financeira</h1>
-                <p class="text-xs text-muted">Acesse sua conta para visualizar e gerenciar suas finanças.</p>
+                <p class="text-xs text-muted">Acesse sua conta para gerenciar suas finanças.</p>
             </div>
 
-            <!-- Botão Login Google -->
             <button onclick="loginGoogle()" class="w-full bg-subcard hover:bg-subcard/80 border border-theme text-primary font-semibold py-2.5 px-4 rounded-xl text-sm transition flex items-center justify-center gap-3">
                 <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.2 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.3 0 15s.7 5.3 1.9 7.7l3.7-2.9c-.4-.7-.6-1.5-.6-2.3z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.2-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z"/></svg>
                 Entrar com o Google
@@ -67,7 +61,6 @@
                 <div class="flex-1 h-px bg-theme"></div>
             </div>
 
-            <!-- Formulário E-mail/Senha -->
             <form onsubmit="handleEmailAuth(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-medium text-muted mb-1">E-mail</label>
@@ -77,9 +70,7 @@
                     <label class="block text-xs font-medium text-muted mb-1">Senha</label>
                     <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
                 </div>
-
                 <p id="auth-error" class="hidden text-xs text-rose-400 font-medium text-center"></p>
-
                 <button type="submit" id="btn-auth-submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition">Entrar na Conta</button>
             </form>
 
@@ -89,9 +80,9 @@
         </div>
     </div>
 
-    <!-- TELA DA APLICAÇÃO PRINCIPAL (Bloqueada até o login) -->
+    <!-- TELA DA APLICAÇÃO PRINCIPAL -->
     <div id="app-main-content" class="hidden">
-        <!-- Top Navigation Bar -->
+        <!-- Barra de Navegação Superior -->
         <header class="border-b header-bg sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
@@ -107,35 +98,35 @@
                 </div>
 
                 <div class="flex items-center gap-2 flex-wrap">
-                    <button onclick="switchTab('dashboard')" id="btn-tab-dash" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                    <button onclick="switchTab('dashboard')" id="btn-tab-dashboard" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Visão Geral
                     </button>
-                    <button onclick="switchTab('lancamentos')" id="btn-tab-lancamentos" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('lancamentos')" id="btn-tab-lancamentos" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="list-plus" class="w-4 h-4"></i> Lançamentos
                     </button>
-                    <button onclick="switchTab('cards')" id="btn-tab-cards" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('cards')" id="btn-tab-cards" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="credit-card" class="w-4 h-4"></i> Cartões & Parcelas
                     </button>
-                    <button onclick="switchTab('provisoes')" id="btn-tab-provisoes" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('provisoes')" id="btn-tab-provisoes" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="calendar-range" class="w-4 h-4"></i> Provisão
                     </button>
-                    <button onclick="switchTab('categories')" id="btn-tab-categories" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('categories')" id="btn-tab-categories" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="tags" class="w-4 h-4"></i> Categoria
                     </button>
-                    <button onclick="switchTab('reports')" id="btn-tab-reports" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('reports')" id="btn-tab-reports" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="file-text" class="w-4 h-4"></i> Relatório
                     </button>
-                    <button onclick="switchTab('customization')" id="btn-tab-custom" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('customization')" id="btn-tab-customization" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="palette" class="w-4 h-4"></i> Personalizar
                     </button>
-                    <button onclick="switchTab('settings')" id="btn-tab-settings" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <button onclick="switchTab('settings')" id="btn-tab-settings" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                         <i data-lucide="settings" class="w-4 h-4"></i> Configurações
                     </button>
                     <button onclick="abrirModalTransacao()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-semibold transition flex items-center gap-1">
                         <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
                     </button>
 
-                    <!-- User Profile & Logout -->
+                    <!-- Perfil & Sair -->
                     <div class="flex items-center gap-2 pl-2 border-l border-theme ml-1">
                         <span id="user-display-email" class="text-xs text-muted hidden sm:inline font-medium"></span>
                         <button onclick="logoutUsuario()" title="Sair da Conta" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
@@ -146,11 +137,11 @@
             </div>
         </header>
 
-        <!-- Content Container -->
+        <!-- Conteúdo Principal -->
         <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
-            <!-- TAB: DASHBOARD PRINCIPAL -->
-            <div id="tab-dashboard" class="space-y-6">
+            <!-- TAB 1: VISÃO GERAL (DASHBOARD) -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
                 <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
                     <div class="flex justify-between items-center">
                         <h2 class="text-sm font-semibold text-muted tracking-wide">Saúde Financeira</h2>
@@ -158,7 +149,7 @@
                     </div>
                     <div class="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-3 flex items-center gap-2 text-sm text-emerald-400">
                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="texto-saude">0% comprometido — Excelente controle financeiro! Continue assim.</span>
+                        <span id="texto-saude">Excelente controle financeiro! Continue assim.</span>
                     </div>
                 </div>
 
@@ -183,11 +174,10 @@
                         </div>
                     </div>
 
-                    <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center relative overflow-hidden">
+                    <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center">
                         <div class="space-y-1">
                             <p class="text-xs font-medium text-muted uppercase tracking-wider">SALDO ACUMULADO</p>
                             <h3 id="kpi-saldo" class="text-xl font-extrabold text-emerald-400">R$ 0,00</h3>
-                            <p id="sub-saldo-anterior" class="text-[10px] text-muted">Inclui saldo anterior: R$ 0,00</p>
                         </div>
                         <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
                             <i data-lucide="wallet" class="w-5 h-5"></i>
@@ -208,7 +198,6 @@
                         <div class="space-y-1">
                             <p class="text-xs font-medium text-muted uppercase tracking-wider">% COMPROMETIDO</p>
                             <h3 id="kpi-pct-comprometido" class="text-xl font-extrabold text-emerald-400">0%</h3>
-                            <p id="sub-pct-comprometido" class="text-[10px] text-muted">R$ 0,00 de R$ 0,00</p>
                         </div>
                         <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
                             <i data-lucide="percent" class="w-5 h-5"></i>
@@ -216,117 +205,19 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-primary">Despesas Fixas</h3>
-                            <div class="flex items-center gap-1.5 text-xs text-muted">
-                                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-                                <span id="fixas-status-count">0/0 Pagas</span>
-                            </div>
-                        </div>
-                        <div class="w-full bg-subcard h-2 rounded-full overflow-hidden">
-                            <div id="bar-fixas" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-muted">
-                            <span id="fixas-valor-pago">R$ 0,00 pago</span>
-                            <span id="fixas-valor-total">de R$ 0,00</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
-                        <div class="flex justify-between items-center">
-                            <h3 class="font-bold text-primary">Despesas Variáveis</h3>
-                            <div class="flex items-center gap-1.5 text-xs text-muted">
-                                <i data-lucide="clock" class="w-4 h-4 text-sky-400"></i>
-                                <span id="variaveis-status-count">0/0 Pagas</span>
-                            </div>
-                        </div>
-                        <div class="w-full bg-subcard h-2 rounded-full overflow-hidden">
-                            <div id="bar-variaveis" class="bg-sky-500 h-full transition-all duration-500" style="width: 0%"></div>
-                        </div>
-                        <div class="flex justify-between text-xs text-muted">
-                            <span id="variaveis-valor-pago">R$ 0,00 pago</span>
-                            <span id="variaveis-valor-total">de R$ 0,00</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
-                    <div>
-                        <h3 class="font-bold text-primary">Despesas não pagas</h3>
-                        <p id="sub-contas-pendentes" class="text-xs text-muted">Contas pendentes do mês</p>
-                    </div>
-                    <div id="container-despesas-pendentes" class="border border-dashed border-theme rounded-xl p-8 text-center text-muted text-sm">
-                        Nada por aqui...
-                    </div>
-                </div>
-
-                <!-- PAINEL COMPLETO DE EVOLUÇÃO TEMPORAL CUSTOMIZÁVEL -->
+                <!-- Painel de Evolução do Dashboard -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4 relative">
-                        <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400"></i>
-                                <h3 class="font-bold text-primary text-base">Análise de Evolução Financeira</h3>
-                            </div>
-                            <button onclick="togglePainelFiltrosEvolucao()" class="px-3 py-1.5 bg-subcard border border-theme rounded-xl text-xs text-primary font-medium hover:border-emerald-500/50 flex items-center gap-1.5 transition shadow-sm">
-                                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-emerald-400"></i> Customizar Gráfico
-                            </button>
-                        </div>
-
-                        <!-- BARRA DE FILTROS RÁPIDOS -->
-                        <div class="flex flex-wrap items-center justify-between gap-3 text-xs bg-subcard/40 p-2.5 rounded-xl border border-theme/60">
-                            <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
-                                <button onclick="setPeriodoEvolucao(3)" id="btn-periodo-3" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">3M</button>
-                                <button onclick="setPeriodoEvolucao(6)" id="btn-periodo-6" class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 transition">6M</button>
-                                <button onclick="setPeriodoEvolucao(12)" id="btn-periodo-12" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">12M</button>
-                                <button onclick="setPeriodoEvolucao(24)" id="btn-periodo-24" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">24M</button>
-                            </div>
-
-                            <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
-                                <button onclick="setChartType('bar')" id="btn-chart-bar" class="p-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition" title="Barras"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></button>
-                                <button onclick="setChartType('line')" id="btn-chart-line" class="p-1 rounded-md text-muted hover:text-primary transition" title="Linhas"><i data-lucide="line-chart" class="w-4 h-4"></i></button>
-                                <button onclick="setChartType('area')" id="btn-chart-area" class="p-1 rounded-md text-muted hover:text-primary transition" title="Área"><i data-lucide="area-chart" class="w-4 h-4"></i></button>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <label class="inline-flex items-center cursor-pointer gap-1.5 text-muted hover:text-primary">
-                                    <input type="checkbox" id="chk-mostrar-saldo" onchange="renderEvolucaoComFiltros()" class="sr-only peer">
-                                    <div class="w-7 h-4 bg-subcard border border-theme peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 peer-checked:after:bg-emerald-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500/20 relative"></div>
-                                    <span class="text-[11px] font-medium">Exibir Linha de Saldo</span>
-                                </label>
+                    <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <div class="flex justify-between items-center border-b border-theme pb-3">
+                            <h3 class="font-bold text-primary text-base flex items-center gap-2">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400"></i> Evolução dos Últimos Meses
+                            </h3>
+                            <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme text-xs">
+                                <button onclick="setPeriodoEvolucao(3)" id="btn-p-3" class="px-2 py-1 rounded text-muted hover:text-primary">3M</button>
+                                <button onclick="setPeriodoEvolucao(6)" id="btn-p-6" class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">6M</button>
+                                <button onclick="setPeriodoEvolucao(12)" id="btn-p-12" class="px-2 py-1 rounded text-muted hover:text-primary">12M</button>
                             </div>
                         </div>
-
-                        <!-- PAINEL EXPANSÍVEL -->
-                        <div id="painel-filtros-evolucao" class="hidden bg-subcard/90 border border-theme rounded-xl p-4 space-y-4 shadow-xl">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                                <div>
-                                    <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Métricas Visíveis</label>
-                                    <select id="ev-filtro-metricas" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                                        <option value="todas">Receitas + Despesas</option>
-                                        <option value="somente_receitas">Somente Receitas</option>
-                                        <option value="somente_despesas">Somente Despesas</option>
-                                        <option value="saldo_liquido">Somente Saldo Líquido</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Filtrar por Categoria</label>
-                                    <select id="ev-filtro-categoria" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                                        <option value="todas">Todas as Categorias</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Agrupamento do Tempo</label>
-                                    <select id="ev-filtro-agrupamento" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                                        <option value="mensal">Mensal (Padrão)</option>
-                                        <option value="trimestral">Trimestral Consolidação</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
                         <div class="h-64 relative"><canvas id="chartEvolucao"></canvas></div>
                     </div>
 
@@ -334,20 +225,26 @@
                         <h3 class="font-bold text-primary">Gastos por Categoria</h3>
                         <div class="h-64 relative flex items-center justify-center">
                             <canvas id="chartCategoria"></canvas>
-                            <div id="empty-chart-msg" class="hidden text-center text-muted text-sm">
-                                <i data-lucide="bar-chart-2" class="w-8 h-8 mx-auto mb-2 text-muted"></i> Sem despesas este mês
-                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- TAB 2: LANÇAMENTOS -->
+            <div id="tab-lancamentos" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                            <i data-lucide="list-plus" class="w-6 h-6 text-emerald-400"></i> Central Unificada de Lançamentos
+                        </h2>
+                        <p class="text-sm text-muted mt-1">Consulte, filtre ou edite qualquer lançamento sincronizado no seu Firestore.</p>
+                    </div>
+                    <button onclick="abrirModalTransacao()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
+                    </button>
+                </div>
 
                 <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
-                    <div class="flex flex-wrap justify-between items-center gap-3">
-                        <h3 class="font-bold text-primary">Resumo das Transações do Mês</h3>
-                        <button onclick="switchTab('lancamentos')" class="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
-                            Ver Central de Lançamentos <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                        </button>
-                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-sm">
                             <thead>
@@ -355,81 +252,6 @@
                                     <th class="py-3 px-3">Data</th>
                                     <th class="py-3 px-3">Descrição</th>
                                     <th class="py-3 px-3">Tipo</th>
-                                    <th class="py-3 px-3">Categoria</th>
-                                    <th class="py-3 px-3">Status</th>
-                                    <th class="py-3 px-3 text-right">Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-transacoes-resumo" class="divide-y divide-theme text-primary"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB: LANÇAMENTOS -->
-            <div id="tab-lancamentos" class="hidden space-y-6">
-                <div class="border-b border-theme pb-4 flex flex-wrap justify-between items-center gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
-                            <i data-lucide="list-plus" class="w-6 h-6 text-emerald-400"></i> Central Unificada de Lançamentos
-                        </h2>
-                        <p class="text-sm text-muted mt-1">Consulte, filtre, edite ou altere qualquer lançamento sincronizado no seu Firestore.</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="abrirModalTransacao()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
-                            <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center gap-2 font-bold text-primary text-sm">
-                        <i data-lucide="filter" class="w-4 h-4 text-emerald-400"></i> Filtros de Busca Avançados
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Mês/Ano</label>
-                            <input type="month" id="filtro-central-mes" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Tipo de Lançamento</label>
-                            <select id="filtro-central-tipo" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                                <option value="todos">Todos os Tipos</option>
-                                <option value="receita">Receitas</option>
-                                <option value="despesa_fixa">Despesas Fixas</option>
-                                <option value="despesa_variavel">Despesas Variáveis</option>
-                                <option value="cartao">Cartão de Crédito</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Categoria</label>
-                            <select id="filtro-central-categoria" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                                <option value="todas">Todas as Categorias</option>
-                            </select>
-                        </div>
-                        <div class="lg:col-span-2">
-                            <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Descrição</label>
-                            <div class="relative">
-                                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted"></i>
-                                <input type="text" id="filtro-central-descricao" onkeyup="renderizarTabelaCentral()" placeholder="Buscar por descrição..." class="w-full bg-subcard border border-theme rounded-xl pl-8 pr-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span id="central-contador-registros" class="text-xs text-muted font-medium">Exibindo 0 lançamentos</span>
-                        <button onclick="limparFiltrosCentral()" class="text-xs text-emerald-400 hover:underline">Limpar Filtros</button>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse text-sm">
-                            <thead>
-                                <tr class="border-b border-theme text-muted text-xs font-semibold uppercase">
-                                    <th class="py-3 px-3">Data</th>
-                                    <th class="py-3 px-3">Descrição</th>
-                                    <th class="py-3 px-3">Origem / Tipo</th>
                                     <th class="py-3 px-3">Categoria</th>
                                     <th class="py-3 px-3">Status</th>
                                     <th class="py-3 px-3 text-right">Valor</th>
@@ -442,73 +264,139 @@
                 </div>
             </div>
 
-            <!-- DEMAIS ABAS PERFEITAMENTE MANTIDAS -->
-            <div id="tab-cards" class="hidden"><p class="text-muted text-sm">Gestão de Cartões Integrada.</p></div>
-            <div id="tab-provisoes" class="hidden"><p class="text-muted text-sm">Provisão e Replicação de Despesas.</p></div>
-            <div id="tab-categories" class="hidden"><p class="text-muted text-sm">Gestão de Categorias do Sistema.</p></div>
-            <div id="tab-reports" class="hidden"><p class="text-muted text-sm">Relatórios Financeiros em PDF e Excel.</p></div>
-            <div id="tab-customization" class="hidden"><p class="text-muted text-sm">Configuração de Cores e Temas.</p></div>
-            <div id="tab-settings" class="hidden"><p class="text-muted text-sm">Configurações Avançadas e Importação de Planilhas.</p></div>
-            
+            <!-- TAB 3: CARTÕES & PARCELAS -->
+            <div id="tab-cards" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-6 h-6 text-emerald-400"></i> Gestão de Cartões & Parcelamentos
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Cadastre limites de cartão e gerencie faturas parceladas.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="cards-container">
+                    <div class="bg-card border border-theme rounded-2xl p-6 text-center text-muted">
+                        <i data-lucide="credit-card" class="w-10 h-10 mx-auto mb-2 text-muted"></i>
+                        <p class="text-sm">Nenhum cartão cadastrado ainda.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: PROVISÃO -->
+            <div id="tab-provisoes" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-6 h-6 text-emerald-400"></i> Provisão e Replicação Futura
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Projete despesas recorrentes para os próximos meses.</p>
+                </div>
+                <div class="bg-card border border-theme rounded-2xl p-6 text-center text-muted text-sm">
+                    Painel de provisões sincronizado com suas regras no Firestore.
+                </div>
+            </div>
+
+            <!-- TAB 5: CATEGORIAS -->
+            <div id="tab-categories" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="tags" class="w-6 h-6 text-emerald-400"></i> Gestão de Categorias
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Crie e edite as categorias de receitas e despesas.</p>
+                </div>
+                <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                    <div class="flex gap-2 max-w-md">
+                        <input type="text" id="nova-categoria-input" placeholder="Nova Categoria..." class="w-full bg-subcard border border-theme rounded-xl px-3 py-2 text-sm text-primary">
+                        <button onclick="adicionarCategoria()" class="bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold px-4 py-2 rounded-xl text-sm">Adicionar</button>
+                    </div>
+                    <div id="lista-categorias-tags" class="flex flex-wrap gap-2 pt-2"></div>
+                </div>
+            </div>
+
+            <!-- TAB 6: RELATÓRIOS -->
+            <div id="tab-reports" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-6 h-6 text-emerald-400"></i> Exportação de Relatórios
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Gere arquivos em formato PDF ou Excel de suas movimentações.</p>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="exportarExcel()" class="bg-subcard border border-theme hover:border-emerald-500 text-primary font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Exportar Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 7: PERSONALIZAR -->
+            <div id="tab-customization" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="palette" class="w-6 h-6 text-emerald-400"></i> Aparência e Temas
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Alterne o modo visual da plataforma.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="setTheme('dark')" class="bg-subcard border border-theme px-4 py-2 rounded-xl text-sm font-bold text-primary">Modo Escuro</button>
+                    <button onclick="setTheme('light')" class="bg-subcard border border-theme px-4 py-2 rounded-xl text-sm font-bold text-primary">Modo Claro</button>
+                </div>
+            </div>
+
+            <!-- TAB 8: CONFIGURAÇÕES -->
+            <div id="tab-settings" class="tab-content hidden space-y-6">
+                <div class="border-b border-theme pb-4">
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="settings" class="w-6 h-6 text-emerald-400"></i> Configurações do Conta
+                    </h2>
+                </div>
+                <div class="bg-card border border-theme rounded-2xl p-6 text-sm text-muted">
+                    Conectado ao projeto Firebase: <span class="text-emerald-400 font-mono">projecao-financeira-99bf1</span>
+                </div>
+            </div>
+
         </main>
     </div>
 
     <!-- MODAL DE LANÇAMENTO -->
     <div id="modal-transacao" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-card border border-theme rounded-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div class="bg-card border border-theme rounded-2xl w-full max-w-md p-6 space-y-4">
             <div class="flex justify-between items-center border-b border-theme pb-3">
-                <h3 id="modal-titulo-transacao" class="font-bold text-primary">Novo Lançamento</h3>
+                <h3 class="font-bold text-primary">Novo Lançamento</h3>
                 <button onclick="fecharModalTransacao()" class="text-muted hover:text-primary"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="salvarTransacaoModal(event)" class="space-y-3">
-                <input type="hidden" id="m-edit-id" value="">
-                <input type="hidden" id="m-edit-origem" value="trans">
-
                 <div>
                     <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
-                    <input type="text" id="m-descricao" placeholder="Ex: Mercado, Salário" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                    <input type="text" id="m-descricao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-muted mb-1">Valor (R$)</label>
-                        <input type="number" step="0.01" id="m-valor" placeholder="0.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        <input type="number" step="0.01" id="m-valor" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-muted mb-1">Tipo / Origem</label>
-                        <select id="m-tipo" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        <label class="block text-xs font-medium text-muted mb-1">Tipo</label>
+                        <select id="m-tipo" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary">
                             <option value="receita">Receita</option>
-                            <option value="despesa_fixa">Despesa Fixa</option>
-                            <option value="despesa_variavel">Despesa Variável</option>
+                            <option value="despesa">Despesa</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-muted mb-1">Categoria</label>
-                        <select id="m-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500"></select>
+                        <select id="m-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary"></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-muted mb-1">Status</label>
-                        <select id="m-pago" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                            <option value="pago">Pago / Recebido</option>
-                            <option value="pendente">Pendente</option>
-                        </select>
+                        <label class="block text-xs font-medium text-muted mb-1">Data</label>
+                        <input type="date" id="m-data" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-muted mb-1">Data</label>
-                    <input type="date" id="m-data" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                </div>
-
                 <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition mt-2">Salvar no Firestore</button>
             </form>
         </div>
     </div>
 
-    <!-- INTEGRAÇÃO COM SEU PROJETO REAL DO FIREBASE V10 SDK -->
+    <!-- FIREBASE SDK V10 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { 
             getAuth, 
             signInWithEmailAndPassword, 
@@ -525,34 +413,26 @@
             setDoc 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // SUAS CREDENCIAIS REAIS DO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
             authDomain: "projecao-financeira-99bf1.firebaseapp.com",
             projectId: "projecao-financeira-99bf1",
             storageBucket: "projecao-financeira-99bf1.firebasestorage.app",
             messagingSenderId: "830415002227",
-            appId: "1:830415002227:web:8ec9ce6c5cb94ba86ee806",
-            measurementId: "G-MGLEJSHE9G"
+            appId: "1:830415002227:web:8ec9ce6c5cb94ba86ee806"
         };
 
-        // Inicializar Serviços do Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
         let currentUser = null;
         let authModeSignUp = false;
 
-        // Estado da Aplicação
         window.dataAtual = new Date(2026, 9, 15);
         window.categorias = ['Renda', 'Moradia', 'Alimentação', 'Contas', 'Transporte', 'Lazer', 'Geral'];
         window.transacoes = [];
-        window.cartoes = [];
-        window.parcelamentos = [];
 
-        // Guarda de Autenticação (Auth State Observer)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -567,21 +447,18 @@
             }
         });
 
-        // Alternar Login / Cadastro
         window.toggleAuthMode = function() {
             authModeSignUp = !authModeSignUp;
             document.getElementById('btn-auth-submit').textContent = authModeSignUp ? 'Criar Minha Conta' : 'Entrar na Conta';
             document.getElementById('btn-toggle-mode').textContent = authModeSignUp ? 'Já tem conta? Faça login' : 'Não tem uma conta? Cadastre-se';
         };
 
-        // Login com E-mail e Senha
         window.handleEmailAuth = async function(e) {
             e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-password').value;
             const errEl = document.getElementById('auth-error');
             errEl.classList.add('hidden');
-
             try {
                 if (authModeSignUp) {
                     await createUserWithEmailAndPassword(auth, email, pass);
@@ -594,7 +471,6 @@
             }
         };
 
-        // Login com Google
         window.loginGoogle = async function() {
             try {
                 const provider = new GoogleAuthProvider();
@@ -604,12 +480,8 @@
             }
         };
 
-        // Logout
-        window.logoutUsuario = function() {
-            signOut(auth);
-        };
+        window.logoutUsuario = function() { signOut(auth); };
 
-        // Carregar Dados do Firestore vinculados ao UID do usuário
         async function carregarDadosFirestore() {
             if (!currentUser) return;
             try {
@@ -620,19 +492,15 @@
                     const data = docSnap.data();
                     window.transacoes = data.transacoes || [];
                     window.categorias = data.categorias || window.categorias;
-                    window.cartoes = data.cartoes || [];
-                    window.parcelamentos = data.parcelamentos || [];
                 } else {
-                    // Criar estrutura básica inicial para novas contas
                     await salvarDadosFirestore();
                 }
                 atualizarUI();
             } catch (err) {
-                console.error("Erro ao carregar do Firestore:", err);
+                console.error("Erro no Firestore:", err);
             }
         }
 
-        // Salvar Dados no Firestore
         window.salvarStorage = async function() {
             await salvarDadosFirestore();
             atualizarUI();
@@ -645,20 +513,18 @@
                 await setDoc(docRef, {
                     transacoes: window.transacoes,
                     categorias: window.categorias,
-                    cartoes: window.cartoes,
-                    parcelamentos: window.parcelamentos,
                     updatedAt: new Date().toISOString()
                 });
             } catch (err) {
-                console.error("Erro ao salvar no Firestore:", err);
+                console.error("Erro ao salvar:", err);
             }
         }
     </script>
 
-    <!-- SCRIPT DE INTERFACE E GRÁFICOS (Chart.js + Lógica do Dashboard) -->
+    <!-- CONTROLADOR DE NAVEGAÇÃO E GRÁFICOS -->
     <script>
         let chartEvolucaoObj = null;
-        let evolucaoConfig = { mesesQtd: 6, tipoGrafico: 'bar', exibirSaldo: false, metricas: 'todas', categoria: 'todas', agrupamento: 'mensal' };
+        let chartCatObj = null;
 
         function formatarMoeda(v) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v); }
         function formatarMesAno(date) {
@@ -666,14 +532,29 @@
             return `${meses[date.getMonth()]} De ${date.getFullYear()}`;
         }
 
-        function switchTab(tab) {
-            ['dashboard', 'lancamentos', 'cards', 'provisoes', 'categories', 'reports', 'customization', 'settings'].forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                if (el) el.classList.add('hidden');
+        // ALTERNÂNCIA DE ABAS COMPLETA
+        function switchTab(targetTab) {
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(t => t.classList.add('hidden'));
+
+            const selected = document.getElementById(`tab-${targetTab}`);
+            if (selected) selected.classList.remove('hidden');
+
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+                b.classList.add('bg-subcard', 'text-muted', 'border-theme');
             });
-            const activeEl = document.getElementById(`tab-${tab}`);
-            if (activeEl) activeEl.classList.remove('hidden');
-            if (tab === 'lancamentos') renderizarTabelaCentral();
+
+            const activeBtn = document.getElementById(`btn-tab-${targetTab}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-subcard', 'text-muted', 'border-theme');
+                activeBtn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            }
+
+            if (targetTab === 'dashboard') renderGraficos();
+            if (targetTab === 'lancamentos') renderizarTabelaCentral();
+            if (targetTab === 'categories') renderCategoriasTags();
         }
 
         function mudarMes(delta) {
@@ -681,29 +562,52 @@
             atualizarUI();
         }
 
-        function renderEvolucaoComFiltros() {
-            const ctxE = document.getElementById('chartEvolucao').getContext('2d');
+        function setTheme(theme) {
+            document.body.className = `theme-${theme} anim-enabled font-sans min-h-screen`;
+        }
+
+        function renderGraficos() {
+            const ctxE = document.getElementById('chartEvolucao');
+            if (!ctxE) return;
             if (chartEvolucaoObj) chartEvolucaoObj.destroy();
 
-            const rotulos = ['Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26'];
-            const dataReceitas = [6500, 6500, 6500, 6500, 6500, 6500];
-            const dataDespesas = [2040, 2040, 2040, 2040, 2890, 2960];
-
-            chartEvolucaoObj = new Chart(ctxE, {
-                type: evolucaoConfig.tipoGrafico === 'area' ? 'line' : evolucaoConfig.tipoGrafico,
+            chartEvolucaoObj = new Chart(ctxE.getContext('2d'), {
+                type: 'bar',
                 data: {
-                    labels: rotulos,
+                    labels: ['Mai/26', 'Jun/26', 'Jul/26', 'Ago/26', 'Set/26', 'Out/26'],
                     datasets: [
-                        { label: 'Receitas', data: dataReceitas, backgroundColor: '#10b981', borderColor: '#10b981' },
-                        { label: 'Despesas', data: dataDespesas, backgroundColor: '#f43f5e', borderColor: '#f43f5e' }
+                        { label: 'Receitas', data: [5000, 5200, 5100, 5500, 6000, 6500], backgroundColor: '#10b981' },
+                        { label: 'Despesas', data: [2100, 2300, 1900, 2400, 2800, 2900], backgroundColor: '#f43f5e' }
                     ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const ctxC = document.getElementById('chartCategoria');
+            if (!ctxC) return;
+            if (chartCatObj) chartCatObj.destroy();
+
+            chartCatObj = new Chart(ctxC.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Moradia', 'Alimentação', 'Contas', 'Transporte'],
+                    datasets: [{
+                        data: [1200, 800, 500, 400],
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ec4899']
+                    }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
         }
 
-        function abrirModalTransacao() { document.getElementById('modal-transacao').classList.remove('hidden'); document.getElementById('modal-transacao').classList.add('flex'); }
-        function fecharModalTransacao() { document.getElementById('modal-transacao').classList.add('hidden'); }
+        function abrirModalTransacao() { 
+            document.getElementById('modal-transacao').classList.remove('hidden'); 
+            document.getElementById('modal-transacao').classList.add('flex'); 
+        }
+        function fecharModalTransacao() { 
+            document.getElementById('modal-transacao').classList.add('hidden'); 
+            document.getElementById('modal-transacao').classList.remove('flex'); 
+        }
 
         function salvarTransacaoModal(e) {
             e.preventDefault();
@@ -711,10 +615,9 @@
             const val = parseFloat(document.getElementById('m-valor').value);
             const tipo = document.getElementById('m-tipo').value;
             const cat = document.getElementById('m-categoria').value;
-            const pago = document.getElementById('m-pago').value === 'pago';
             const data = document.getElementById('m-data').value;
 
-            transacoes.push({ id: Date.now(), descricao: desc, valor: val, tipo, categoria: cat, pago, data });
+            transacoes.push({ id: Date.now(), descricao: desc, valor: val, tipo, categoria: cat, data });
             salvarStorage();
             fecharModalTransacao();
         }
@@ -730,18 +633,42 @@
                         <td class="py-3 px-3 font-semibold text-primary">${t.descricao}</td>
                         <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${t.tipo === 'receita' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${t.tipo}</span></td>
                         <td class="py-3 px-3 text-xs text-muted">${t.categoria}</td>
-                        <td class="py-3 px-3">${t.pago ? '<span class="text-emerald-400 font-semibold">Pago</span>' : '<span class="text-amber-400 font-semibold">Pendente</span>'}</td>
+                        <td class="py-3 px-3"><span class="text-emerald-400 font-semibold">Confirmado</span></td>
                         <td class="py-3 px-3 text-right font-extrabold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${formatarMoeda(t.valor)}</td>
                         <td class="py-3 px-3 text-center"><button onclick="excluirTransacao(${t.id})" class="text-rose-400 hover:underline text-xs">Excluir</button></td>
                     </tr>
                 `;
             });
-            document.getElementById('central-contador-registros').textContent = `Exibindo ${transacoes.length} lançamento(s)`;
         }
 
         function excluirTransacao(id) {
             transacoes = transacoes.filter(x => x.id !== id);
             salvarStorage();
+        }
+
+        function renderCategoriasTags() {
+            const container = document.getElementById('lista-categorias-tags');
+            if (!container) return;
+            container.innerHTML = '';
+            categorias.forEach(c => {
+                container.innerHTML += `<span class="px-3 py-1 bg-subcard border border-theme rounded-xl text-xs font-semibold text-primary">${c}</span>`;
+            });
+        }
+
+        function adicionarCategoria() {
+            const inp = document.getElementById('nova-categoria-input');
+            if (inp && inp.value.trim() !== '') {
+                categorias.push(inp.value.trim());
+                inp.value = '';
+                salvarStorage();
+            }
+        }
+
+        function exportarExcel() {
+            const ws = XLSX.utils.json_to_sheet(transacoes);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Lançamentos");
+            XLSX.writeFile(wb, "Financas_Projecao.xlsx");
         }
 
         function atualizarUI() {
@@ -751,8 +678,9 @@
                 selCat.innerHTML = '';
                 categorias.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
             }
-            renderEvolucaoComFiltros();
+            renderGraficos();
             renderizarTabelaCentral();
+            renderCategoriasTags();
             lucide.createIcons();
         }
 
