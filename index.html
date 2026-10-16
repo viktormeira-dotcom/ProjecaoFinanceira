@@ -1,4 +1,1692 @@
-function processarMapeamentoEGerarPrevia() {
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeção Financeira - Sistema Completo Integrado</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (xlsx) para Leitura e Exportação de Excel/CSV -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF e autoTable para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style id="custom-theme-styles">
+        .anim-enabled * {
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.3s ease !important;
+        }
+        .anim-disabled * {
+            transition: none !important;
+            animation: none !important;
+        }
+
+        body.theme-dark { background-color: #0b0f17; color: #f3f4f6; }
+        .theme-dark .bg-card { background-color: #111827; }
+        .theme-dark .bg-subcard { background-color: #1f2937; }
+        .theme-dark .border-theme { border-color: #1f2937; }
+        .theme-dark .text-primary { color: #f3f4f6; }
+        .theme-dark .text-muted { color: #9ca3af; }
+        .theme-dark .header-bg { background-color: #111827; border-color: #1f2937; }
+
+        body.theme-light { background-color: #f8fafc; color: #0f172a; }
+        .theme-light .bg-card { background-color: #ffffff; }
+        .theme-light .bg-subcard { background-color: #f1f5f9; }
+        .theme-light .border-theme { border-color: #e2e8f0; }
+        .theme-light .text-primary { color: #0f172a; }
+        .theme-light .text-muted { color: #64748b; }
+        .theme-light .header-bg { background-color: #ffffff; border-color: #e2e8f0; }
+    </style>
+</head>
+<body class="theme-dark anim-enabled font-sans min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b header-bg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2 bg-subcard px-3 py-1.5 rounded-lg border border-theme text-sm font-medium">
+                    <button onclick="mudarMes(-1)" class="hover:text-emerald-400"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <span id="label-mes-ano">Outubro De 2026</span>
+                    <button onclick="mudarMes(1)" class="hover:text-emerald-400"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-muted"></i>
+                    <input type="text" id="campo-pesquisar" onkeyup="filtrarPesquisaGeral()" placeholder="Pesquisar..." class="bg-subcard border border-theme rounded-lg pl-9 pr-4 py-1.5 text-sm text-primary focus:outline-none focus:border-emerald-500 w-48 sm:w-64">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="switchTab('dashboard')" id="btn-tab-dash" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Visão Geral
+                </button>
+                <button onclick="switchTab('lancamentos')" id="btn-tab-lancamentos" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="list-plus" class="w-4 h-4"></i> Lançamentos
+                </button>
+                <button onclick="switchTab('cards')" id="btn-tab-cards" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i> Cartões & Parcelas
+                </button>
+                <button onclick="switchTab('provisoes')" id="btn-tab-provisoes" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="calendar-range" class="w-4 h-4"></i> Provisão
+                </button>
+                <button onclick="switchTab('categories')" id="btn-tab-categories" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="tags" class="w-4 h-4"></i> Categoria
+                </button>
+                <button onclick="switchTab('reports')" id="btn-tab-reports" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Relatório
+                </button>
+                <button onclick="switchTab('customization')" id="btn-tab-custom" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="palette" class="w-4 h-4"></i> Personalizar
+                </button>
+                <button onclick="switchTab('settings')" id="btn-tab-settings" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Configurações
+                </button>
+                <button onclick="abrirModalTransacao()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-semibold transition flex items-center gap-1">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Container -->
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+        <!-- TAB: DASHBOARD PRINCIPAL -->
+        <div id="tab-dashboard" class="space-y-6">
+            <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold text-muted tracking-wide">Saúde Financeira</h2>
+                    <span id="badge-saude" class="px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Excelente</span>
+                </div>
+                <div class="bg-emerald-950/20 border border-emerald-800/30 rounded-xl p-3 flex items-center gap-2 text-sm text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="texto-saude">0% comprometido — Excelente controle financeiro! Continue assim.</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center">
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium text-muted uppercase tracking-wider">TOTAL RECEITAS</p>
+                        <h3 id="kpi-receitas" class="text-xl font-extrabold text-emerald-400">R$ 0,00</h3>
+                    </div>
+                    <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="trending-up" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center">
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium text-muted uppercase tracking-wider">TOTAL DESPESAS</p>
+                        <h3 id="kpi-despesas" class="text-xl font-extrabold text-rose-500">R$ 0,00</h3>
+                    </div>
+                    <div class="p-2.5 bg-rose-500/10 text-rose-500 rounded-xl border border-rose-500/20">
+                        <i data-lucide="trending-down" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center relative overflow-hidden">
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium text-muted uppercase tracking-wider">SALDO ACUMULADO</p>
+                        <h3 id="kpi-saldo" class="text-xl font-extrabold text-emerald-400">R$ 0,00</h3>
+                        <p id="sub-saldo-anterior" class="text-[10px] text-muted">Inclui saldo anterior: R$ 0,00</p>
+                    </div>
+                    <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="wallet" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center">
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium text-muted uppercase tracking-wider">RESULTADO DO MÊS</p>
+                        <h3 id="kpi-economia" class="text-xl font-extrabold text-emerald-400">R$ 0,00</h3>
+                    </div>
+                    <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="piggy-bank" class="w-5 h-5"></i>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-4 flex justify-between items-center">
+                    <div class="space-y-1">
+                        <p class="text-xs font-medium text-muted uppercase tracking-wider">% COMPROMETIDO</p>
+                        <h3 id="kpi-pct-comprometido" class="text-xl font-extrabold text-emerald-400">0%</h3>
+                        <p id="sub-pct-comprometido" class="text-[10px] text-muted">R$ 0,00 de R$ 0,00</p>
+                    </div>
+                    <div class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20">
+                        <i data-lucide="percent" class="w-5 h-5"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary">Despesas Fixas</h3>
+                        <div class="flex items-center gap-1.5 text-xs text-muted">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+                            <span id="fixas-status-count">0/0 Pagas</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-subcard h-2 rounded-full overflow-hidden">
+                        <div id="bar-fixas" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-muted">
+                        <span id="fixas-valor-pago">R$ 0,00 pago</span>
+                        <span id="fixas-valor-total">de R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary">Despesas Variáveis</h3>
+                        <div class="flex items-center gap-1.5 text-xs text-muted">
+                            <i data-lucide="clock" class="w-4 h-4 text-sky-400"></i>
+                            <span id="variaveis-status-count">0/0 Pagas</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-subcard h-2 rounded-full overflow-hidden">
+                        <div id="bar-variaveis" class="bg-sky-500 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-muted">
+                        <span id="variaveis-valor-pago">R$ 0,00 pago</span>
+                        <span id="variaveis-valor-total">de R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                <div>
+                    <h3 class="font-bold text-primary">Despesas não pagas</h3>
+                    <p id="sub-contas-pendentes" class="text-xs text-muted">Contas pendentes de out. de 26</p>
+                </div>
+                <div id="container-despesas-pendentes" class="border border-dashed border-theme rounded-xl p-8 text-center text-muted text-sm">
+                    Nada por aqui...
+                </div>
+            </div>
+
+            <!-- PAINEL COMPLETO E CUSTOMIZÁVEL DE EVOLUÇÃO TEMPORAL -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4 relative">
+                    <!-- CABEÇALHO DO GRÁFICO COM CONTROLES MODERNOS -->
+                    <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400"></i>
+                            <h3 class="font-bold text-primary text-base">Análise de Evolução Financeira</h3>
+                        </div>
+                        <button onclick="togglePainelFiltrosEvolucao()" class="px-3 py-1.5 bg-subcard border border-theme rounded-xl text-xs text-primary font-medium hover:border-emerald-500/50 flex items-center gap-1.5 transition shadow-sm">
+                            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-emerald-400"></i> Customizar Gráfico
+                        </button>
+                    </div>
+
+                    <!-- BARRA DE FILTROS RÁPIDOS MODERNOS (CHIPS) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 text-xs bg-subcard/40 p-2.5 rounded-xl border border-theme/60">
+                        <!-- PERÍODO RÁPIDO -->
+                        <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
+                            <button onclick="setPeriodoEvolucao(3)" id="btn-periodo-3" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">3M</button>
+                            <button onclick="setPeriodoEvolucao(6)" id="btn-periodo-6" class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 transition">6M</button>
+                            <button onclick="setPeriodoEvolucao(12)" id="btn-periodo-12" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">12M</button>
+                            <button onclick="setPeriodoEvolucao(24)" id="btn-periodo-24" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">24M</button>
+                        </div>
+
+                        <!-- SELEÇÃO DE TIPO DE GRÁFICO -->
+                        <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
+                            <button onclick="setChartType('bar')" id="btn-chart-bar" class="p-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition" title="Barras Comparativas"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></button>
+                            <button onclick="setChartType('line')" id="btn-chart-line" class="p-1 rounded-md text-muted hover:text-primary transition" title="Linha de Tendência"><i data-lucide="line-chart" class="w-4 h-4"></i></button>
+                            <button onclick="setChartType('area')" id="btn-chart-area" class="p-1 rounded-md text-muted hover:text-primary transition" title="Área Preenchida"><i data-lucide="area-chart" class="w-4 h-4"></i></button>
+                        </div>
+
+                        <!-- TOGGLE DE MÉTRICA SECUNDÁRIA -->
+                        <div class="flex items-center gap-2">
+                            <label class="inline-flex items-center cursor-pointer gap-1.5 text-muted hover:text-primary">
+                                <input type="checkbox" id="chk-mostrar-saldo" onchange="renderEvolucaoComFiltros()" class="sr-only peer">
+                                <div class="w-7 h-4 bg-subcard border border-theme peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 peer-checked:after:bg-emerald-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500/20 relative"></div>
+                                <span class="text-[11px] font-medium">Exibir Linha de Saldo</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- PAINEL EXPANSÍVEL DE FILTROS AVANÇADOS -->
+                    <div id="painel-filtros-evolucao" class="hidden bg-subcard/90 border border-theme rounded-xl p-4 space-y-4 shadow-xl">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Métricas Visíveis</label>
+                                <select id="ev-filtro-metricas" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                                    <option value="todas">Receitas + Despesas</option>
+                                    <option value="somente_receitas">Somente Receitas</option>
+                                    <option value="somente_despesas">Somente Despesas</option>
+                                    <option value="saldo_liquido">Somente Saldo Líquido</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Filtrar por Categoria</label>
+                                <select id="ev-filtro-categoria" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                                    <option value="todas">Todas as Categorias</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-muted uppercase text-[10px] mb-1">Agrupamento do Tempo</label>
+                                <select id="ev-filtro-agrupamento" onchange="renderEvolucaoComFiltros()" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                                    <option value="mensal">Mensal (Padrão)</option>
+                                    <option value="trimestral">Trimestral Consolidação</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTAINER DO GRÁFICO DE EVOLUÇÃO -->
+                    <div class="h-64 relative"><canvas id="chartEvolucao"></canvas></div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-primary">Gastos por Categoria</h3>
+                    <div class="h-64 relative flex items-center justify-center">
+                        <canvas id="chartCategoria"></canvas>
+                        <div id="empty-chart-msg" class="hidden text-center text-muted text-sm">
+                            <i data-lucide="bar-chart-2" class="w-8 h-8 mx-auto mb-2 text-muted"></i> Sem despesas este mês
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-3">
+                    <h3 class="font-bold text-primary">Resumo das Transações do Mês</h3>
+                    <button onclick="switchTab('lancamentos')" class="text-xs text-emerald-400 hover:underline flex items-center gap-1 font-semibold">
+                        Ver Central de Lançamentos <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-theme text-muted text-xs font-semibold uppercase">
+                                <th class="py-3 px-3">Data</th>
+                                <th class="py-3 px-3">Descrição</th>
+                                <th class="py-3 px-3">Tipo</th>
+                                <th class="py-3 px-3">Categoria</th>
+                                <th class="py-3 px-3">Status</th>
+                                <th class="py-3 px-3 text-right">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-transacoes-resumo" class="divide-y divide-theme text-primary"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: LANÇAMENTOS -->
+        <div id="tab-lancamentos" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4 flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="list-plus" class="w-6 h-6 text-emerald-400"></i> Central Unificada de Lançamentos
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Consulte, filtre, edite ou altere qualquer lançamento (Receitas, Despesas Fixas/Variáveis e Cartões) que impactam todo o sistema.</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="abrirModalTransacao()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARD DE FILTROS DA CENTRAL -->
+            <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                <div class="flex items-center gap-2 font-bold text-primary text-sm">
+                    <i data-lucide="filter" class="w-4 h-4 text-emerald-400"></i> Filtros de Busca Avançados
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Mês/Ano</label>
+                        <input type="month" id="filtro-central-mes" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Tipo de Lançamento</label>
+                        <select id="filtro-central-tipo" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                            <option value="todos">Todos os Tipos</option>
+                            <option value="receita">Receitas</option>
+                            <option value="despesa_fixa">Despesas Fixas</option>
+                            <option value="despesa_variavel">Despesas Variáveis</option>
+                            <option value="cartao">Cartão de Crédito</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Categoria</label>
+                        <select id="filtro-central-categoria" onchange="renderizarTabelaCentral()" class="w-full bg-subcard border border-theme rounded-xl px-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                            <option value="todas">Todas as Categorias</option>
+                        </select>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-[11px] font-semibold text-muted uppercase mb-1">Descrição</label>
+                        <div class="relative">
+                            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-muted"></i>
+                            <input type="text" id="filtro-central-descricao" onkeyup="renderizarTabelaCentral()" placeholder="Buscar por descrição..." class="w-full bg-subcard border border-theme rounded-xl pl-8 pr-3 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA CENTRAL DE LANÇAMENTOS -->
+            <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <span id="central-contador-registros" class="text-xs text-muted font-medium">Exibindo 0 lançamentos</span>
+                    <button onclick="limparFiltrosCentral()" class="text-xs text-emerald-400 hover:underline">Limpar Filtros</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="border-b border-theme text-muted text-xs font-semibold uppercase">
+                                <th class="py-3 px-3">Data</th>
+                                <th class="py-3 px-3">Descrição</th>
+                                <th class="py-3 px-3">Origem / Tipo</th>
+                                <th class="py-3 px-3">Categoria</th>
+                                <th class="py-3 px-3">Status</th>
+                                <th class="py-3 px-3 text-right">Valor</th>
+                                <th class="py-3 px-3 text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-central-corpo" class="divide-y divide-theme text-primary"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CARTÕES -->
+        <div id="tab-cards" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="space-y-6">
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="credit-card" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão</h3>
+                        <form onsubmit="cadastrarCartao(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Nome do Cartão</label>
+                                <input type="text" id="c-nome" placeholder="Ex: Nubank, Itaú" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Fechamento</label>
+                                    <input type="number" min="1" max="31" id="c-fechamento" placeholder="5" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Vencimento</label>
+                                    <input type="number" min="1" max="31" id="c-vencimento" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 rounded-xl text-sm transition">Adicionar Cartão</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra Parcelada</h3>
+                        <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Cartão</label>
+                                <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
+                                <input type="text" id="p-descricao" placeholder="Ex: Notebook, Viagem" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Categoria do Cartão</label>
+                                <select id="p-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Valor Total (R$)</label>
+                                    <input type="number" step="0.01" id="p-valor" placeholder="1200.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Nº Parcelas</label>
+                                    <input type="number" min="1" max="72" id="p-parcelas" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Data da 1ª Parcela (Início)</label>
+                                <input type="date" id="p-data-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2.5 rounded-xl text-sm transition">Registrar Compra</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-primary">Cartões e Faturas Ativas</h3>
+                    <div id="container-cartoes" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: PROVISÃO -->
+        <div id="tab-provisoes" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="calendar-range" class="w-6 h-6 text-emerald-400"></i> Provisão & Replicar Despesas Fixas
+                </h2>
+                <p class="text-sm text-muted mt-1">Duplique despesas fixas para vários meses futuros e planeje seus compromissos recorrentes.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="copy" class="w-5 h-5 text-emerald-400"></i> Replicar Despesa Existente
+                    </h3>
+                    <p class="text-xs text-muted">Escolha uma despesa fixa do mês atual e replique-a para o intervalo de meses desejado.</p>
+                    
+                    <form onsubmit="executarProvisaoEmLote(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Selecione a Despesa Fixa</label>
+                            <select id="prov-despesa-id" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Mês de Início</label>
+                            <input type="month" id="prov-mes-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Mês de Fim</label>
+                            <input type="month" id="prov-mes-fim" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="repeat" class="w-4 h-4"></i> Replicar Despesa
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary">Despesas Fixas no Mês Atual</h3>
+                        <span class="text-xs text-muted">Ações rápidas de provisão</span>
+                    </div>
+                    <div id="container-lista-provisoes-atuais" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CATEGORIA -->
+        <div id="tab-categories" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="tags" class="w-6 h-6 text-emerald-400"></i> Gestão de Categoria
+                </h2>
+                <p class="text-sm text-muted mt-1">Crie, renomeie categorias e reclassifique despesas ou compras de cartão em lote.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5 text-emerald-400"></i> Nova Categoria</h3>
+                    <form onsubmit="cadastrarCategoria(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Nome da Categoria</label>
+                            <input type="text" id="cat-novo-nome" placeholder="Ex: Educação, Lazer" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-2 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Criar Categoria
+                        </button>
+                    </form>
+
+                    <hr class="border-theme my-4">
+
+                    <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="arrow-right-left" class="w-5 h-5 text-sky-400"></i> Reclassificar Lançamento</h3>
+                    <form onsubmit="reclassificarIndividual(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Selecione o Lançamento</label>
+                            <select id="rec-item-id" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-sky-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Nova Categoria Destino</label>
+                            <select id="rec-nova-cat" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-sky-500"></select>
+                        </div>
+                        <button type="submit" class="w-full bg-sky-500 hover:bg-sky-600 text-gray-950 font-bold py-2 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                            <i data-lucide="check" class="w-4 h-4"></i> Reclassificar Item
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <h3 class="font-bold text-primary">Categorias Cadastradas</h3>
+                    <p class="text-xs text-muted">Ajuste os nomes existentes ou exclua. A reclassificação atualiza despesas e faturas instantaneamente.</p>
+
+                    <div id="container-lista-categorias" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: RELATÓRIO -->
+        <div id="tab-reports" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-6 h-6 text-emerald-400"></i> Relatórios Financeiros
+                </h2>
+                <p class="text-sm text-muted mt-1">Extraia relatórios detalhados nos formatos PDF e Excel com filtros por período e categoria.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 w-fit">
+                            <i data-lucide="calendar" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-primary text-base">Fechamento do Mês Atual</h3>
+                        <p class="text-xs text-muted">Resumo completo com receitas, despesas fixas, variáveis e faturas de cartões do mês selecionado.</p>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="gerarRelatorioFechamento('pdf')" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="file-type-2" class="w-4 h-4"></i> PDF
+                        </button>
+                        <button onclick="gerarRelatorioFechamento('excel')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="sheet" class="w-4 h-4"></i> Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="p-3 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20 w-fit">
+                            <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-primary text-base">Gastos por Categoria</h3>
+                        <p class="text-xs text-muted">Agrupamento consolidado dos totais gastos por cada categoria no período selecionado.</p>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="gerarRelatorioCategoria('pdf')" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="file-type-2" class="w-4 h-4"></i> PDF
+                        </button>
+                        <button onclick="gerarRelatorioCategoria('excel')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="sheet" class="w-4 h-4"></i> Excel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="p-3 bg-purple-500/10 text-purple-400 rounded-xl border border-purple-500/20 w-fit">
+                            <i data-lucide="credit-card" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-primary text-base">Faturas de Cartões</h3>
+                        <p class="text-xs text-muted">Detalhamento de todos os parcelamentos ativos, cartões, valor das parcelas e totalização.</p>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="gerarRelatorioCartoes('pdf')" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="file-type-2" class="w-4 h-4"></i> PDF
+                        </button>
+                        <button onclick="gerarRelatorioCartoes('excel')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+                            <i data-lucide="sheet" class="w-4 h-4"></i> Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: PERSONALIZAR -->
+        <div id="tab-customization" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="palette" class="w-6 h-6 text-emerald-400"></i> Personalização da Interface
+                </h2>
+                <p class="text-sm text-muted mt-1">Ajuste as preferências visuais do sistema conforme sua preferência de leitura.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                    <h3 class="font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="sun-moon" class="w-5 h-5 text-amber-400"></i> Modo Visual do Site
+                    </h3>
+                    <p class="text-xs text-muted">Escolha entre a aparência escura para menor cansaço visual ou clara para maior contraste durante o dia.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button onclick="definirTema('dark')" id="opt-theme-dark" class="p-4 border border-theme bg-subcard rounded-xl text-left space-y-2 hover:border-emerald-500 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm text-primary flex items-center gap-2"><i data-lucide="moon" class="w-4 h-4 text-emerald-400"></i> Modo Escuro</span>
+                                <span id="check-dark" class="text-emerald-400"><i data-lucide="check-circle-2" class="w-4 h-4"></i></span>
+                            </div>
+                        </button>
+
+                        <button onclick="definirTema('light')" id="opt-theme-light" class="p-4 border border-theme bg-subcard rounded-xl text-left space-y-2 hover:border-emerald-500 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm text-primary flex items-center gap-2"><i data-lucide="sun" class="w-4 h-4 text-amber-400"></i> Modo Claro</span>
+                                <span id="check-light" class="hidden text-emerald-400"><i data-lucide="check-circle-2" class="w-4 h-4"></i></span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                    <h3 class="font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-sky-400"></i> Animações & Transições
+                    </h3>
+                    <p class="text-xs text-muted">Ative transições de cores e efeitos suaves ao clicar, ou desative para ganho de desempenho em telas menores.</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button onclick="definirAnimacao(true)" id="opt-anim-on" class="p-4 border border-theme bg-subcard rounded-xl text-left space-y-2 hover:border-emerald-500 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm text-primary flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i> Com Animação</span>
+                                <span id="check-anim-on" class="text-emerald-400"><i data-lucide="check-circle-2" class="w-4 h-4"></i></span>
+                            </div>
+                        </button>
+
+                        <button onclick="definirAnimacao(false)" id="opt-anim-off" class="p-4 border border-theme bg-subcard rounded-xl text-left space-y-2 hover:border-emerald-500 transition">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm text-primary flex items-center gap-2"><i data-lucide="zap-off" class="w-4 h-4 text-rose-400"></i> Sem Animação</span>
+                                <span id="check-anim-off" class="hidden text-emerald-400"><i data-lucide="check-circle-2" class="w-4 h-4"></i></span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CONFIGURAÇÕES -->
+        <div id="tab-settings" class="hidden space-y-6">
+            <!-- IMPORTAÇÃO DE CARTÕES DE CRÉDITO (CSV / XLSX) -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-lg">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-purple-400"></i> Importação de Compras de Cartão de Crédito
+                        </h3>
+                        <p class="text-xs text-muted mt-0.5">Importe extratos de cartão de crédito ou compras parceladas em lote via CSV ou Excel.</p>
+                    </div>
+                    <button onclick="baixarPlanilhaModeloCartao()" class="px-4 py-2 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Modelo Cartão (.xlsx)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-muted uppercase mb-2">Selecione o arquivo (.xlsx ou .csv):</label>
+                        <input type="file" id="input-file-excel-cartao" accept=".xlsx, .xls, .csv" onchange="lerArquivoPlanilhaCartao(event)" class="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer cursor-pointer bg-subcard border border-theme rounded-xl p-1.5">
+                    </div>
+                </div>
+
+                <!-- Mapeamento de Colunas Cartão -->
+                <div id="box-mapeamento-colunas-cartao" class="hidden space-y-4 pt-4 border-t border-theme">
+                    <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> Mapeamento de Colunas (Cartão de Crédito)
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-subcard p-4 rounded-xl border border-theme">
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Data da Compra *</label>
+                            <select id="map-card-data" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Descrição *</label>
+                            <select id="map-card-descricao" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Valor Total (R$) *</label>
+                            <select id="map-card-valor" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Nº de Parcelas (Opcional)</label>
+                            <select id="map-card-parcelas" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Cartão Destino *</label>
+                            <select id="map-card-cartao-dest" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria (Opcional)</label>
+                            <select id="map-card-categoria" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria Padrão</label>
+                            <select id="map-card-cat-fallback" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="processarMapeamentoCartaoEGerarPrevia()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="play" class="w-4 h-4"></i> Processar Mapeamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prévia da Importação -->
+                <div id="container-previa-excel-cartao" class="hidden space-y-3 pt-4 border-t border-theme">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-primary text-sm flex items-center gap-2">
+                            <i data-lucide="check-square" class="w-4 h-4 text-purple-400"></i> Prévia de Compras Mapeadas
+                        </h4>
+                        <button onclick="confirmarEImportarPlanilhaCartao()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-purple-900/20">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirmar & Importar Compras
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-64 overflow-y-auto border border-theme rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="sticky top-0 bg-subcard z-10">
+                                <tr class="border-b border-theme text-muted uppercase font-bold">
+                                    <th class="py-2.5 px-3">Data 1ª Parcela</th>
+                                    <th class="py-2.5 px-3">Descrição</th>
+                                    <th class="py-2.5 px-3">Cartão</th>
+                                    <th class="py-2.5 px-3">Categoria</th>
+                                    <th class="py-2.5 px-3">Parcelas</th>
+                                    <th class="py-2.5 px-3 text-right">Valor Parcela</th>
+                                    <th class="py-2.5 px-3 text-right">Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-previa-excel-cartao-corpo" class="divide-y divide-theme"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="settings" class="w-6 h-6 text-emerald-400"></i> Configurações do Sistema
+                </h2>
+                <p class="text-sm text-muted mt-1">Gerencie suas preferências, importe planilhas (CSV/XLSX) com mapeamento dinâmico ou restaure as configurações de fábrica.</p>
+            </div>
+
+            <!-- IMPORTAÇÃO CSV / XLSX -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-lg">
+                            <i data-lucide="file-spreadsheet" class="w-5 h-5 text-emerald-400"></i> Importação de Arquivos CSV / XLSX
+                        </h3>
+                        <p class="text-xs text-muted mt-0.5">Faça upload de qualquer planilha financeira ou baixe o modelo padrão pronto para preenchimento.</p>
+                    </div>
+                    <button onclick="baixarPlanilhaModelo()" class="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500 hover:text-gray-950 text-emerald-400 font-bold text-xs rounded-xl transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Planilha Modelo (.xlsx)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-muted uppercase mb-2">Selecione o arquivo da planilha (.xlsx ou .csv):</label>
+                        <input type="file" id="input-file-excel" accept=".xlsx, .xls, .csv" onchange="lerArquivoPlanilha(event)" class="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500 file:text-gray-950 hover:file:bg-emerald-600 file:cursor-pointer cursor-pointer bg-subcard border border-theme rounded-xl p-1.5">
+                    </div>
+                </div>
+
+                <div id="box-mapeamento-colunas" class="hidden space-y-4 pt-4 border-t border-theme">
+                    <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> Mapeamento Dinâmico de Colunas
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-subcard p-4 rounded-xl border border-theme">
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Data *</label>
+                            <select id="map-col-data" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Descrição *</label>
+                            <select id="map-col-descricao" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Valor (R$) *</label>
+                            <select id="map-col-valor" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Tipo (Opcional)</label>
+                            <select id="map-col-tipo" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria (Opcional)</label>
+                            <select id="map-col-categoria" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Status Pago (Opcional)</label>
+                            <select id="map-col-pago" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria Padrão</label>
+                            <select id="map-cat-fallback" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-emerald-500"></select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="processarMapeamentoEGerarPrevia()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-1.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="play" class="w-4 h-4"></i> Processar Mapeamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="container-previa-excel" class="hidden space-y-3 pt-4 border-t border-theme">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-primary text-sm flex items-center gap-2">
+                            <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i> Prévia de Dados Mapeados
+                        </h4>
+                        <button onclick="confirmarEImportarPlanilha()" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirmar & Importar Todos
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-64 overflow-y-auto border border-theme rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="sticky top-0 bg-subcard z-10">
+                                <tr class="border-b border-theme text-muted uppercase font-bold">
+                                    <th class="py-2.5 px-3">Data</th>
+                                    <th class="py-2.5 px-3">Descrição</th>
+                                    <th class="py-2.5 px-3">Tipo</th>
+                                    <th class="py-2.5 px-3">Categoria</th>
+                                    <th class="py-2.5 px-3">Status</th>
+                                    <th class="py-2.5 px-3 text-right">Valor (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-previa-excel-corpo" class="divide-y divide-theme"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESET DO SISTEMA -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                <h3 class="font-bold text-rose-400 flex items-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5 text-rose-400"></i> Restauração de Fábrica
+                </h3>
+                <div class="flex flex-wrap items-center justify-between gap-4 bg-rose-950/20 border border-rose-900/40 p-4 rounded-xl">
+                    <div>
+                        <p class="text-sm font-semibold text-rose-200">Reset Total do Sistema</p>
+                        <p class="text-xs text-rose-300/70">Esta ação irá apagar todos os dados inseridos e restaurar o aplicativo para o padrão inicial do site.</p>
+                    </div>
+                    <button onclick="executarReset()" class="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-900/20">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE LANÇAMENTO / EDIÇÃO UNIFICADA -->
+    <div id="modal-transacao" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-card border border-theme rounded-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-theme pb-3">
+                <h3 id="modal-titulo-transacao" class="font-bold text-primary">Novo Lançamento</h3>
+                <button onclick="fecharModalTransacao()" class="text-muted hover:text-primary"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="salvarTransacaoModal(event)" class="space-y-3">
+                <input type="hidden" id="m-edit-id" value="">
+                <input type="hidden" id="m-edit-origem" value="trans">
+
+                <div>
+                    <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
+                    <input type="text" id="m-descricao" placeholder="Ex: Mercado, Salário, Notebook" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-muted mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" id="m-valor" placeholder="0.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-muted mb-1">Tipo / Origem</label>
+                        <select id="m-tipo" onchange="alternarCamposModalPorTipo()" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                            <option value="receita">Receita</option>
+                            <option value="despesa_fixa">Despesa Fixa</option>
+                            <option value="despesa_variavel">Despesa Variável</option>
+                            <option value="cartao">Cartão de Crédito</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="box-campo-cartao" class="hidden">
+                    <label class="block text-xs font-medium text-muted mb-1">Selecione o Cartão</label>
+                    <select id="m-cartao-id" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500"></select>
+                </div>
+
+                <div id="box-campo-parcelas" class="hidden grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-muted mb-1">Nº de Parcelas</label>
+                        <input type="number" min="1" max="72" id="m-parcelas" value="1" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-muted mb-1">Valor Parcela (R$)</label>
+                        <input type="text" id="m-valor-parcela-preview" readonly placeholder="R$ 0,00" class="w-full bg-subcard/50 border border-theme rounded-xl px-3.5 py-2 text-sm text-muted focus:outline-none cursor-not-allowed">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-muted mb-1">Categoria</label>
+                        <select id="m-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500"></select>
+                    </div>
+                    <div id="box-campo-status">
+                        <label class="block text-xs font-medium text-muted mb-1">Status de Pagamento</label>
+                        <select id="m-pago" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                            <option value="pago">Pago / Recebido</option>
+                            <option value="pendente">Pendente / Não pago</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-muted mb-1">Data do Lançamento</label>
+                    <input type="date" id="m-data" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div id="container-replicar-despesa" class="hidden bg-subcard/60 p-3 rounded-xl border border-theme space-y-3">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="m-replicar" onchange="toggleDatasReplicacao()" class="w-4 h-4 accent-emerald-500 rounded">
+                        <label for="m-replicar" class="text-xs font-medium text-emerald-400">Replicar esta despesa fixa para outros meses</label>
+                    </div>
+                    <div id="box-datas-replicacao" class="hidden grid grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="block text-[11px] font-medium text-muted mb-1">Mês Início</label>
+                            <input type="month" id="m-rep-inicio" class="w-full bg-subcard border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-medium text-muted mb-1">Mês Fim</label>
+                            <input type="month" id="m-rep-fim" class="w-full bg-subcard border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold py-2.5 rounded-xl text-sm transition mt-2">Salvar Lançamento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT DA APLICAÇÃO -->
+    <script>
+        let dataAtual = new Date(2026, 9, 15); // Outubro 2026
+        let temaAtual = localStorage.getItem('pf_tema') || 'dark';
+        let animacaoAtiva = localStorage.getItem('pf_animacao') !== 'false';
+
+        // Estado dos Filtros do Gráfico de Evolução
+        let evolucaoConfig = {
+            mesesQtd: 6,
+            tipoGrafico: 'bar',
+            exibirSaldo: false,
+            metricas: 'todas',
+            categoria: 'todas',
+            agrupamento: 'mensal'
+        };
+
+        const PADRAO_CATEGORIAS = ['Renda', 'Moradia', 'Alimentação', 'Contas', 'Transporte', 'Lazer', 'Geral'];
+        
+        const PADRAO_TRANSACOES = [
+            { id: 1, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-05-01' },
+            { id: 2, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-05-05' },
+            { id: 3, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-06-01' },
+            { id: 4, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-06-05' },
+            { id: 5, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-07-01' },
+            { id: 6, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-07-05' },
+            { id: 7, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-08-01' },
+            { id: 8, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-08-05' },
+            { id: 9, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-09-01' },
+            { id: 10, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-09-05' },
+            { id: 11, descricao: 'Supermercado', valor: 850, tipo: 'despesa_variavel', categoria: 'Alimentação', pago: true, data: '2026-09-08' },
+            { id: 12, descricao: 'Salário Mensal', valor: 6500, tipo: 'receita', categoria: 'Renda', pago: true, data: '2026-10-01' },
+            { id: 13, descricao: 'Aluguel & Condomínio', valor: 1800, tipo: 'despesa_fixa', categoria: 'Moradia', pago: true, data: '2026-10-05' },
+            { id: 14, descricao: 'Supermercado', valor: 920, tipo: 'despesa_variavel', categoria: 'Alimentação', pago: true, data: '2026-10-08' },
+            { id: 15, descricao: 'Conta de Luz / Energia', valor: 220, tipo: 'despesa_fixa', categoria: 'Contas', pago: false, data: '2026-10-25' }
+        ];
+
+        const PADRAO_CARTOES = [
+            { id: 1, nome: 'Cartão Nubank', fechamento: 5, vencimento: 12 }
+        ];
+
+        const PADRAO_PARCELAMENTOS = [
+            { id: 1, cartaoId: 1, descricao: 'Smartphone Novo', categoria: 'Lazer', valorTotal: 2400, totalParcelas: 10, valorParcela: 240, dataInicio: '2026-05-10' }
+        ];
+
+        let categorias = JSON.parse(localStorage.getItem('pf_categorias_v10')) || [...PADRAO_CATEGORIAS];
+        let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v10')) || [...PADRAO_TRANSACOES];
+        let cartoes = JSON.parse(localStorage.getItem('pf_cartoes_v10')) || [...PADRAO_CARTOES];
+        let parcelamentos = JSON.parse(localStorage.getItem('pf_parcelamentos_v10')) || [...PADRAO_PARCELAMENTOS];
+
+        let dadosBrutosPlanilha = [];
+        let cabecalhosPlanilha = [];
+        let transacoesMapeadasPrevia = [];
+
+        let chartEvolucaoObj = null;
+        let chartCategoriaObj = null;
+
+        function aplicarPersonalizacao() {
+            document.body.className = `${temaAtual === 'dark' ? 'theme-dark' : 'theme-light'} ${animacaoAtiva ? 'anim-enabled' : 'anim-disabled'} font-sans min-h-screen`;
+            document.getElementById('check-dark').classList.toggle('hidden', temaAtual !== 'dark');
+            document.getElementById('check-light').classList.toggle('hidden', temaAtual !== 'light');
+            document.getElementById('check-anim-on').classList.toggle('hidden', !animacaoAtiva);
+            document.getElementById('check-anim-off').classList.toggle('hidden', animacaoAtiva);
+        }
+
+        function definirTema(modo) {
+            temaAtual = modo;
+            localStorage.setItem('pf_tema', modo);
+            aplicarPersonalizacao();
+            atualizarUI();
+        }
+
+        function definirAnimacao(ativar) {
+            animacaoAtiva = ativar;
+            localStorage.setItem('pf_animacao', ativar);
+            aplicarPersonalizacao();
+        }
+
+        function formatarMoeda(val) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+        }
+
+        function formatarMesAno(date) {
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            return `${meses[date.getMonth()]} De ${date.getFullYear()}`;
+        }
+
+        function switchTab(tab) {
+            const tabs = ['dashboard', 'lancamentos', 'cards', 'provisoes', 'categories', 'reports', 'customization', 'settings'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`btn-tab-${t === 'dashboard' ? 'dash' : t === 'lancamentos' ? 'lancamentos' : t === 'categories' ? 'categories' : t === 'reports' ? 'reports' : t === 'customization' ? 'custom' : t}`);
+                if (el) el.classList.add('hidden');
+                if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5';
+            });
+
+            const activeEl = document.getElementById(`tab-${tab}`);
+            const activeBtn = document.getElementById(`btn-tab-${tab === 'dashboard' ? 'dash' : tab === 'lancamentos' ? 'lancamentos' : tab === 'categories' ? 'categories' : tab === 'reports' ? 'reports' : tab === 'customization' ? 'custom' : tab}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5';
+
+            if (tab === 'lancamentos') {
+                renderizarTabelaCentral();
+            }
+        }
+
+        function mudarMes(delta) {
+            dataAtual.setMonth(dataAtual.getMonth() + delta);
+            const ano = dataAtual.getFullYear();
+            const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filtro-central-mes').value = `${ano}-${mes}`;
+            atualizarUI();
+        }
+
+        function togglePainelFiltrosEvolucao() {
+            const painel = document.getElementById('painel-filtros-evolucao');
+            painel.classList.toggle('hidden');
+        }
+
+        function setPeriodoEvolucao(meses) {
+            evolucaoConfig.mesesQtd = meses;
+            [3, 6, 12, 24].forEach(m => {
+                const btn = document.getElementById(`btn-periodo-${m}`);
+                if (btn) {
+                    btn.className = m === meses ? "px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 transition" : "px-2.5 py-1 rounded-md text-muted hover:text-primary transition";
+                }
+            });
+            renderEvolucaoComFiltros();
+        }
+
+        function setChartType(tipo) {
+            evolucaoConfig.tipoGrafico = tipo;
+            ['bar', 'line', 'area'].forEach(t => {
+                const btn = document.getElementById(`btn-chart-${t}`);
+                if (btn) {
+                    btn.className = t === tipo ? "p-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition" : "p-1 rounded-md text-muted hover:text-primary transition";
+                }
+            });
+            renderEvolucaoComFiltros();
+        }
+
+        function renderEvolucaoComFiltros() {
+            const isDark = temaAtual === 'dark';
+            const textColor = isDark ? '#9ca3af' : '#64748b';
+            const gridColor = isDark ? '#1f2937' : '#e2e8f0';
+
+            evolucaoConfig.exibirSaldo = document.getElementById('chk-mostrar-saldo').checked;
+            evolucaoConfig.metricas = document.getElementById('ev-filtro-metricas').value;
+            evolucaoConfig.categoria = document.getElementById('ev-filtro-categoria').value;
+            evolucaoConfig.agrupamento = document.getElementById('ev-filtro-agrupamento').value;
+
+            const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            const rotulos = [];
+            const dataReceitas = [];
+            const dataDespesas = [];
+            const dataSaldo = [];
+
+            const totalMeses = evolucaoConfig.mesesQtd;
+            const refDate = new Date(dataAtual.getFullYear(), dataAtual.getMonth(), 1);
+
+            for (let i = totalMeses - 1; i >= 0; i--) {
+                const dCursor = new Date(refDate.getFullYear(), refDate.getMonth() - i, 1);
+                const anoC = dCursor.getFullYear();
+                const mesC = dCursor.getMonth();
+
+                rotulos.push(`${mesesNomes[mesC]}/${String(anoC).slice(-2)}`);
+
+                let recMes = 0;
+                let despMes = 0;
+
+                transacoes.forEach(t => {
+                    const dT = new Date(t.data + 'T00:00:00');
+                    if (dT.getFullYear() === anoC && dT.getMonth() === mesC) {
+                        if (evolucaoConfig.categoria === 'todas' || t.categoria === evolucaoConfig.categoria) {
+                            if (t.tipo === 'receita') recMes += t.valor;
+                            else despMes += t.valor;
+                        }
+                    }
+                });
+
+                parcelamentos.forEach(p => {
+                    if (evolucaoConfig.categoria === 'todas' || p.categoria === evolucaoConfig.categoria) {
+                        const infoP = calcularParcelaAtivaNoMes(p, anoC, mesC);
+                        if (infoP.ativa) {
+                            despMes += infoP.valorParcela;
+                        }
+                    }
+                });
+
+                dataReceitas.push(recMes);
+                dataDespesas.push(despMes);
+                dataSaldo.push(recMes - despMes);
+            }
+
+            let rotulosFinais = rotulos;
+            let recFinais = dataReceitas;
+            let despFinais = dataDespesas;
+            let saldoFinais = dataSaldo;
+
+            if (evolucaoConfig.agrupamento === 'trimestral' && totalMeses >= 6) {
+                rotulosFinais = [];
+                recFinais = [];
+                despFinais = [];
+                saldoFinais = [];
+
+                for (let i = 0; i < rotulos.length; i += 3) {
+                    if (i + 2 < rotulos.length) {
+                        rotulosFinais.push(`Tri (${rotulos[i].split('/')[0]}-${rotulos[i+2].split('/')[0]})`);
+                        recFinais.push(dataReceitas[i] + dataReceitas[i+1] + dataReceitas[i+2]);
+                        despFinais.push(dataDespesas[i] + dataDespesas[i+1] + dataDespesas[i+2]);
+                        saldoFinais.push(dataSaldo[i] + dataSaldo[i+1] + dataSaldo[i+2]);
+                    }
+                }
+            }
+
+            const ctxE = document.getElementById('chartEvolucao').getContext('2d');
+            if (chartEvolucaoObj) chartEvolucaoObj.destroy();
+
+            const datasets = [];
+            const isArea = evolucaoConfig.tipoGrafico === 'area';
+            const mainType = isArea ? 'line' : evolucaoConfig.tipoGrafico;
+
+            if (evolucaoConfig.metricas === 'todas' || evolucaoConfig.metricas === 'somente_receitas') {
+                datasets.push({
+                    type: mainType,
+                    label: 'Receitas',
+                    data: recFinais,
+                    backgroundColor: isArea ? 'rgba(16, 185, 129, 0.25)' : '#10b981',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    fill: isArea,
+                    tension: 0.3,
+                    borderRadius: 6
+                });
+            }
+
+            if (evolucaoConfig.metricas === 'todas' || evolucaoConfig.metricas === 'somente_despesas') {
+                datasets.push({
+                    type: mainType,
+                    label: 'Despesas',
+                    data: despFinais,
+                    backgroundColor: isArea ? 'rgba(244, 63, 94, 0.25)' : '#f43f5e',
+                    borderColor: '#f43f5e',
+                    borderWidth: 2,
+                    fill: isArea,
+                    tension: 0.3,
+                    borderRadius: 6
+                });
+            }
+
+            if (evolucaoConfig.metricas === 'saldo_liquido') {
+                datasets.push({
+                    type: mainType,
+                    label: 'Saldo Líquido',
+                    data: saldoFinais,
+                    backgroundColor: isArea ? 'rgba(56, 189, 248, 0.25)' : '#38bdf8',
+                    borderColor: '#38bdf8',
+                    borderWidth: 2,
+                    fill: isArea,
+                    tension: 0.3,
+                    borderRadius: 6
+                });
+            }
+
+            if (evolucaoConfig.exibirSaldo && evolucaoConfig.metricas !== 'saldo_liquido') {
+                datasets.push({
+                    type: 'line',
+                    label: 'Linha de Saldo',
+                    data: saldoFinais,
+                    borderColor: '#38bdf8',
+                    backgroundColor: '#38bdf8',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    tension: 0.3,
+                    fill: false
+                });
+            }
+
+            chartEvolucaoObj = new Chart(ctxE, {
+                data: {
+                    labels: rotulosFinais,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: textColor, font: { size: 11, weight: '600' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatarMoeda(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                        y: { ticks: { color: textColor, callback: v => 'R$ ' + v }, grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+
+        function abrirModalTransacao(idParaEditar = null, origem = 'trans') {
+            document.getElementById('m-edit-id').value = idParaEditar || '';
+            document.getElementById('m-edit-origem').value = origem;
+
+            if (idParaEditar) {
+                document.getElementById('modal-titulo-transacao').textContent = 'Editar Lançamento';
+                if (origem === 'trans') {
+                    const item = transacoes.find(x => x.id === idParaEditar);
+                    if (item) {
+                        document.getElementById('m-descricao').value = item.descricao;
+                        document.getElementById('m-valor').value = item.valor;
+                        document.getElementById('m-tipo').value = item.tipo;
+                        document.getElementById('m-categoria').value = item.categoria || 'Geral';
+                        document.getElementById('m-pago').value = item.pago ? 'pago' : 'pendente';
+                        document.getElementById('m-data').value = item.data;
+                    }
+                } else if (origem === 'cartao') {
+                    const item = parcelamentos.find(x => x.id === idParaEditar);
+                    if (item) {
+                        document.getElementById('m-descricao').value = item.descricao;
+                        document.getElementById('m-valor').value = item.valorTotal;
+                        document.getElementById('m-tipo').value = 'cartao';
+                        document.getElementById('m-cartao-id').value = item.cartaoId;
+                        document.getElementById('m-parcelas').value = item.totalParcelas;
+                        document.getElementById('m-categoria').value = item.categoria || 'Geral';
+                        document.getElementById('m-data').value = item.dataInicio || item.data;
+                    }
+                }
+            } else {
+                document.getElementById('modal-titulo-transacao').textContent = 'Novo Lançamento';
+                document.getElementById('m-descricao').value = '';
+                document.getElementById('m-valor').value = '';
+                document.getElementById('m-tipo').value = 'receita';
+                document.getElementById('m-data').valueAsDate = new Date();
+            }
+
+            alternarCamposModalPorTipo();
+            document.getElementById('modal-transacao').classList.remove('hidden');
+            document.getElementById('modal-transacao').classList.add('flex');
+        }
+
+        function fecharModalTransacao() {
+            document.getElementById('modal-transacao').classList.add('hidden');
+            document.getElementById('modal-transacao').classList.remove('flex');
+        }
+
+        function alternarCamposModalPorTipo() {
+            const tipo = document.getElementById('m-tipo').value;
+            const boxCartao = document.getElementById('box-campo-cartao');
+            const boxParcelas = document.getElementById('box-campo-parcelas');
+            const boxStatus = document.getElementById('box-campo-status');
+            const containerRep = document.getElementById('container-replicar-despesa');
+
+            if (tipo === 'cartao') {
+                boxCartao.classList.remove('hidden');
+                boxParcelas.classList.remove('hidden');
+                boxStatus.classList.add('hidden');
+                containerRep.classList.add('hidden');
+            } else if (tipo === 'despesa_fixa') {
+                boxCartao.classList.add('hidden');
+                boxParcelas.classList.add('hidden');
+                boxStatus.classList.remove('hidden');
+                containerRep.classList.remove('hidden');
+            } else {
+                boxCartao.classList.add('hidden');
+                boxParcelas.classList.add('hidden');
+                boxStatus.classList.remove('hidden');
+                containerRep.classList.add('hidden');
+                document.getElementById('m-replicar').checked = false;
+                toggleDatasReplicacao();
+            }
+        }
+
+        function toggleDatasReplicacao() {
+            const checked = document.getElementById('m-replicar').checked;
+            const box = document.getElementById('box-datas-replicacao');
+            if (checked) {
+                box.classList.remove('hidden');
+                const ano = dataAtual.getFullYear();
+                const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+                document.getElementById('m-rep-inicio').value = `${ano}-${mes}`;
+                
+                const dataFim = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 11, 1);
+                const anoFim = dataFim.getFullYear();
+                const mesFim = String(dataFim.getMonth() + 1).padStart(2, '0');
+                document.getElementById('m-rep-fim').value = `${anoFim}-${mesFim}`;
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function salvarTransacaoModal(e) {
+            e.preventDefault();
+            const editId = document.getElementById('m-edit-id').value;
+            const origemEdit = document.getElementById('m-edit-origem').value;
+
+            const desc = document.getElementById('m-descricao').value;
+            const val = parseFloat(document.getElementById('m-valor').value);
+            const tipo = document.getElementById('m-tipo').value;
+            const cat = document.getElementById('m-categoria').value;
+            const pago = document.getElementById('m-pago').value === 'pago';
+            const dataBase = document.getElementById('m-data').value;
+
+            if (tipo === 'cartao') {
+                const cid = parseInt(document.getElementById('m-cartao-id').value) || (cartoes[0] ? cartoes[0].id : 1);
+                const par = parseInt(document.getElementById('m-parcelas').value) || 1;
+
+                if (editId && origemEdit === 'cartao') {
+                    const idx = parcelamentos.findIndex(x => x.id == editId);
+                    if (idx !== -1) {
+                        parcelamentos[idx] = {
+                            id: Number(editId),
+                            cartaoId: cid,
+                            descricao: desc,
+                            categoria: cat,
+                            valorTotal: val,
+                            totalParcelas: par,
+                            valorParcela: val / par,
+                            dataInicio: dataBase
+                        };
+                    }
+                } else {
+                    parcelamentos.push({
+                        id: Date.now(),
+                        cartaoId: cid,
+                        descricao: desc,
+                        categoria: cat,
+                        valorTotal: val,
+                        totalParcelas: par,
+                        valorParcela: val / par,
+                        dataInicio: dataBase
+                    });
+                }
+            } else {
+                const replicar = document.getElementById('m-replicar').checked && tipo === 'despesa_fixa';
+
+                if (editId && origemEdit === 'trans') {
+                    const idx = transacoes.findIndex(x => x.id == editId);
+                    if (idx !== -1) {
+                        transacoes[idx] = {
+                            id: Number(editId),
+                            descricao: desc,
+                            valor: val,
+                            tipo: tipo,
+                            categoria: cat,
+                            pago: pago,
+                            data: dataBase
+                        };
+                    }
+                } else if (replicar) {
+                    const repInicio = document.getElementById('m-rep-inicio').value;
+                    const repFim = document.getElementById('m-rep-fim').value;
+
+                    if (!repInicio || !repFim) {
+                        alert('Por favor, defina o mês de início e fim para replicação.');
+                        return;
+                    }
+
+                    const [anoIni, mesIni] = repInicio.split('-').map(Number);
+                    const [anoFim, mesFim] = repFim.split('-').map(Number);
+                    const diaOriginal = new Date(dataBase + 'T00:00:00').getDate();
+
+                    let cursor = new Date(anoIni, mesIni - 1, 1);
+                    const limite = new Date(anoFim, mesFim - 1, 1);
+                    let inseridos = 0;
+
+                    while (cursor <= limite) {
+                        const ano = cursor.getFullYear();
+                        const mes = cursor.getMonth();
+                        const maxDias = new Date(ano, mes + 1, 0).getDate();
+                        const diaAjustado = Math.min(diaOriginal, maxDias);
+                        const dataFmt = `${ano}-${String(mes + 1).padStart(2, '0')}-${String(diaAjustado).padStart(2, '0')}`;
+
+                        transacoes.push({
+                            id: Date.now() + Math.random(),
+                            descricao: desc,
+                            valor: val,
+                            tipo: 'despesa_fixa',
+                            categoria: cat,
+                            pago: false,
+                            data: dataFmt
+                        });
+
+                        cursor.setMonth(cursor.getMonth() + 1);
+                        inseridos++;
+                    }
+                    alert(`Despesa "${desc}" replicada para ${inseridos} meses!`);
+                } else {
+                    transacoes.push({
+                        id: Date.now(),
+                        descricao: desc,
+                        valor: val,
+                        tipo: tipo,
+                        categoria: cat,
+                        pago: pago,
+                        data: dataBase
+                    });
+                }
+            }
+
+            salvarStorage();
+            fecharModalTransacao();
+        }
+
+        function renderizarTabelaCentral() {
+            const corpo = document.getElementById('tabela-central-corpo');
+            if (!corpo) return;
+
+            const filtroMes = document.getElementById('filtro-central-mes').value;
+            const filtroTipo = document.getElementById('filtro-central-tipo').value;
+            const filtroCat = document.getElementById('filtro-central-categoria').value;
+            const filtroDesc = document.getElementById('filtro-central-descricao').value.toLowerCase().trim();
+
+            let listaConsolidada = [];
+
+            transacoes.forEach(t => {
+                listaConsolidada.push({
+                    id: t.id,
+                    origem: 'trans',
+                    data: t.data,
+                    descricao: t.descricao,
+                    tipo: t.tipo,
+                    categoria: t.categoria || 'Geral',
+                    pago: t.pago,
+                    valor: t.valor
+                });
+            });
+
+            parcelamentos.forEach(p => {
+                const c = cartoes.find(x => x.id === p.cartaoId);
+                const nomeCartao = c ? c.nome : 'Cartão';
+
+                if (filtroMes) {
+                    const [fAno, fMes] = filtroMes.split('-').map(Number);
+                    const infoP = calcularParcelaAtivaNoMes(p, fAno, fMes - 1);
+                    if (infoP.ativa) {
+                        listaConsolidada.push({
+                            id: p.id,
+                            origem: 'cartao',
+                            data: p.dataInicio || p.data,
+                            descricao: `${p.descricao} (${infoP.numeroParcela}/${p.totalParcelas}x)`,
+                            tipo: 'cartao',
+                            nomeCartao: nomeCartao,
+                            categoria: p.categoria || 'Geral',
+                            pago: true,
+                            valor: infoP.valorParcela
+                        });
+                    }
+                } else {
+                    listaConsolidada.push({
+                        id: p.id,
+                        origem: 'cartao',
+                        data: p.dataInicio || p.data,
+                        descricao: `${p.descricao} (${p.totalParcelas}x)`,
+                        tipo: 'cartao',
+                        nomeCartao: nomeCartao,
+                        categoria: p.categoria || 'Geral',
+                        pago: true,
+                        valor: p.valorParcela
+                    });
+                }
+            });
+
+            let filtrados = listaConsolidada.filter(item => {
+                if (filtroMes && !item.data.startsWith(filtroMes)) return false;
+                if (filtroTipo !== 'todos') {
+                    if (filtroTipo === 'cartao' && item.tipo !== 'cartao') return false;
+                    if (filtroTipo !== 'cartao' && item.tipo !== filtroTipo) return false;
+                }
+                if (filtroCat !== 'todas' && item.categoria !== filtroCat) return false;
+                if (filtroDesc && !item.descricao.toLowerCase().includes(filtroDesc) && !item.categoria.toLowerCase().includes(filtroDesc)) return false;
+                return true;
+            });
+
+            filtrados.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            document.getElementById('central-contador-registros').textContent = `Exibindo ${filtrados.length} lançamento(s) encontrado(s)`;
+            corpo.innerHTML = '';
+
+            if (filtrados.length === 0) {
+                corpo.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-muted text-sm">Nenhum lançamento encontrado com os filtros selecionados.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-subcard transition border-b border-theme';
+
+                let badgeTipo = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                let labelTipo = 'Receita';
+                if (item.tipo === 'despesa_fixa') { badgeTipo = 'bg-rose-500/10 text-rose-400 border-rose-500/20'; labelTipo = 'Despesa Fixa'; }
+                if (item.tipo === 'despesa_variavel') { badgeTipo = 'bg-sky-500/10 text-sky-400 border-sky-500/20'; labelTipo = 'Despesa Variável'; }
+                if (item.tipo === 'cartao') { badgeTipo = 'bg-purple-500/10 text-purple-400 border-purple-500/20'; labelTipo = `Cartão (${item.nomeCartao})`; }
+
+                let statusCol = item.pago ? 
+                    `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Pago</span>` :
+                    `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Pendente</span>`;
+
+                if (item.origem === 'trans') {
+                    statusCol = `<button onclick="alternarStatusPago(${item.id})" class="focus:outline-none">${statusCol}</button>`;
+                }
+
+                const valorCor = item.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400';
+
+                tr.innerHTML = `
+                    <td class="py-3 px-3 text-xs text-muted font-medium">${item.data}</td>
+                    <td class="py-3 px-3 font-semibold text-primary">${item.descricao}</td>
+                    <td class="py-3 px-3"><span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeTipo}">${labelTipo}</span></td>
+                    <td class="py-3 px-3 text-xs text-muted">${item.categoria}</td>
+                    <td class="py-3 px-3">${statusCol}</td>
+                    <td class="py-3 px-3 text-right font-extrabold ${valorCor}">${item.tipo === 'receita' ? '+' : '-'} ${formatarMoeda(item.valor)}</td>
+                    <td class="py-3 px-3 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="abrirModalTransacao(${item.id}, '${item.origem}')" title="Editar Lançamento" class="p-1 text-muted hover:text-sky-400 transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="excluirLancamentoCentral(${item.id}, '${item.origem}')" title="Excluir Lançamento" class="p-1 text-muted hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </td>
+                `;
+                corpo.appendChild(tr);
+            });
+
+            lucide.createIcons();
+        }
+
+        function limparFiltrosCentral() {
+            const ano = dataAtual.getFullYear();
+            const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filtro-central-mes').value = `${ano}-${mes}`;
+            document.getElementById('filtro-central-tipo').value = 'todos';
+            document.getElementById('filtro-central-categoria').value = 'todas';
+            document.getElementById('filtro-central-descricao').value = '';
+            renderizarTabelaCentral();
+        }
+
+        function excluirLancamentoCentral(id, origem) {
+            if (confirm('Deseja realmente excluir este lançamento? Esta ação atualizará os relatórios e saldo.')) {
+                if (origem === 'trans') {
+                    transacoes = transacoes.filter(x => x.id !== id);
+                } else if (origem === 'cartao') {
+                    parcelamentos = parcelamentos.filter(x => x.id !== id);
+                }
+                salvarStorage();
+            }
+        }
+
+        function baixarPlanilhaModelo() {
+            const modeloDados = [
+                ["Data", "Descrição", "Valor", "Tipo", "Categoria", "Pago"],
+                ["10/10/2026", "Supermercado Mensal", -350.80, "despesa_variavel", "Alimentação", "SIM"],
+                ["12/10/2026", "Salário Empresa", 6500.00, "receita", "Renda", "SIM"],
+                ["15/10/2026", "Conta de Luz", -210.50, "despesa_fixa", "Contas", "NAO"]
+            ];
+
+            const ws = XLSX.utils.aoa_to_sheet(modeloDados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Modelo_Lançamentos");
+            XLSX.writeFile(wb, "Planilha_Modelo_Financas.xlsx");
+        }
+
+        function lerArquivoPlanilha(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                const primeirAba = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[primeirAba];
+
+                dadosBrutosPlanilha = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
+
+                if (dadosBrutosPlanilha.length < 2) {
+                    alert('A planilha selecionada está vazia.');
+                    return;
+                }
+
+                cabecalhosPlanilha = dadosBrutosPlanilha[0].map(c => String(c).trim());
+                preencherSeleitoresMapeamento();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function preencherSeleitoresMapeamento() {
+            const idsSelects = ['map-col-data', 'map-col-descricao', 'map-col-valor', 'map-col-tipo', 'map-col-categoria', 'map-col-pago'];
+            
+            idsSelects.forEach(id => {
+                const sel = document.getElementById(id);
+                sel.innerHTML = `<option value="">-- Não Mapeado --</option>`;
+                cabecalhosPlanilha.forEach((col, idx) => {
+                    sel.innerHTML += `<option value="${idx}">Coluna ${idx + 1}: ${col}</option>`;
+                });
+            });
+
+            cabecalhosPlanilha.forEach((col, idx) => {
+                const c = col.toLowerCase();
+                if (c.includes('data') || c.includes('date')) document.getElementById('map-col-data').value = idx;
+                if (c.includes('desc') || c.includes('historico')) document.getElementById('map-col-descricao').value = idx;
+                if (c.includes('valor') || c.includes('amount')) document.getElementById('map-col-valor').value = idx;
+                if (c.includes('tipo') || c.includes('type')) document.getElementById('map-col-tipo').value = idx;
+                if (c.includes('cat') || c.includes('grupo')) document.getElementById('map-col-categoria').value = idx;
+                if (c.includes('pago') || c.includes('status')) document.getElementById('map-col-pago').value = idx;
+            });
+
+            document.getElementById('box-mapeamento-colunas').classList.remove('hidden');
+        }
+
+        function processarMapeamentoEGerarPrevia() {
             const idxData = document.getElementById('map-col-data').value;
             const idxDesc = document.getElementById('map-col-descricao').value;
             const idxValor = document.getElementById('map-col-valor').value;
@@ -148,6 +1836,12 @@ function processarMapeamentoEGerarPrevia() {
             switchTab('lancamentos');
         }
 
+        // VARIÁVEIS DE SUPORTE PARA IMPORTAÇÃO DE CARTÃO
+        let dadosBrutosCartao = [];
+        let cabecalhosCartao = [];
+        let comprasMapeadasPrevia = [];
+
+        // 1. Baixar modelo de planilha pronto para Cartão de Crédito
         function baixarPlanilhaModeloCartao() {
             const modeloDados = [
                 ["Data", "Descrição", "Valor Total", "Parcelas", "Categoria"],
@@ -162,6 +1856,7 @@ function processarMapeamentoEGerarPrevia() {
             XLSX.writeFile(wb, "Planilha_Modelo_Cartao.xlsx");
         }
 
+        // 2. Ler o arquivo selecionado
         function lerArquivoPlanilhaCartao(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -186,6 +1881,7 @@ function processarMapeamentoEGerarPrevia() {
             reader.readAsArrayBuffer(file);
         }
 
+        // 3. Preencher os seletores de mapeamento de colunas
         function preencherSeleitoresMapeamentoCartao() {
             const idsSelects = ['map-card-data', 'map-card-descricao', 'map-card-valor', 'map-card-parcelas', 'map-card-categoria'];
             
@@ -197,18 +1893,21 @@ function processarMapeamentoEGerarPrevia() {
                 });
             });
 
+            // Opções de Cartões cadastrados
             const selCartaoDest = document.getElementById('map-card-cartao-dest');
             selCartaoDest.innerHTML = '';
             cartoes.forEach(c => {
                 selCartaoDest.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
             });
 
+            // Opções de Categorias para Fallback
             const selCatFallback = document.getElementById('map-card-cat-fallback');
             selCatFallback.innerHTML = '';
             categorias.forEach(cat => {
                 selCatFallback.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
 
+            // Auto-detecção inteligente por nome do cabeçalho
             cabecalhosCartao.forEach((col, idx) => {
                 const c = col.toLowerCase();
                 if (c.includes('data') || c.includes('date')) document.getElementById('map-card-data').value = idx;
@@ -221,6 +1920,7 @@ function processarMapeamentoEGerarPrevia() {
             document.getElementById('box-mapeamento-colunas-cartao').classList.remove('hidden');
         }
 
+        // 4. Processar os dados e gerar a prévia na tabela
         function processarMapeamentoCartaoEGerarPrevia() {
             const idxData = document.getElementById('map-card-data').value;
             const idxDesc = document.getElementById('map-card-descricao').value;
@@ -253,6 +1953,7 @@ function processarMapeamentoEGerarPrevia() {
 
                 if (!rawDesc || rawValor === undefined || rawValor === null) continue;
 
+                // Limpeza do valor numérico
                 let strVal = String(rawValor).replace(/R\$/gi, '').replace(/\s+/g, '').replace('-', '').trim();
                 if (strVal.includes(',') && strVal.includes('.')) {
                     strVal = strVal.replace(/\./g, '').replace(',', '.');
@@ -263,12 +1964,14 @@ function processarMapeamentoEGerarPrevia() {
                 let numValorTotal = parseFloat(strVal);
                 if (isNaN(numValorTotal) || numValorTotal <= 0) continue;
 
+                // Número de parcelas (Padrão: 1)
                 let numParcelas = 1;
                 if (idxParc !== "" && linha[idxParc]) {
                     let parsedParc = parseInt(String(linha[idxParc]).replace(/\D/g, ''));
                     if (!isNaN(parsedParc) && parsedParc > 0) numParcelas = parsedParc;
                 }
 
+                // Categoria
                 let catFinal = catFallback;
                 if (idxCat !== "" && linha[idxCat]) {
                     let valCat = String(linha[idxCat]).trim();
@@ -280,6 +1983,7 @@ function processarMapeamentoEGerarPrevia() {
                     }
                 }
 
+                // Formatação da data
                 let dataFormatadaISO = new Date().toISOString().split('T')[0];
                 if (rawData) {
                     let strData = String(rawData).trim();
@@ -310,6 +2014,7 @@ function processarMapeamentoEGerarPrevia() {
             exibirPreviaCartaoMapeado();
         }
 
+        // 5. Renderizar prévia na tabela
         function exibirPreviaCartaoMapeado() {
             const contPrevia = document.getElementById('container-previa-excel-cartao');
             const corpoTabela = document.getElementById('tabela-previa-excel-cartao-corpo');
@@ -341,6 +2046,7 @@ function processarMapeamentoEGerarPrevia() {
             contPrevia.classList.remove('hidden');
         }
 
+        // 6. Confirmar e salvar tudo no Cloud Firestore / Estado da Aplicação
         function confirmarEImportarPlanilhaCartao() {
             if (comprasMapeadasPrevia.length === 0) return;
 
@@ -531,16 +2237,13 @@ function processarMapeamentoEGerarPrevia() {
                 localStorage.removeItem('pf_cartoes_v10');
                 localStorage.removeItem('pf_parcelamentos_v10');
                 localStorage.removeItem('pf_categorias_v10');
-                localStorage.removeItem('pf_perfil_v10');
 
                 categorias = [...PADRAO_CATEGORIAS];
                 transacoes = [...PADRAO_TRANSACOES];
                 cartoes = [...PADRAO_CARTOES];
                 parcelamentos = [...PADRAO_PARCELAMENTOS];
-                perfilUsuario = { ...PADRAO_PERFIL };
 
                 salvarStorage();
-                carregarDadosPerfilUI();
                 alert("Sistema resetado com sucesso!");
             }
         }
@@ -892,6 +2595,7 @@ function processarMapeamentoEGerarPrevia() {
             const pctVar = varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0;
             document.getElementById('bar-variaveis').style.width = `${pctVar}%`;
 
+            // CONSOLIDAÇÃO DE DESPESAS NÃO PAGAS (FIXAS, VARIÁVEIS E FATURAS DE CARTÃO)
             const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
                 id: t.id,
                 descricao: t.descricao,
@@ -900,6 +2604,7 @@ function processarMapeamentoEGerarPrevia() {
                 tipoOrigem: 'trans'
             }));
 
+            // Adiciona faturas de cartão no bloco de pendências caso o valor do mês > 0
             cartoes.forEach(c => {
                 let totalFaturaCartao = 0;
                 parcelamentos.filter(p => p.cartaoId === c.id).forEach(p => {
@@ -1064,7 +2769,6 @@ function processarMapeamentoEGerarPrevia() {
             renderEvolucaoComFiltros();
             renderGraficoCategoria(tDoMes);
             renderizarTabelaCentral();
-            carregarDadosPerfilUI();
             lucide.createIcons();
         }
 
