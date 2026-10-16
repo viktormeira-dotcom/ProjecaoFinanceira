@@ -680,98 +680,99 @@
 
         <!-- TAB: CONFIGURAÇÕES -->
         <div id="tab-settings" class="hidden space-y-6">
-<!-- IMPORTAÇÃO DE CARTÕES DE CRÉDITO (CSV / XLSX) -->
-<div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
-    <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
-        <div>
-            <h3 class="font-bold text-primary flex items-center gap-2 text-lg">
-                <i data-lucide="credit-card" class="w-5 h-5 text-purple-400"></i> Importação de Compras de Cartão de Crédito
-            </h3>
-            <p class="text-xs text-muted mt-0.5">Importe extratos de cartão de crédito ou compras parceladas em lote via CSV ou Excel.</p>
-        </div>
-        <button onclick="baixarPlanilhaModeloCartao()" class="px-4 py-2 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2">
-            <i data-lucide="download" class="w-4 h-4"></i> Baixar Modelo Cartão (.xlsx)
-        </button>
-    </div>
+            <!-- IMPORTAÇÃO DE CARTÕES DE CRÉDITO (CSV / XLSX) -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
+                    <div>
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-lg">
+                            <i data-lucide="credit-card" class="w-5 h-5 text-purple-400"></i> Importação de Compras de Cartão de Crédito
+                        </h3>
+                        <p class="text-xs text-muted mt-0.5">Importe extratos de cartão de crédito ou compras parceladas em lote via CSV ou Excel.</p>
+                    </div>
+                    <button onclick="baixarPlanilhaModeloCartao()" class="px-4 py-2 bg-purple-500/10 border border-purple-500/30 hover:bg-purple-500 hover:text-white font-bold text-xs rounded-xl transition flex items-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Modelo Cartão (.xlsx)
+                    </button>
+                </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-        <div class="md:col-span-2">
-            <label class="block text-xs font-semibold text-muted uppercase mb-2">Selecione o arquivo (.xlsx ou .csv):</label>
-            <input type="file" id="input-file-excel-cartao" accept=".xlsx, .xls, .csv" onchange="lerArquivoPlanilhaCartao(event)" class="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer cursor-pointer bg-subcard border border-theme rounded-xl p-1.5">
-        </div>
-    </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-semibold text-muted uppercase mb-2">Selecione o arquivo (.xlsx ou .csv):</label>
+                        <input type="file" id="input-file-excel-cartao" accept=".xlsx, .xls, .csv" onchange="lerArquivoPlanilhaCartao(event)" class="w-full text-xs text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700 file:cursor-pointer cursor-pointer bg-subcard border border-theme rounded-xl p-1.5">
+                    </div>
+                </div>
 
-    <!-- Mapeamento de Colunas Cartão -->
-    <div id="box-mapeamento-colunas-cartao" class="hidden space-y-4 pt-4 border-t border-theme">
-        <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
-            <i data-lucide="sliders" class="w-4 h-4"></i> Mapeamento de Colunas (Cartão de Crédito)
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-subcard p-4 rounded-xl border border-theme">
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Data da Compra *</label>
-                <select id="map-card-data" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Descrição *</label>
-                <select id="map-card-descricao" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Valor Total (R$) *</label>
-                <select id="map-card-valor" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Nº de Parcelas (Opcional)</label>
-                <select id="map-card-parcelas" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Cartão Destino *</label>
-                <select id="map-card-cartao-dest" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Categoria (Opcional)</label>
-                <select id="map-card-categoria" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-primary mb-1">Categoria Padrão</label>
-                <select id="map-card-cat-fallback" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
-            </div>
-            <div class="flex items-end">
-                <button onclick="processarMapeamentoCartaoEGerarPrevia()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
-                    <i data-lucide="play" class="w-4 h-4"></i> Processar Mapeamento
-                </button>
-            </div>
-        </div>
-    </div>
+                <!-- Mapeamento de Colunas Cartão -->
+                <div id="box-mapeamento-colunas-cartao" class="hidden space-y-4 pt-4 border-t border-theme">
+                    <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> Mapeamento de Colunas (Cartão de Crédito)
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-subcard p-4 rounded-xl border border-theme">
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Data da Compra *</label>
+                            <select id="map-card-data" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Descrição *</label>
+                            <select id="map-card-descricao" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Valor Total (R$) *</label>
+                            <select id="map-card-valor" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Nº de Parcelas (Opcional)</label>
+                            <select id="map-card-parcelas" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Cartão Destino *</label>
+                            <select id="map-card-cartao-dest" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria (Opcional)</label>
+                            <select id="map-card-categoria" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-primary mb-1">Categoria Padrão</label>
+                            <select id="map-card-cat-fallback" class="w-full bg-card border border-theme rounded-lg px-2.5 py-1.5 text-xs text-primary focus:outline-none focus:border-purple-500"></select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="processarMapeamentoCartaoEGerarPrevia()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-1.5 rounded-lg text-xs transition flex items-center justify-center gap-1.5">
+                                <i data-lucide="play" class="w-4 h-4"></i> Processar Mapeamento
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Prévia da Importação -->
-    <div id="container-previa-excel-cartao" class="hidden space-y-3 pt-4 border-t border-theme">
-        <div class="flex justify-between items-center">
-            <h4 class="font-bold text-primary text-sm flex items-center gap-2">
-                <i data-lucide="check-square" class="w-4 h-4 text-purple-400"></i> Prévia de Compras Mapeadas
-            </h4>
-            <button onclick="confirmarEImportarPlanilhaCartao()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-purple-900/20">
-                <i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirmar & Importar Compras
-            </button>
-        </div>
+                <!-- Prévia da Importação -->
+                <div id="container-previa-excel-cartao" class="hidden space-y-3 pt-4 border-t border-theme">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-primary text-sm flex items-center gap-2">
+                            <i data-lucide="check-square" class="w-4 h-4 text-purple-400"></i> Prévia de Compras Mapeadas
+                        </h4>
+                        <button onclick="confirmarEImportarPlanilhaCartao()" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-purple-900/20">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Confirmar & Importar Compras
+                        </button>
+                    </div>
 
-        <div class="overflow-x-auto max-h-64 overflow-y-auto border border-theme rounded-xl">
-            <table class="w-full text-left border-collapse text-xs">
-                <thead class="sticky top-0 bg-subcard z-10">
-                    <tr class="border-b border-theme text-muted uppercase font-bold">
-                        <th class="py-2.5 px-3">Data 1ª Parcela</th>
-                        <th class="py-2.5 px-3">Descrição</th>
-                        <th class="py-2.5 px-3">Cartão</th>
-                        <th class="py-2.5 px-3">Categoria</th>
-                        <th class="py-2.5 px-3">Parcelas</th>
-                        <th class="py-2.5 px-3 text-right">Valor Parcela</th>
-                        <th class="py-2.5 px-3 text-right">Valor Total</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-previa-excel-cartao-corpo" class="divide-y divide-theme"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                    <div class="overflow-x-auto max-h-64 overflow-y-auto border border-theme rounded-xl">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="sticky top-0 bg-subcard z-10">
+                                <tr class="border-b border-theme text-muted uppercase font-bold">
+                                    <th class="py-2.5 px-3">Data 1ª Parcela</th>
+                                    <th class="py-2.5 px-3">Descrição</th>
+                                    <th class="py-2.5 px-3">Cartão</th>
+                                    <th class="py-2.5 px-3">Categoria</th>
+                                    <th class="py-2.5 px-3">Parcelas</th>
+                                    <th class="py-2.5 px-3 text-right">Valor Parcela</th>
+                                    <th class="py-2.5 px-3 text-right">Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-previa-excel-cartao-corpo" class="divide-y divide-theme"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <div class="border-b border-theme pb-4">
                 <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
                     <i data-lucide="settings" class="w-6 h-6 text-emerald-400"></i> Configurações do Sistema
@@ -1834,236 +1835,261 @@
             alert(`Excelente! ${qtd} lançamentos foram importados com sucesso.`);
             switchTab('lancamentos');
         }
-// VARIÁVEIS DE SUPORTE PARA IMPORTAÇÃO DE CARTÃO
-let dadosBrutosCartao = [];
-let cabecalhosCartao = [];
-let comprasMapeadasPrevia = [];
 
-// 1. Baixar modelo de planilha pronto para Cartão de Crédito
-function baixarPlanilhaModeloCartao() {
-    const modeloDados = [
-        ["Data", "Descrição", "Valor Total", "Parcelas", "Categoria"],
-        ["10/10/2026", "Compra Notebook", 2400.00, 10, "Lazer"],
-        ["15/10/2026", "Supermercado Mensal", 450.00, 1, "Alimentação"],
-        ["20/10/2026", "Passagem Aérea", 1200.00, 6, "Lazer"]
-    ];
+        // VARIÁVEIS DE SUPORTE PARA IMPORTAÇÃO DE CARTÃO
+        let dadosBrutosCartao = [];
+        let cabecalhosCartao = [];
+        let comprasMapeadasPrevia = [];
 
-    const ws = XLSX.utils.aoa_to_sheet(modeloDados);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Modelo_Cartao");
-    XLSX.writeFile(wb, "Planilha_Modelo_Cartao.xlsx");
-}
+        // 1. Baixar modelo de planilha pronto para Cartão de Crédito
+        function baixarPlanilhaModeloCartao() {
+            const modeloDados = [
+                ["Data", "Descrição", "Valor Total", "Parcelas", "Categoria"],
+                ["10/10/2026", "Compra Notebook", 2400.00, 10, "Lazer"],
+                ["15/10/2026", "Supermercado Mensal", 450.00, 1, "Alimentação"],
+                ["20/10/2026", "Passagem Aérea", 1200.00, 6, "Lazer"]
+            ];
 
-// 2. Ler o arquivo selecionado
-function lerArquivoPlanilhaCartao(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-        const primeirAba = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[primeirAba];
-
-        dadosBrutosCartao = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
-
-        if (dadosBrutosCartao.length < 2) {
-            alert('A planilha selecionada está vazia.');
-            return;
+            const ws = XLSX.utils.aoa_to_sheet(modeloDados);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Modelo_Cartao");
+            XLSX.writeFile(wb, "Planilha_Modelo_Cartao.xlsx");
         }
 
-        cabecalhosCartao = dadosBrutosCartao[0].map(c => String(c).trim());
-        preencherSeleitoresMapeamentoCartao();
-    };
-    reader.readAsArrayBuffer(file);
-}
+        // 2. Ler o arquivo selecionado
+        function lerArquivoPlanilhaCartao(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-// 3. Preencher os seletores de mapeamento de colunas
-function preencherSeleitoresMapeamentoCartao() {
-    const idsSelects = ['map-card-data', 'map-card-descricao', 'map-card-valor', 'map-card-parcelas', 'map-card-categoria'];
-    
-    idsSelects.forEach(id => {
-        const sel = document.getElementById(id);
-        sel.innerHTML = `<option value="">-- Não Mapeado --</option>`;
-        cabecalhosCartao.forEach((col, idx) => {
-            sel.innerHTML += `<option value="${idx}">Coluna ${idx + 1}: ${col}</option>`;
-        });
-    });
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                const primeirAba = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[primeirAba];
 
-    // Opções de Cartões cadastrados
-    const selCartaoDest = document.getElementById('map-card-cartao-dest');
-    selCartaoDest.innerHTML = '';
-    cartoes.forEach(c => {
-        selCartaoDest.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-    });
+                dadosBrutosCartao = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, dateNF: 'yyyy-mm-dd' });
 
-    // Opções de Categorias para Fallback
-    const selCatFallback = document.getElementById('map-card-cat-fallback');
-    selCatFallback.innerHTML = '';
-    categorias.forEach(cat => {
-        selCatFallback.innerHTML += `<option value="${cat}">${cat}</option>`;
-    });
-
-    // Auto-detecção inteligente por nome do cabeçalho
-    cabecalhosCartao.forEach((col, idx) => {
-        const c = col.toLowerCase();
-        if (c.includes('data') || c.includes('date')) document.getElementById('map-card-data').value = idx;
-        if (c.includes('desc') || c.includes('historico') || c.includes('item')) document.getElementById('map-card-descricao').value = idx;
-        if (c.includes('valor') || c.includes('total') || c.includes('amount')) document.getElementById('map-card-valor').value = idx;
-        if (c.includes('parc') || c.includes('qtd')) document.getElementById('map-card-parcelas').value = idx;
-        if (c.includes('cat') || c.includes('grupo')) document.getElementById('map-card-categoria').value = idx;
-    });
-
-    document.getElementById('box-mapeamento-colunas-cartao').classList.remove('hidden');
-}
-
-// 4. Processar os dados e gerar a prévia na tabela
-function processarMapeamentoCartaoEGerarPrevia() {
-    const idxData = document.getElementById('map-card-data').value;
-    const idxDesc = document.getElementById('map-card-descricao').value;
-    const idxValor = document.getElementById('map-card-valor').value;
-    const cartaoIdSelecionado = parseInt(document.getElementById('map-card-cartao-dest').value);
-
-    if (idxData === "" || idxDesc === "" || idxValor === "") {
-        alert('Por favor, selecione ao menos as colunas de DATA, DESCRIÇÃO e VALOR TOTAL.');
-        return;
-    }
-
-    if (!cartaoIdSelecionado) {
-        alert('Por favor, cadastre ou selecione um Cartão de Crédito de destino.');
-        return;
-    }
-
-    const idxParc = document.getElementById('map-card-parcelas').value;
-    const idxCat = document.getElementById('map-card-categoria').value;
-    const catFallback = document.getElementById('map-card-cat-fallback').value || 'Geral';
-
-    comprasMapeadasPrevia = [];
-
-    for (let i = 1; i < dadosBrutosCartao.length; i++) {
-        const linha = dadosBrutosCartao[i];
-        if (!linha || linha.length === 0) continue;
-
-        let rawData = linha[idxData];
-        let rawDesc = linha[idxDesc];
-        let rawValor = linha[idxValor];
-
-        if (!rawDesc || rawValor === undefined || rawValor === null) continue;
-
-        // Limpeza do valor numérico
-        let strVal = String(rawValor).replace(/R\$/gi, '').replace(/\s+/g, '').replace('-', '').trim();
-        if (strVal.includes(',') && strVal.includes('.')) {
-            strVal = strVal.replace(/\./g, '').replace(',', '.');
-        } else if (strVal.includes(',')) {
-            strVal = strVal.replace(',', '.');
-        }
-
-        let numValorTotal = parseFloat(strVal);
-        if (isNaN(numValorTotal) || numValorTotal <= 0) continue;
-
-        // Número de parcelas (Padrão: 1)
-        let numParcelas = 1;
-        if (idxParc !== "" && linha[idxParc]) {
-            let parsedParc = parseInt(String(linha[idxParc]).replace(/\D/g, ''));
-            if (!isNaN(parsedParc) && parsedParc > 0) numParcelas = parsedParc;
-        }
-
-        // Categoria
-        let catFinal = catFallback;
-        if (idxCat !== "" && linha[idxCat]) {
-            let valCat = String(linha[idxCat]).trim();
-            if (valCat) {
-                catFinal = valCat;
-                if (!categorias.includes(catFinal)) {
-                    categorias.push(catFinal);
+                if (dadosBrutosCartao.length < 2) {
+                    alert('A planilha selecionada está vazia.');
+                    return;
                 }
-            }
+
+                cabecalhosCartao = dadosBrutosCartao[0].map(c => String(c).trim());
+                preencherSeleitoresMapeamentoCartao();
+            };
+            reader.readAsArrayBuffer(file);
         }
 
-        // Formatação da data
-        let dataFormatadaISO = new Date().toISOString().split('T')[0];
-        if (rawData) {
-            let strData = String(rawData).trim();
-            const partes = strData.split(/[\/\.-]/);
-            if (partes.length === 3) {
-                if (partes[0].length === 4) {
-                    dataFormatadaISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
-                } else {
-                    let ano = partes[2];
-                    if (ano.length === 2) ano = '20' + ano;
-                    dataFormatadaISO = `${ano}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+        // 3. Preencher os seletores de mapeamento de colunas
+        function preencherSeleitoresMapeamentoCartao() {
+            const idsSelects = ['map-card-data', 'map-card-descricao', 'map-card-valor', 'map-card-parcelas', 'map-card-categoria'];
+            
+            idsSelects.forEach(id => {
+                const sel = document.getElementById(id);
+                sel.innerHTML = `<option value="">-- Não Mapeado --</option>`;
+                cabecalhosCartao.forEach((col, idx) => {
+                    sel.innerHTML += `<option value="${idx}">Coluna ${idx + 1}: ${col}</option>`;
+                });
+            });
+
+            // Opções de Cartões cadastrados
+            const selCartaoDest = document.getElementById('map-card-cartao-dest');
+            selCartaoDest.innerHTML = '';
+            cartoes.forEach(c => {
+                selCartaoDest.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+            });
+
+            // Opções de Categorias para Fallback
+            const selCatFallback = document.getElementById('map-card-cat-fallback');
+            selCatFallback.innerHTML = '';
+            categorias.forEach(cat => {
+                selCatFallback.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            // Auto-detecção inteligente por nome do cabeçalho
+            cabecalhosCartao.forEach((col, idx) => {
+                const c = col.toLowerCase();
+                if (c.includes('data') || c.includes('date')) document.getElementById('map-card-data').value = idx;
+                if (c.includes('desc') || c.includes('historico') || c.includes('item')) document.getElementById('map-card-descricao').value = idx;
+                if (c.includes('valor') || c.includes('total') || c.includes('amount')) document.getElementById('map-card-valor').value = idx;
+                if (c.includes('parc') || c.includes('qtd')) document.getElementById('map-card-parcelas').value = idx;
+                if (c.includes('cat') || c.includes('grupo')) document.getElementById('map-card-categoria').value = idx;
+            });
+
+            document.getElementById('box-mapeamento-colunas-cartao').classList.remove('hidden');
+        }
+
+        // 4. Processar os dados e gerar a prévia na tabela
+        function processarMapeamentoCartaoEGerarPrevia() {
+            const idxData = document.getElementById('map-card-data').value;
+            const idxDesc = document.getElementById('map-card-descricao').value;
+            const idxValor = document.getElementById('map-card-valor').value;
+            const cartaoIdSelecionado = parseInt(document.getElementById('map-card-cartao-dest').value);
+
+            if (idxData === "" || idxDesc === "" || idxValor === "") {
+                alert('Por favor, selecione ao menos as colunas de DATA, DESCRIÇÃO e VALOR TOTAL.');
+                return;
+            }
+
+            if (!cartaoIdSelecionado) {
+                alert('Por favor, cadastre ou selecione um Cartão de Crédito de destino.');
+                return;
+            }
+
+            const idxParc = document.getElementById('map-card-parcelas').value;
+            const idxCat = document.getElementById('map-card-categoria').value;
+            const catFallback = document.getElementById('map-card-cat-fallback').value || 'Geral';
+
+            comprasMapeadasPrevia = [];
+
+            for (let i = 1; i < dadosBrutosCartao.length; i++) {
+                const linha = dadosBrutosCartao[i];
+                if (!linha || linha.length === 0) continue;
+
+                let rawData = linha[idxData];
+                let rawDesc = linha[idxDesc];
+                let rawValor = linha[idxValor];
+
+                if (!rawDesc || rawValor === undefined || rawValor === null) continue;
+
+                // Limpeza do valor numérico
+                let strVal = String(rawValor).replace(/R\$/gi, '').replace(/\s+/g, '').replace('-', '').trim();
+                if (strVal.includes(',') && strVal.includes('.')) {
+                    strVal = strVal.replace(/\./g, '').replace(',', '.');
+                } else if (strVal.includes(',')) {
+                    strVal = strVal.replace(',', '.');
                 }
+
+                let numValorTotal = parseFloat(strVal);
+                if (isNaN(numValorTotal) || numValorTotal <= 0) continue;
+
+                // Número de parcelas (Padrão: 1)
+                let numParcelas = 1;
+                if (idxParc !== "" && linha[idxParc]) {
+                    let parsedParc = parseInt(String(linha[idxParc]).replace(/\D/g, ''));
+                    if (!isNaN(parsedParc) && parsedParc > 0) numParcelas = parsedParc;
+                }
+
+                // Categoria
+                let catFinal = catFallback;
+                if (idxCat !== "" && linha[idxCat]) {
+                    let valCat = String(linha[idxCat]).trim();
+                    if (valCat) {
+                        catFinal = valCat;
+                        if (!categorias.includes(catFinal)) {
+                            categorias.push(catFinal);
+                        }
+                    }
+                }
+
+                // Formatação da data
+                let dataFormatadaISO = new Date().toISOString().split('T')[0];
+                if (rawData) {
+                    let strData = String(rawData).trim();
+                    const partes = strData.split(/[\/\.-]/);
+                    if (partes.length === 3) {
+                        if (partes[0].length === 4) {
+                            dataFormatadaISO = `${partes[0]}-${partes[1].padStart(2, '0')}-${partes[2].padStart(2, '0')}`;
+                        } else {
+                            let ano = partes[2];
+                            if (ano.length === 2) ano = '20' + ano;
+                            dataFormatadaISO = `${ano}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+                        }
+                    }
+                }
+
+                comprasMapeadasPrevia.push({
+                    id: Date.now() + Math.random(),
+                    cartaoId: cartaoIdSelecionado,
+                    descricao: String(rawDesc).trim(),
+                    categoria: catFinal,
+                    valorTotal: numValorTotal,
+                    totalParcelas: numParcelas,
+                    valorParcela: numValorTotal / numParcelas,
+                    dataInicio: dataFormatadaISO
+                });
             }
+
+            exibirPreviaCartaoMapeado();
         }
 
-        comprasMapeadasPrevia.push({
-            id: Date.now() + Math.random(),
-            cartaoId: cartaoIdSelecionado,
-            descricao: String(rawDesc).trim(),
-            categoria: catFinal,
-            valorTotal: numValorTotal,
-            totalParcelas: numParcelas,
-            valorParcela: numValorTotal / numParcelas,
-            dataInicio: dataFormatadaISO
-        });
-    }
+        // 5. Renderizar prévia na tabela
+        function exibirPreviaCartaoMapeado() {
+            const contPrevia = document.getElementById('container-previa-excel-cartao');
+            const corpoTabela = document.getElementById('tabela-previa-excel-cartao-corpo');
 
-    exibirPreviaCartaoMapeado();
-}
+            if (comprasMapeadasPrevia.length === 0) {
+                alert('Nenhum dado válido de compra pôde ser extraído.');
+                contPrevia.classList.add('hidden');
+                return;
+            }
 
-// 5. Renderizar prévia na tabela
-function exibirPreviaCartaoMapeado() {
-    const contPrevia = document.getElementById('container-previa-excel-cartao');
-    const corpoTabela = document.getElementById('tabela-previa-excel-cartao-corpo');
+            corpoTabela.innerHTML = '';
+            comprasMapeadasPrevia.forEach(item => {
+                const c = cartoes.find(x => x.id === item.cartaoId);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-subcard transition border-b border-theme';
 
-    if (comprasMapeadasPrevia.length === 0) {
-        alert('Nenhum dado válido de compra pôde ser extraído.');
-        contPrevia.classList.add('hidden');
-        return;
-    }
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 text-muted">${item.dataInicio}</td>
+                    <td class="py-2.5 px-3 font-medium">${item.descricao}</td>
+                    <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${c ? c.nome : 'Cartão'}</span></td>
+                    <td class="py-2.5 px-3 text-muted">${item.categoria}</td>
+                    <td class="py-2.5 px-3 font-semibold text-center">${item.totalParcelas}x</td>
+                    <td class="py-2.5 px-3 text-right font-bold text-purple-400">${formatarMoeda(item.valorParcela)}</td>
+                    <td class="py-2.5 px-3 text-right font-extrabold text-primary">${formatarMoeda(item.valorTotal)}</td>
+                `;
+                corpoTabela.appendChild(tr);
+            });
 
-    corpoTabela.innerHTML = '';
-    comprasMapeadasPrevia.forEach(item => {
-        const c = cartoes.find(x => x.id === item.cartaoId);
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-subcard transition border-b border-theme';
+            contPrevia.classList.remove('hidden');
+        }
 
-        tr.innerHTML = `
-            <td class="py-2.5 px-3 text-muted">${item.dataInicio}</td>
-            <td class="py-2.5 px-3 font-medium">${item.descricao}</td>
-            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">${c ? c.nome : 'Cartão'}</span></td>
-            <td class="py-2.5 px-3 text-muted">${item.categoria}</td>
-            <td class="py-2.5 px-3 font-semibold text-center">${item.totalParcelas}x</td>
-            <td class="py-2.5 px-3 text-right font-bold text-purple-400">${formatarMoeda(item.valorParcela)}</td>
-            <td class="py-2.5 px-3 text-right font-extrabold text-primary">${formatarMoeda(item.valorTotal)}</td>
-        `;
-        corpoTabela.appendChild(tr);
-    });
+        // 6. Confirmar e salvar tudo no Cloud Firestore / Estado da Aplicação
+        function confirmarEImportarPlanilhaCartao() {
+            if (comprasMapeadasPrevia.length === 0) return;
 
-    contPrevia.classList.remove('hidden');
-}
+            comprasMapeadasPrevia.forEach(item => parcelamentos.push(item));
+            salvarStorage();
 
-// 6. Confirmar e salvar tudo no Cloud Firestore / Estado da Aplicação
-function confirmarEImportarPlanilhaCartao() {
-    if (comprasMapeadasPrevia.length === 0) return;
+            document.getElementById('input-file-excel-cartao').value = '';
+            document.getElementById('box-mapeamento-colunas-cartao').classList.add('hidden');
+            document.getElementById('container-previa-excel-cartao').classList.add('hidden');
 
-    comprasMapeadasPrevia.forEach(item => parcelamentos.push(item));
-    salvarStorage(); // Salva no Firebase Firestore automaticamente
+            const qtd = comprasMapeadasPrevia.length;
+            comprasMapeadasPrevia = [];
 
-    document.getElementById('input-file-excel-cartao').value = '';
-    document.getElementById('box-mapeamento-colunas-cartao').classList.add('hidden');
-    document.getElementById('container-previa-excel-cartao').classList.add('hidden');
+            alert(`Sucesso! ${qtd} compra(s) de cartão foram importadas com sucesso!`);
+            switchTab('cards');
+        }
 
-    const qtd = comprasMapeadasPrevia.length;
-    comprasMapeadasPrevia = [];
-
-    alert(`Sucesso! ${qtd} compra(s) de cartão foram importadas com sucesso!`);
-    switchTab('cards');
-}
         function alternarStatusPago(id) {
             const t = transacoes.find(x => x.id === id);
             if (t) { t.pago = !t.pago; salvarStorage(); }
+        }
+
+        function alternarStatusFaturaCartao(cartaoId, dataVencimentoFmt, valorTotal) {
+            const idUnico = `fatura_${cartaoId}_${dataVencimentoFmt}`;
+            const c = cartoes.find(x => x.id === cartaoId);
+            const nomeCartao = c ? c.nome : 'Cartão';
+
+            const idx = transacoes.findIndex(x => x.id === idUnico);
+
+            if (idx !== -1) {
+                transacoes[idx].pago = !transacoes[idx].pago;
+            } else {
+                transacoes.push({
+                    id: idUnico,
+                    descricao: `Fatura ${nomeCartao}`,
+                    valor: valorTotal,
+                    tipo: 'despesa_fixa',
+                    categoria: 'Cartão de Crédito',
+                    pago: true,
+                    data: dataVencimentoFmt
+                });
+            }
+            salvarStorage();
         }
 
         function cadastrarCartao(e) {
@@ -2569,27 +2595,67 @@ function confirmarEImportarPlanilhaCartao() {
             const pctVar = varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0;
             document.getElementById('bar-variaveis').style.width = `${pctVar}%`;
 
-            const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita');
+            // CONSOLIDAÇÃO DE DESPESAS NÃO PAGAS (FIXAS, VARIÁVEIS E FATURAS DE CARTÃO)
+            const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
+                id: t.id,
+                descricao: t.descricao,
+                valor: t.valor,
+                data: t.data,
+                tipoOrigem: 'trans'
+            }));
+
+            // Adiciona faturas de cartão no bloco de pendências caso o valor do mês > 0
+            cartoes.forEach(c => {
+                let totalFaturaCartao = 0;
+                parcelamentos.filter(p => p.cartaoId === c.id).forEach(p => {
+                    const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
+                    if (infoP.ativa) totalFaturaCartao += infoP.valorParcela;
+                });
+
+                if (totalFaturaCartao > 0) {
+                    const diaVenc = String(c.vencimento).padStart(2, '0');
+                    const mesFmt = String(mesAtual + 1).padStart(2, '0');
+                    const dataVenc = `${anoAtual}-${mesFmt}-${diaVenc}`;
+                    const idUnicoFatura = `fatura_${c.id}_${dataVenc}`;
+
+                    const registroPagamento = transacoes.find(x => x.id === idUnicoFatura);
+                    const jaEstaPaga = registroPagamento ? registroPagamento.pago : false;
+
+                    if (!jaEstaPaga) {
+                        pendentes.push({
+                            id: idUnicoFatura,
+                            cartaoId: c.id,
+                            descricao: `Fatura ${c.nome}`,
+                            valor: totalFaturaCartao,
+                            data: dataVenc,
+                            tipoOrigem: 'fatura_cartao'
+                        });
+                    }
+                }
+            });
+
             const contP = document.getElementById('container-despesas-pendentes');
             document.getElementById('sub-contas-pendentes').textContent = `Contas pendentes de ${formatarMesAno(dataAtual).toLowerCase()}`;
 
             if (pendentes.length === 0) {
-                contP.innerHTML = `<div class="text-center text-muted text-sm py-2">Nada por aqui... Todas as contas do mês estão em dia!</div>`;
+                contP.innerHTML = `<div class="text-center text-muted text-sm py-2">Nada por aqui... Todas as contas e faturas do mês estão em dia!</div>`;
             } else {
                 contP.innerHTML = `
                     <div class="space-y-2">
                         ${pendentes.map(p => `
                             <div class="flex items-center justify-between bg-subcard p-3 rounded-xl border border-theme">
                                 <div class="flex items-center gap-3">
-                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                                    <span class="w-2 h-2 rounded-full ${p.tipoOrigem === 'fatura_cartao' ? 'bg-purple-400' : 'bg-amber-400'}"></span>
                                     <div>
                                         <p class="text-sm font-medium text-primary">${p.descricao}</p>
                                         <p class="text-xs text-muted">Vence em: ${p.data}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <span class="text-sm font-bold text-rose-400">${formatarMoeda(p.valor)}</span>
-                                    <button onclick="alternarStatusPago(${p.id})" class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-medium rounded-lg border border-emerald-500/20 transition">Pagar</button>
+                                    <span class="text-sm font-bold text-rose-400">${formatarMoeda(p.valor)}</span>${p.tipoOrigem === 'fatura_cartao' ? 
+                                        `<button onclick="alternarStatusFaturaCartao(${p.cartaoId}, '${p.data}', ${p.valor})" class="px-2.5 py-1 text-xs bg-purple-500/10 text-purple-400 hover:bg-purple-600 hover:text-white font-medium rounded-lg border border-purple-500/20 transition">Pagar Fatura</button>` :
+                                        `<button onclick="alternarStatusPago('${p.id}')" class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-medium rounded-lg border border-emerald-500/20 transition">Pagar</button>`
+                                    }
                                 </div>
                             </div>
                         `).join('')}
@@ -2668,11 +2734,23 @@ function confirmarEImportarPlanilhaCartao() {
                         }
                     }).join('') || '<p class="text-xs text-muted">Sem parcelamentos vinculados neste cartão.</p>';
 
+                    const diaVenc = String(c.vencimento).padStart(2, '0');
+                    const mesFmt = String(mesAtual + 1).padStart(2, '0');
+                    const dataVenc = `${anoAtual}-${mesFmt}-${diaVenc}`;
+                    const idUnicoFatura = `fatura_${c.id}_${dataVenc}`;
+                    const regP = transacoes.find(x => x.id === idUnicoFatura);
+                    const estaPaga = regP ? regP.pago : false;
+
                     contC.innerHTML += `
                         <div class="bg-subcard border border-theme rounded-xl p-4 space-y-3">
                             <div class="flex justify-between items-center border-b border-theme pb-2">
                                 <div>
-                                    <h4 class="font-bold text-primary">${c.nome}</h4>
+                                    <h4 class="font-bold text-primary flex items-center gap-2">
+                                        ${c.nome}
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${estaPaga ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                            ${estaPaga ? 'Fatura Paga' : 'Fatura Aberta'}
+                                        </span>
+                                    </h4>
                                     <p class="text-xs text-muted">Fechamento: dia ${c.fechamento} | Vencimento: dia ${c.vencimento}</p>
                                 </div>
                                 <div class="text-right">
