@@ -623,64 +623,105 @@
             </div>
         </div>
 
-<!-- TAB: MEU PERFIL -->
-<div id="tab-profile" class="hidden space-y-6">
+<!-- TAB: MEU PERFIL (NOVO MODELO REVISADO) -->
+<div id="tab-profile" class="space-y-6">
+    <!-- Cabeçalho -->
     <div class="border-b border-theme pb-4">
         <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
             <i data-lucide="user" class="w-6 h-6 text-emerald-400"></i> Meu Perfil
         </h2>
-        <p class="text-sm text-muted mt-1">Gerencie suas informações pessoais, preferências da conta e dados de acesso.</p>
+        <p class="text-sm text-muted mt-1">Gerencie suas informações pessoais, segurança e dados de acesso na plataforma.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Card de Informações Pessoais -->
-        <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-6 space-y-4">
-            <h3 class="font-bold text-primary flex items-center gap-2 text-base">
-                <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
-            </h3>
-            <form onsubmit="salvarPerfil(event)" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-muted mb-1">Nome Completo</label>
-                        <input type="text" id="prof-nome" placeholder="Seu Nome" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+        
+        <!-- COLUNA ESQUERDA (2 Cols): Dados Pessoais e Ações da Conta -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Card 1: Dados Pessoais -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                    <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
+                </h3>
+                <form onsubmit="salvarPerfil(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">Nome Completo</label>
+                            <input type="text" id="prof-nome" placeholder="Seu Nome" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-muted mb-1">E-mail de Acesso</label>
+                            <input type="email" id="prof-email" placeholder="seuemail@exemplo.com" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted mb-1">E-mail</label>
-                        <input type="email" id="prof-email" placeholder="seuemail@exemplo.com" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-muted mb-1">Profissão / Ocupação</label>
                         <input type="text" id="prof-cargo" placeholder="Ex: Desenvolvedor, Administrador" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted mb-1">Renda Mensal Estimada (R$)</label>
-                        <input type="number" step="0.01" id="prof-renda" placeholder="0.00" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                    <div class="pt-2">
+                        <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/10">
+                            <i data-lucide="save" class="w-4 h-4"></i> Salvar Alterações
+                        </button>
                     </div>
-                </div>
-                <div class="pt-2">
-                    <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/10">
-                        <i data-lucide="save" class="w-4 h-4"></i> Salvar Dados do Perfil
-                    </button>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
 
-        <!-- Card de Resumo da Conta & Ações -->
-        <div class="space-y-6">
+            <!-- Card 2: Opções de Conta e Segurança -->
             <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                 <h3 class="font-bold text-primary flex items-center gap-2 text-base">
-                    <i data-lucide="shield-check" class="w-5 h-5 text-sky-400"></i> Status da Conta
+                    <i data-lucide="key-round" class="w-5 h-5 text-sky-400"></i> Segurança & Opções da Conta
+                </h3>
+                <p class="text-xs text-muted">Gerencie suas credenciais de acesso ou encerre a sua conta nesta plataforma.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <button onclick="alterarSenhaModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
+                        <div class="flex items-center gap-2 text-sky-400 font-semibold text-xs">
+                            <i data-lucide="lock" class="w-4 h-4"></i> Alterar Senha
+                        </div>
+                        <p class="text-[11px] text-muted">Redefina sua palavra-passe de acesso.</p>
+                    </button>
+
+                    <button onclick="alterarContaAcessoModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
+                        <div class="flex items-center gap-2 text-purple-400 font-semibold text-xs">
+                            <i data-lucide="user-cog" class="w-4 h-4"></i> Alterar Conta
+                        </div>
+                        <p class="text-[11px] text-muted">Vincule ou mude o e-mail principal.</p>
+                    </button>
+
+                    <button onclick="excluirContaModal()" class="p-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-left space-y-1 transition">
+                        <div class="flex items-center gap-2 text-rose-400 font-semibold text-xs">
+                            <i data-lucide="user-x" class="w-4 h-4"></i> Excluir Conta
+                        </div>
+                        <p class="text-[11px] text-muted">Remova permanentemente seus dados.</p>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- COLUNA DIREITA (1 Col): Status da Conta & Proteção Google -->
+        <div class="space-y-6">
+            
+            <!-- Card 3: Status e Conexão -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i> Status da Conta
                 </h3>
                 <div class="space-y-3 text-xs">
+                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                        <span class="text-muted">Conectado via</span>
+                        <span id="prof-metodo-conexao" class="font-bold text-emerald-400 flex items-center gap-1.5">
+                            <!-- Ícone dinâmico: Google ou E-mail -->
+                            <i data-lucide="chrome" class="w-3.5 h-3.5"></i> Conta Google
+                        </span>
+                    </div>
                     <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
                         <span class="text-muted">Plano Atual</span>
                         <span class="font-bold text-emerald-400">Pro / Ilimitado</span>
                     </div>
                     <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
                         <span class="text-muted">Armazenamento</span>
-                        <span class="font-bold text-primary">Local (Navegador)</span>
+                        <span class="font-bold text-primary">Google Cloud Storage</span>
                     </div>
                     <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
                         <span class="text-muted">Membro Desde</span>
@@ -688,10 +729,32 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Card 4: Garantia de Proteção e Hospedagem Google -->
+            <div class="bg-card border border-theme rounded-2xl p-6 space-y-3">
+                <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                    <i data-lucide="cloud-shield" class="w-5 h-5"></i> Proteção & Segurança Google
+                </div>
+                <p class="text-xs text-muted leading-relaxed">
+                    A sua conta e os seus dados financeiros estão hospedados na infraestrutura segura da <strong>Google Cloud Platform</strong>.
+                </p>
+                <ul class="text-[11px] text-muted space-y-1.5 pt-1">
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Criptografia SSL/TLS em trânsito
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Dados encriptados em repouso (AES-256)
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Autenticação segura via Google Identity
+                    </li>
+                </ul>
+            </div>
+
         </div>
+
     </div>
 </div>
-
         <!-- TAB: PERSONALIZAR -->
         <div id="tab-customization" class="hidden space-y-6">
             <div class="border-b border-theme pb-4">
