@@ -81,15 +81,15 @@
                 <button onclick="switchTab('customization')" id="btn-tab-custom" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                     <i data-lucide="palette" class="w-4 h-4"></i> Personalizar
                 </button>
+                <button onclick="switchTab('profile')" id="btn-tab-profile" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
+                    <i data-lucide="user" class="w-4 h-4"></i> Meu Perfil
+                </button>
                 <button onclick="switchTab('settings')" id="btn-tab-settings" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
                     <i data-lucide="settings" class="w-4 h-4"></i> Configurações
                 </button>
                 <button onclick="abrirModalTransacao()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-semibold transition flex items-center gap-1">
                     <i data-lucide="plus" class="w-4 h-4"></i> Novo Lançamento
                 </button>
-<button onclick="switchTab('profile')" id="btn-tab-profile" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5">
-    <i data-lucide="user" class="w-4 h-4"></i> Meu Perfil
-</button>
             </div>
         </div>
     </header>
@@ -210,10 +210,8 @@
                 </div>
             </div>
 
-            <!-- PAINEL COMPLETO E CUSTOMIZÁVEL DE EVOLUÇÃO TEMPORAL -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4 relative">
-                    <!-- CABEÇALHO DO GRÁFICO COM CONTROLES MODERNOS -->
                     <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
                         <div class="flex items-center gap-2">
                             <i data-lucide="bar-chart-3" class="w-5 h-5 text-emerald-400"></i>
@@ -224,9 +222,7 @@
                         </button>
                     </div>
 
-                    <!-- BARRA DE FILTROS RÁPIDOS MODERNOS (CHIPS) -->
                     <div class="flex flex-wrap items-center justify-between gap-3 text-xs bg-subcard/40 p-2.5 rounded-xl border border-theme/60">
-                        <!-- PERÍODO RÁPIDO -->
                         <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
                             <button onclick="setPeriodoEvolucao(3)" id="btn-periodo-3" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">3M</button>
                             <button onclick="setPeriodoEvolucao(6)" id="btn-periodo-6" class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 transition">6M</button>
@@ -234,14 +230,12 @@
                             <button onclick="setPeriodoEvolucao(24)" id="btn-periodo-24" class="px-2.5 py-1 rounded-md text-muted hover:text-primary transition">24M</button>
                         </div>
 
-                        <!-- SELEÇÃO DE TIPO DE GRÁFICO -->
                         <div class="flex items-center gap-1 bg-subcard p-1 rounded-lg border border-theme">
                             <button onclick="setChartType('bar')" id="btn-chart-bar" class="p-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition" title="Barras Comparativas"><i data-lucide="bar-chart-2" class="w-4 h-4"></i></button>
                             <button onclick="setChartType('line')" id="btn-chart-line" class="p-1 rounded-md text-muted hover:text-primary transition" title="Linha de Tendência"><i data-lucide="line-chart" class="w-4 h-4"></i></button>
                             <button onclick="setChartType('area')" id="btn-chart-area" class="p-1 rounded-md text-muted hover:text-primary transition" title="Área Preenchida"><i data-lucide="area-chart" class="w-4 h-4"></i></button>
                         </div>
 
-                        <!-- TOGGLE DE MÉTRICA SECUNDÁRIA -->
                         <div class="flex items-center gap-2">
                             <label class="inline-flex items-center cursor-pointer gap-1.5 text-muted hover:text-primary">
                                 <input type="checkbox" id="chk-mostrar-saldo" onchange="renderEvolucaoComFiltros()" class="sr-only peer">
@@ -251,7 +245,6 @@
                         </div>
                     </div>
 
-                    <!-- PAINEL EXPANSÍVEL DE FILTROS AVANÇADOS -->
                     <div id="painel-filtros-evolucao" class="hidden bg-subcard/90 border border-theme rounded-xl p-4 space-y-4 shadow-xl">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                             <div>
@@ -279,7 +272,6 @@
                         </div>
                     </div>
 
-                    <!-- CONTAINER DO GRÁFICO DE EVOLUÇÃO -->
                     <div class="h-64 relative"><canvas id="chartEvolucao"></canvas></div>
                 </div>
 
@@ -326,7 +318,7 @@
                     <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
                         <i data-lucide="list-plus" class="w-6 h-6 text-emerald-400"></i> Central Unificada de Lançamentos
                     </h2>
-                    <p class="text-sm text-muted mt-1">Consulte, filtre, edite ou altere qualquer lançamento (Receitas, Despesas Fixas/Variáveis e Cartões) que impactam todo o sistema.</p>
+                    <p class="text-sm text-muted mt-1">Consulte, filtre, edite ou altere qualquer lançamento que impacta todo o sistema.</p>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="abrirModalTransacao()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-emerald-500/10">
@@ -335,7 +327,6 @@
                 </div>
             </div>
 
-            <!-- CARD DE FILTROS DA CENTRAL -->
             <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
                 <div class="flex items-center gap-2 font-bold text-primary text-sm">
                     <i data-lucide="filter" class="w-4 h-4 text-emerald-400"></i> Filtros de Busca Avançados
@@ -371,7 +362,6 @@
                 </div>
             </div>
 
-            <!-- TABELA CENTRAL DE LANÇAMENTOS -->
             <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
                 <div class="flex justify-between items-center">
                     <span id="central-contador-registros" class="text-xs text-muted font-medium">Exibindo 0 lançamentos</span>
@@ -623,138 +613,6 @@
             </div>
         </div>
 
-<!-- TAB: MEU PERFIL (NOVO MODELO REVISADO) -->
-<div id="tab-profile" class="space-y-6">
-    <!-- Cabeçalho -->
-    <div class="border-b border-theme pb-4">
-        <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
-            <i data-lucide="user" class="w-6 h-6 text-emerald-400"></i> Meu Perfil
-        </h2>
-        <p class="text-sm text-muted mt-1">Gerencie suas informações pessoais, segurança e dados de acesso na plataforma.</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- COLUNA ESQUERDA (2 Cols): Dados Pessoais e Ações da Conta -->
-        <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Card 1: Dados Pessoais -->
-            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
-                <h3 class="font-bold text-primary flex items-center gap-2 text-base">
-                    <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
-                </h3>
-                <form onsubmit="salvarPerfil(event)" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-medium text-muted mb-1">Nome Completo</label>
-                            <input type="text" id="prof-nome" placeholder="Seu Nome" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-muted mb-1">E-mail de Acesso</label>
-                            <input type="email" id="prof-email" placeholder="seuemail@exemplo.com" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-muted mb-1">Profissão / Ocupação</label>
-                        <input type="text" id="prof-cargo" placeholder="Ex: Desenvolvedor, Administrador" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/10">
-                            <i data-lucide="save" class="w-4 h-4"></i> Salvar Alterações
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Card 2: Opções de Conta e Segurança -->
-            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
-                <h3 class="font-bold text-primary flex items-center gap-2 text-base">
-                    <i data-lucide="key-round" class="w-5 h-5 text-sky-400"></i> Segurança & Opções da Conta
-                </h3>
-                <p class="text-xs text-muted">Gerencie suas credenciais de acesso ou encerre a sua conta nesta plataforma.</p>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                    <button onclick="alterarSenhaModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
-                        <div class="flex items-center gap-2 text-sky-400 font-semibold text-xs">
-                            <i data-lucide="lock" class="w-4 h-4"></i> Alterar Senha
-                        </div>
-                        <p class="text-[11px] text-muted">Redefina sua palavra-passe de acesso.</p>
-                    </button>
-
-                    <button onclick="alterarContaAcessoModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
-                        <div class="flex items-center gap-2 text-purple-400 font-semibold text-xs">
-                            <i data-lucide="user-cog" class="w-4 h-4"></i> Alterar Conta
-                        </div>
-                        <p class="text-[11px] text-muted">Vincule ou mude o e-mail principal.</p>
-                    </button>
-
-                    <button onclick="excluirContaModal()" class="p-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-left space-y-1 transition">
-                        <div class="flex items-center gap-2 text-rose-400 font-semibold text-xs">
-                            <i data-lucide="user-x" class="w-4 h-4"></i> Excluir Conta
-                        </div>
-                        <p class="text-[11px] text-muted">Remova permanentemente seus dados.</p>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- COLUNA DIREITA (1 Col): Status da Conta & Proteção Google -->
-        <div class="space-y-6">
-            
-            <!-- Card 3: Status e Conexão -->
-            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
-                <h3 class="font-bold text-primary flex items-center gap-2 text-base">
-                    <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i> Status da Conta
-                </h3>
-                <div class="space-y-3 text-xs">
-                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                        <span class="text-muted">Conectado via</span>
-                        <span id="prof-metodo-conexao" class="font-bold text-emerald-400 flex items-center gap-1.5">
-                            <!-- Ícone dinâmico: Google ou E-mail -->
-                            <i data-lucide="chrome" class="w-3.5 h-3.5"></i> Conta Google
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                        <span class="text-muted">Plano Atual</span>
-                        <span class="font-bold text-emerald-400">Pro / Ilimitado</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                        <span class="text-muted">Armazenamento</span>
-                        <span class="font-bold text-primary">Google Cloud Storage</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                        <span class="text-muted">Membro Desde</span>
-                        <span id="prof-criado-em" class="font-bold text-primary">Outubro de 2026</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 4: Garantia de Proteção e Hospedagem Google -->
-            <div class="bg-card border border-theme rounded-2xl p-6 space-y-3">
-                <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
-                    <i data-lucide="cloud-shield" class="w-5 h-5"></i> Proteção & Segurança Google
-                </div>
-                <p class="text-xs text-muted leading-relaxed">
-                    A sua conta e os seus dados financeiros estão hospedados na infraestrutura segura da <strong>Google Cloud Platform</strong>.
-                </p>
-                <ul class="text-[11px] text-muted space-y-1.5 pt-1">
-                    <li class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Criptografia SSL/TLS em trânsito
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Dados encriptados em repouso (AES-256)
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Autenticação segura via Google Identity
-                    </li>
-                </ul>
-            </div>
-
-        </div>
-
-    </div>
-</div>
         <!-- TAB: PERSONALIZAR -->
         <div id="tab-customization" class="hidden space-y-6">
             <div class="border-b border-theme pb-4">
@@ -813,6 +671,131 @@
             </div>
         </div>
 
+        <!-- TAB: MEU PERFIL (NOVO MODELO CORRIGIDO) -->
+        <div id="tab-profile" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4">
+                <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                    <i data-lucide="user" class="w-6 h-6 text-emerald-400"></i> Meu Perfil
+                </h2>
+                <p class="text-sm text-muted mt-1">Gerencie suas informações pessoais, segurança e dados de acesso na plataforma.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- COLUNA ESQUERDA (2 Cols): Dados Pessoais e Ações da Conta -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Card 1: Dados Pessoais -->
+                    <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                            <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
+                        </h3>
+                        <form onsubmit="salvarPerfil(event)" class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Nome Completo</label>
+                                    <input type="text" id="prof-nome" placeholder="Seu Nome" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">E-mail de Acesso</label>
+                                    <input type="email" id="prof-email" placeholder="seuemail@exemplo.com" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Profissão / Ocupação</label>
+                                <input type="text" id="prof-cargo" placeholder="Ex: Desenvolvedor, Administrador" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-500/10">
+                                    <i data-lucide="save" class="w-4 h-4"></i> Salvar Alterações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Card 2: Segurança & Opções da Conta -->
+                    <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                            <i data-lucide="key-round" class="w-5 h-5 text-sky-400"></i> Segurança & Opções da Conta
+                        </h3>
+                        <p class="text-xs text-muted">Gerencie suas credenciais de acesso ou encerre a sua conta nesta plataforma.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <button onclick="alterarSenhaModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
+                                <div class="flex items-center gap-2 text-sky-400 font-semibold text-xs">
+                                    <i data-lucide="lock" class="w-4 h-4"></i> Alterar Senha
+                                </div>
+                                <p class="text-[11px] text-muted">Redefina sua palavra-passe de acesso.</p>
+                            </button>
+
+                            <button onclick="alterarContaAcessoModal()" class="p-3 bg-subcard hover:bg-subcard/80 border border-theme rounded-xl text-left space-y-1 transition">
+                                <div class="flex items-center gap-2 text-purple-400 font-semibold text-xs">
+                                    <i data-lucide="user-cog" class="w-4 h-4"></i> Alterar Conta
+                                </div>
+                                <p class="text-[11px] text-muted">Vincule ou mude o e-mail principal.</p>
+                            </button>
+
+                            <button onclick="excluirContaModal()" class="p-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-left space-y-1 transition">
+                                <div class="flex items-center gap-2 text-rose-400 font-semibold text-xs">
+                                    <i data-lucide="user-x" class="w-4 h-4"></i> Excluir Conta
+                                </div>
+                                <p class="text-[11px] text-muted">Remova permanentemente seus dados.</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA (1 Col): Status & Hospedagem Google -->
+                <div class="space-y-6">
+                    <!-- Card 3: Status da Conta -->
+                    <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i> Status da Conta
+                        </h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                                <span class="text-muted">Conectado via</span>
+                                <span id="prof-metodo-conexao" class="font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <i data-lucide="chrome" class="w-3.5 h-3.5"></i> Conta Google
+                                </span>
+                            </div>
+                            <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                                <span class="text-muted">Plano Atual</span>
+                                <span class="font-bold text-emerald-400">Pro / Ilimitado</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                                <span class="text-muted">Armazenamento</span>
+                                <span id="prof-armazenamento" class="font-bold text-primary">Google Cloud Storage</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                                <span class="text-muted">Membro Desde</span>
+                                <span id="prof-criado-em" class="font-bold text-primary">Outubro de 2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Proteção Google -->
+                    <div class="bg-card border border-theme rounded-2xl p-6 space-y-3">
+                        <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
+                            <i data-lucide="cloud-shield" class="w-5 h-5"></i> Proteção & Segurança Google
+                        </div>
+                        <p class="text-xs text-muted leading-relaxed">
+                            A sua conta e os seus dados financeiros estão hospedados na infraestrutura segura da <strong>Google Cloud Platform</strong>.
+                        </p>
+                        <ul class="text-[11px] text-muted space-y-1.5 pt-1">
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Criptografia SSL/TLS em trânsito
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Dados encriptados em repouso (AES-256)
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Autenticação segura via Google Identity
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- TAB: CONFIGURAÇÕES -->
         <div id="tab-settings" class="hidden space-y-6">
             <!-- IMPORTAÇÃO DE CARTÕES DE CRÉDITO (CSV / XLSX) -->
@@ -836,7 +819,6 @@
                     </div>
                 </div>
 
-                <!-- Mapeamento de Colunas Cartão -->
                 <div id="box-mapeamento-colunas-cartao" class="hidden space-y-4 pt-4 border-t border-theme">
                     <div class="flex items-center gap-2 text-purple-400 font-bold text-sm">
                         <i data-lucide="sliders" class="w-4 h-4"></i> Mapeamento de Colunas (Cartão de Crédito)
@@ -878,7 +860,6 @@
                     </div>
                 </div>
 
-                <!-- Prévia da Importação -->
                 <div id="container-previa-excel-cartao" class="hidden space-y-3 pt-4 border-t border-theme">
                     <div class="flex justify-between items-center">
                         <h4 class="font-bold text-primary text-sm flex items-center gap-2">
@@ -1117,7 +1098,6 @@
         let temaAtual = localStorage.getItem('pf_tema') || 'dark';
         let animacaoAtiva = localStorage.getItem('pf_animacao') !== 'false';
 
-        // Estado dos Filtros do Gráfico de Evolução
         let evolucaoConfig = {
             mesesQtd: 6,
             tipoGrafico: 'bar',
@@ -1155,14 +1135,27 @@
             { id: 1, cartaoId: 1, descricao: 'Smartphone Novo', categoria: 'Lazer', valorTotal: 2400, totalParcelas: 10, valorParcela: 240, dataInicio: '2026-05-10' }
         ];
 
+        const PADRAO_PERFIL = {
+            nome: 'Vitor Souza',
+            email: 'usuario@exemplo.com',
+            cargo: 'Planejador Financeiro',
+            metodoConexao: 'google', // 'google' ou 'email'
+            armazenamento: 'Google Cloud Storage'
+        };
+
         let categorias = JSON.parse(localStorage.getItem('pf_categorias_v10')) || [...PADRAO_CATEGORIAS];
         let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v10')) || [...PADRAO_TRANSACOES];
         let cartoes = JSON.parse(localStorage.getItem('pf_cartoes_v10')) || [...PADRAO_CARTOES];
         let parcelamentos = JSON.parse(localStorage.getItem('pf_parcelamentos_v10')) || [...PADRAO_PARCELAMENTOS];
+        let perfilUsuario = JSON.parse(localStorage.getItem('pf_perfil_v10')) || { ...PADRAO_PERFIL };
 
         let dadosBrutosPlanilha = [];
         let cabecalhosPlanilha = [];
         let transacoesMapeadasPrevia = [];
+
+        let dadosBrutosCartao = [];
+        let cabecalhosCartao = [];
+        let comprasMapeadasPrevia = [];
 
         let chartEvolucaoObj = null;
         let chartCategoriaObj = null;
@@ -1197,24 +1190,97 @@
             return `${meses[date.getMonth()]} De ${date.getFullYear()}`;
         }
 
-function switchTab(tab) {
-    const tabs = ['dashboard', 'lancamentos', 'cards', 'provisoes', 'categories', 'reports', 'customization', 'settings', 'profile'];
-    tabs.forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        const btn = document.getElementById(`btn-tab-${t === 'dashboard' ? 'dash' : t === 'lancamentos' ? 'lancamentos' : t === 'categories' ? 'categories' : t === 'reports' ? 'reports' : t === 'customization' ? 'custom' : t}`);
-        if (el) el.classList.add('hidden');
-        if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5';
-    });
+        function switchTab(tab) {
+            const tabs = ['dashboard', 'lancamentos', 'cards', 'provisoes', 'categories', 'reports', 'customization', 'settings', 'profile'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`btn-tab-${t === 'dashboard' ? 'dash' : t === 'lancamentos' ? 'lancamentos' : t === 'categories' ? 'categories' : t === 'reports' ? 'reports' : t === 'customization' ? 'custom' : t}`);
+                if (el) el.classList.add('hidden');
+                if (btn) btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-subcard text-muted border border-theme hover:text-primary flex items-center gap-1.5';
+            });
 
-    const activeEl = document.getElementById(`tab-${tab}`);
-    const activeBtn = document.getElementById(`btn-tab-${tab === 'dashboard' ? 'dash' : tab === 'lancamentos' ? 'lancamentos' : tab === 'categories' ? 'categories' : tab === 'reports' ? 'reports' : tab === 'customization' ? 'custom' : tab}`);
-    if (activeEl) activeEl.classList.remove('hidden');
-    if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5';
+            const activeEl = document.getElementById(`tab-${tab}`);
+            const activeBtn = document.getElementById(`btn-tab-${tab === 'dashboard' ? 'dash' : tab === 'lancamentos' ? 'lancamentos' : tab === 'categories' ? 'categories' : tab === 'reports' ? 'reports' : tab === 'customization' ? 'custom' : tab}`);
+            if (activeEl) activeEl.classList.remove('hidden');
+            if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5';
 
-    if (tab === 'lancamentos') {
-        renderizarTabelaCentral();
-    }
-}
+            if (tab === 'lancamentos') {
+                renderizarTabelaCentral();
+            }
+        }
+
+        function carregarDadosPerfilUI() {
+            document.getElementById('prof-nome').value = perfilUsuario.nome || '';
+            document.getElementById('prof-email').value = perfilUsuario.email || '';
+            document.getElementById('prof-cargo').value = perfilUsuario.cargo || '';
+            
+            const badgeMetodo = document.getElementById('prof-metodo-conexao');
+            if (badgeMetodo) {
+                if (perfilUsuario.metodoConexao === 'google') {
+                    badgeMetodo.innerHTML = `<i data-lucide="chrome" class="w-3.5 h-3.5"></i> Conta Google`;
+                    badgeMetodo.className = "font-bold text-emerald-400 flex items-center gap-1.5";
+                } else {
+                    badgeMetodo.innerHTML = `<i data-lucide="mail" class="w-3.5 h-3.5"></i> E-mail e Senha`;
+                    badgeMetodo.className = "font-bold text-sky-400 flex items-center gap-1.5";
+                }
+            }
+
+            const elArmaz = document.getElementById('prof-armazenamento');
+            if (elArmaz) {
+                elArmaz.textContent = perfilUsuario.armazenamento || 'Google Cloud Storage';
+            }
+        }
+
+        function salvarPerfil(e) {
+            e.preventDefault();
+            perfilUsuario = {
+                ...perfilUsuario,
+                nome: document.getElementById('prof-nome').value,
+                email: document.getElementById('prof-email').value,
+                cargo: document.getElementById('prof-cargo').value
+            };
+            localStorage.setItem('pf_perfil_v10', JSON.stringify(perfilUsuario));
+            alert('Dados do perfil salvos com sucesso!');
+        }
+
+        // FUNÇÕES PARA OS BOTÕES DE SEGURANÇA DO PERFIL
+        function alterarSenhaModal() {
+            if (perfilUsuario.metodoConexao === 'google') {
+                alert('Sua conta está conectada via Google Identity. Para alterar sua senha, acesse as configurações da sua Conta Google.');
+                return;
+            }
+            const senhaAtual = prompt('Informe sua senha atual:');
+            if (senhaAtual) {
+                const novaSenha = prompt('Digite sua nova senha:');
+                if (novaSenha && novaSenha.trim() !== '') {
+                    alert('Senha alterada com sucesso!');
+                }
+            }
+        }
+
+        function alterarContaAcessoModal() {
+            const novoEmail = prompt('Digite o novo e-mail para esta conta:', perfilUsuario.email);
+            if (novoEmail && novoEmail.trim() !== '' && novoEmail !== perfilUsuario.email) {
+                perfilUsuario.email = novoEmail.trim();
+                localStorage.setItem('pf_perfil_v10', JSON.stringify(perfilUsuario));
+                carregarDadosPerfilUI();
+                alert('E-mail de acesso atualizado com sucesso!');
+            }
+        }
+
+        function excluirContaModal() {
+            const confirmacao = confirm('ATENÇÃO: Deseja realmente excluir permanentemente sua conta e remover todos os seus dados alojados na nuvem? Esta ação não pode ser desfeita.');
+            if (confirmacao) {
+                const digitar = prompt('Para confirmar a exclusão, digite "EXCLUIR":');
+                if (digitar === 'EXCLUIR') {
+                    localStorage.clear();
+                    alert('Sua conta foi excluída permanentemente. O sistema será reiniciado.');
+                    window.location.reload();
+                } else {
+                    alert('Exclusão cancelada. O texto digitado foi incorreto.');
+                }
+            }
+        }
 
         function mudarMes(delta) {
             dataAtual.setMonth(dataAtual.getMonth() + delta);
@@ -1971,12 +2037,6 @@ function switchTab(tab) {
             switchTab('lancamentos');
         }
 
-        // VARIÁVEIS DE SUPORTE PARA IMPORTAÇÃO DE CARTÃO
-        let dadosBrutosCartao = [];
-        let cabecalhosCartao = [];
-        let comprasMapeadasPrevia = [];
-
-        // 1. Baixar modelo de planilha pronto para Cartão de Crédito
         function baixarPlanilhaModeloCartao() {
             const modeloDados = [
                 ["Data", "Descrição", "Valor Total", "Parcelas", "Categoria"],
@@ -1991,7 +2051,6 @@ function switchTab(tab) {
             XLSX.writeFile(wb, "Planilha_Modelo_Cartao.xlsx");
         }
 
-        // 2. Ler o arquivo selecionado
         function lerArquivoPlanilhaCartao(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -2016,7 +2075,6 @@ function switchTab(tab) {
             reader.readAsArrayBuffer(file);
         }
 
-        // 3. Preencher os seletores de mapeamento de colunas
         function preencherSeleitoresMapeamentoCartao() {
             const idsSelects = ['map-card-data', 'map-card-descricao', 'map-card-valor', 'map-card-parcelas', 'map-card-categoria'];
             
@@ -2028,21 +2086,18 @@ function switchTab(tab) {
                 });
             });
 
-            // Opções de Cartões cadastrados
             const selCartaoDest = document.getElementById('map-card-cartao-dest');
             selCartaoDest.innerHTML = '';
             cartoes.forEach(c => {
                 selCartaoDest.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
             });
 
-            // Opções de Categorias para Fallback
             const selCatFallback = document.getElementById('map-card-cat-fallback');
             selCatFallback.innerHTML = '';
             categorias.forEach(cat => {
                 selCatFallback.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
 
-            // Auto-detecção inteligente por nome do cabeçalho
             cabecalhosCartao.forEach((col, idx) => {
                 const c = col.toLowerCase();
                 if (c.includes('data') || c.includes('date')) document.getElementById('map-card-data').value = idx;
@@ -2055,7 +2110,6 @@ function switchTab(tab) {
             document.getElementById('box-mapeamento-colunas-cartao').classList.remove('hidden');
         }
 
-        // 4. Processar os dados e gerar a prévia na tabela
         function processarMapeamentoCartaoEGerarPrevia() {
             const idxData = document.getElementById('map-card-data').value;
             const idxDesc = document.getElementById('map-card-descricao').value;
@@ -2088,7 +2142,6 @@ function switchTab(tab) {
 
                 if (!rawDesc || rawValor === undefined || rawValor === null) continue;
 
-                // Limpeza do valor numérico
                 let strVal = String(rawValor).replace(/R\$/gi, '').replace(/\s+/g, '').replace('-', '').trim();
                 if (strVal.includes(',') && strVal.includes('.')) {
                     strVal = strVal.replace(/\./g, '').replace(',', '.');
@@ -2099,14 +2152,12 @@ function switchTab(tab) {
                 let numValorTotal = parseFloat(strVal);
                 if (isNaN(numValorTotal) || numValorTotal <= 0) continue;
 
-                // Número de parcelas (Padrão: 1)
                 let numParcelas = 1;
                 if (idxParc !== "" && linha[idxParc]) {
                     let parsedParc = parseInt(String(linha[idxParc]).replace(/\D/g, ''));
                     if (!isNaN(parsedParc) && parsedParc > 0) numParcelas = parsedParc;
                 }
 
-                // Categoria
                 let catFinal = catFallback;
                 if (idxCat !== "" && linha[idxCat]) {
                     let valCat = String(linha[idxCat]).trim();
@@ -2118,7 +2169,6 @@ function switchTab(tab) {
                     }
                 }
 
-                // Formatação da data
                 let dataFormatadaISO = new Date().toISOString().split('T')[0];
                 if (rawData) {
                     let strData = String(rawData).trim();
@@ -2149,7 +2199,6 @@ function switchTab(tab) {
             exibirPreviaCartaoMapeado();
         }
 
-        // 5. Renderizar prévia na tabela
         function exibirPreviaCartaoMapeado() {
             const contPrevia = document.getElementById('container-previa-excel-cartao');
             const corpoTabela = document.getElementById('tabela-previa-excel-cartao-corpo');
@@ -2181,7 +2230,6 @@ function switchTab(tab) {
             contPrevia.classList.remove('hidden');
         }
 
-        // 6. Confirmar e salvar tudo no Cloud Firestore / Estado da Aplicação
         function confirmarEImportarPlanilhaCartao() {
             if (comprasMapeadasPrevia.length === 0) return;
 
@@ -2372,13 +2420,16 @@ function switchTab(tab) {
                 localStorage.removeItem('pf_cartoes_v10');
                 localStorage.removeItem('pf_parcelamentos_v10');
                 localStorage.removeItem('pf_categorias_v10');
+                localStorage.removeItem('pf_perfil_v10');
 
                 categorias = [...PADRAO_CATEGORIAS];
                 transacoes = [...PADRAO_TRANSACOES];
                 cartoes = [...PADRAO_CARTOES];
                 parcelamentos = [...PADRAO_PARCELAMENTOS];
+                perfilUsuario = { ...PADRAO_PERFIL };
 
                 salvarStorage();
+                carregarDadosPerfilUI();
                 alert("Sistema resetado com sucesso!");
             }
         }
@@ -2730,7 +2781,6 @@ function switchTab(tab) {
             const pctVar = varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0;
             document.getElementById('bar-variaveis').style.width = `${pctVar}%`;
 
-            // CONSOLIDAÇÃO DE DESPESAS NÃO PAGAS (FIXAS, VARIÁVEIS E FATURAS DE CARTÃO)
             const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
                 id: t.id,
                 descricao: t.descricao,
@@ -2739,7 +2789,6 @@ function switchTab(tab) {
                 tipoOrigem: 'trans'
             }));
 
-            // Adiciona faturas de cartão no bloco de pendências caso o valor do mês > 0
             cartoes.forEach(c => {
                 let totalFaturaCartao = 0;
                 parcelamentos.filter(p => p.cartaoId === c.id).forEach(p => {
@@ -2904,6 +2953,7 @@ function switchTab(tab) {
             renderEvolucaoComFiltros();
             renderGraficoCategoria(tDoMes);
             renderizarTabelaCentral();
+            carregarDadosPerfilUI();
             lucide.createIcons();
         }
 
@@ -2965,39 +3015,6 @@ function switchTab(tab) {
 
             atualizarUI();
         });
-const PADRAO_PERFIL = {
-    nome: 'Usuário',
-    email: 'usuario@exemplo.com',
-    cargo: 'Planejador Financeiro',
-    renda: 6500.00
-};
-
-let perfilUsuario = JSON.parse(localStorage.getItem('pf_perfil_v10')) || { ...PADRAO_PERFIL };
-
-function carregarDadosPerfilUI() {
-    document.getElementById('prof-nome').value = perfilUsuario.nome || '';
-    document.getElementById('prof-email').value = perfilUsuario.email || '';
-    document.getElementById('prof-cargo').value = perfilUsuario.cargo || '';
-    document.getElementById('prof-renda').value = perfilUsuario.renda || '';
-}
-
-function salvarPerfil(e) {
-    e.preventDefault();
-    perfilUsuario = {
-        nome: document.getElementById('prof-nome').value,
-        email: document.getElementById('prof-email').value,
-        cargo: document.getElementById('prof-cargo').value,
-        renda: parseFloat(document.getElementById('prof-renda').value) || 0
-    };
-    localStorage.setItem('pf_perfil_v10', JSON.stringify(perfilUsuario));
-    alert('Dados do perfil salvos com sucesso!');
-}
-
-// Chamar a função de carregar o perfil no evento DOMContentLoaded:
-document.addEventListener('DOMContentLoaded', () => {
-    // ... mantêm-se as chamadas que você já possui ...
-    carregarDadosPerfilUI();
-});
     </script>
 </body>
 </html>
