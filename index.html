@@ -82,35 +82,27 @@
                 <div class="flex-grow border-t border-theme"></div>
             </div>
 
-<!-- FORMULÁRIO DE LOGIN / CADASTRO TRADICIONAL -->
-<form onsubmit="fazerLoginEmail(event)" class="space-y-3 text-left">
-    <!-- Campo Nome Completo (Exibido apenas no modo Cadastro) -->
-    <div id="box-campo-nome" class="hidden">
-        <label class="block text-xs font-semibold text-muted mb-1">Nome Completo</label>
-        <input type="text" id="login-nome" placeholder="Seu Nome Completo" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+            <!-- FORMULÁRIO DE LOGIN TRADICIONAL -->
+            <form onsubmit="fazerLoginEmail(event)" class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-muted mb-1">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="seuemail@exemplo.com" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-muted mb-1">Senha</label>
+                    <input type="password" id="login-senha" required placeholder="••••••••" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-500/10">
+                    Entrar na Conta
+                </button>
+            </form>
+
+            <p class="text-[11px] text-muted border-t border-theme pt-4">
+                Ambiente seguro protegido por criptografia de ponta a ponta.
+            </p>
+        </div>
     </div>
 
-    <div>
-        <label class="block text-xs font-semibold text-muted mb-1">E-mail</label>
-        <input type="email" id="login-email" required placeholder="seuemail@exemplo.com" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-    </div>
-    <div>
-        <label class="block text-xs font-semibold text-muted mb-1">Senha</label>
-        <input type="password" id="login-senha" required placeholder="••••••••" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
-    </div>
-
-    <button type="submit" id="btn-submit-login" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-500/10">
-        Entrar na Conta
-    </button>
-</form>
-
-<!-- OPÇÃO PARA ALTERNAR ENTRE LOGIN E CRIAR CONTA -->
-<div class="pt-2 text-center text-xs text-muted">
-    <span id="texto-alternar-modo">Não tem uma conta?</span> 
-    <button type="button" onclick="alternarModoAuth()" id="btn-link-alternar" class="text-emerald-400 font-bold hover:underline ml-1 focus:outline-none">
-        Criar Conta
-    </button>
-</div>
     <!-- BARRA SUPERIOR / MENU COMPLETO -->
     <header class="border-b header-bg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center border-b border-theme/60 gap-4">
@@ -3257,107 +3249,6 @@ async function fazerLoginEmail(e) {
             
             atualizarUI();
         });
-let modoCadastro = false;
-
-// Função para alternar visualmente a tela entre "Login" e "Criar Conta"
-function alternarModoAuth() {
-    modoCadastro = !modoCadastro;
-
-    const boxNome = document.getElementById('box-campo-nome');
-    const inputNome = document.getElementById('login-nome');
-    const btnSubmit = document.getElementById('btn-submit-login');
-    const txtAlternar = document.getElementById('texto-alternar-modo');
-    const btnLink = document.getElementById('btn-link-alternar');
-
-    if (modoCadastro) {
-        boxNome.classList.remove('hidden');
-        inputNome.setAttribute('required', 'required');
-        btnSubmit.textContent = 'Criar Minha Conta';
-        txtAlternar.textContent = 'Já possui uma conta?';
-        btnLink.textContent = 'Fazer Login';
-    } else {
-        boxNome.classList.add('hidden');
-        inputNome.removeAttribute('required');
-        btnSubmit.textContent = 'Entrar na Conta';
-        txtAlternar.textContent = 'Não tem uma conta?';
-        btnLink.textContent = 'Criar Conta';
-    }
-}
-
-// Função de Autenticação Unificada (Login / Cadastro) com Firebase
-async function fazerLoginEmail(e) {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value.trim();
-    const senha = document.getElementById('login-senha').value;
-    const nome = document.getElementById('login-nome').value.trim();
-
-    try {
-        if (modoCadastro) {
-            // --- MODO CRIAR CONTA ---
-            if (!nome) {
-                alert('Por favor, informe seu nome completo.');
-                return;
-            }
-
-            // Criar conta no Firebase Auth
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            // Atualiza o nome do usuário no perfil do Firebase
-            await user.updateProfile({ displayName: nome });
-
-            // Envia e-mail de verificação/confirmação
-            await user.sendEmailVerification();
-
-            alert('Conta criada com sucesso! Enviamos um e-mail de confirmação para ' + email + '. Por favor, acesse sua caixa de entrada e confirme o e-mail antes de acessar o sistema.');
-
-            // Desconecta até que o usuário confirme o e-mail
-            await firebase.auth().signOut();
-
-            // Retorna a tela para o modo de login
-            alternarModoAuth();
-
-        } else {
-            // --- MODO LOGIN TRADICIONAL ---
-            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            // Bloqueia acesso caso o e-mail ainda não tenha sido verificado
-            if (!user.emailVerified) {
-                alert('Atenção: Seu e-mail ainda não foi confirmado! Enviamos um link de confirmação para a sua caixa de entrada.');
-                
-                // Desconecta a sessão pendente
-                await firebase.auth().signOut();
-                return;
-            }
-
-            // Se estiver verificado, preenche e libera o dashboard
-            perfilUsuario.nome = user.displayName || nome || email.split('@')[0];
-            perfilUsuario.email = user.email;
-            perfilUsuario.metodoConexao = 'email';
-
-            localStorage.setItem('pf_logado', 'true');
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-            document.getElementById('tela-login').classList.add('hidden');
-            carregarDadosPerfilUI();
-            atualizarUI();
-        }
-    } catch (error) {
-        console.error("Erro na autenticação:", error);
-        
-        // Tratamento de mensagens de erro comuns do Firebase
-        if (error.code === 'auth/email-already-in-use') {
-            alert('Este e-mail já está cadastrado! Alterne para "Fazer Login" para acessar sua conta.');
-        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            alert('E-mail ou senha incorretos.');
-        } else if (error.code === 'auth/weak-password') {
-            alert('A senha deve ter pelo menos 6 caracteres.');
-        } else {
-            alert('Ocorreu um erro: ' + error.message);
-        }
-    }
-}
     </script>
 </body>
 </html>
