@@ -93,9 +93,9 @@
                     </div>
                 </div>
                 <button onclick="fazerLogout()" title="Encerrar Sessão" class="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
-    <i data-lucide="log-out" class="w-4 h-4"></i>
-    <span class="hidden sm:inline">Sair</span>
-</button>
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Sair</span>
+                </button>
             </div>
         </div>
 
@@ -1270,14 +1270,10 @@
             atualizarUI();
         }
 
-function fazerLogout() {
-            if (confirm('Deseja realmente encerrar a sua sessão?')) {
-                // Remove os dados da sessão local caso utilize autenticação
-                localStorage.removeItem('pf_usuario_logado');
-                
-                // Redireciona para a página de login desejada
-                // Caso sua página de login seja 'login.html', altere o endereço abaixo:
-                window.location.href = 'login.html'; 
+        function fazerLogout() {
+            if (confirm('Deseja realmente encerrar a sessão?')) {
+                alert('Sessão encerrada com sucesso.');
+                window.location.reload();
             }
         }
 
