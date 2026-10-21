@@ -1270,10 +1270,14 @@
             atualizarUI();
         }
 
-        function fazerLogout() {
-            if (confirm('Deseja realmente encerrar a sessão?')) {
-                alert('Sessão encerrada com sucesso.');
-                window.location.reload();
+function fazerLogout() {
+            if (confirm('Deseja realmente encerrar a sua sessão?')) {
+                // Remove os dados da sessão local caso utilize autenticação
+                localStorage.removeItem('pf_usuario_logado');
+                
+                // Redireciona para a página de login desejada
+                // Caso sua página de login seja 'login.html', altere o endereço abaixo:
+                window.location.href = 'login.html'; 
             }
         }
 
