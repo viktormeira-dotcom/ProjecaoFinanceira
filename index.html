@@ -114,7 +114,7 @@
             <div class="pt-3 text-center text-xs text-muted border-t border-theme/60 mt-4">
                 <span id="texto-alternar-modo">Ainda não tem uma conta?</span> 
                 <button type="button" onclick="alternarModoAuth()" id="btn-link-alternar" class="text-emerald-400 font-bold hover:underline ml-1 focus:outline-none">
-                    Criar nova conta
+                    Criar conta
                 </button>
             </div>
 
@@ -123,104 +123,6 @@
             </p>
         </div>
     </div>
-
-let modoCadastro = false;
-
-// Alterna visualmente os campos entre "Login" e "Criar Conta"
-function alternarModoAuth() {
-    modoCadastro = !modoCadastro;
-
-    const boxNome = document.getElementById('box-campo-nome');
-    const inputNome = document.getElementById('login-nome');
-    const btnSubmit = document.getElementById('btn-submit-auth');
-    const txtAlternar = document.getElementById('texto-alternar-modo');
-    const btnLink = document.getElementById('btn-link-alternar');
-
-    if (modoCadastro) {
-        boxNome.classList.remove('hidden');
-        inputNome.setAttribute('required', 'required');
-        btnSubmit.textContent = 'Finalizar Cadastro';
-        txtAlternar.textContent = 'Já possui uma conta registrada?';
-        btnLink.textContent = 'Fazer Login';
-    } else {
-        boxNome.classList.add('hidden');
-        inputNome.removeAttribute('required');
-        btnSubmit.textContent = 'Entrar na Conta';
-        txtAlternar.textContent = 'Ainda não tem uma conta?';
-        btnLink.textContent = 'Criar nova conta';
-    }
-}
-
-// Processa o Login ou o Cadastro via Firebase Authentication
-async function fazerLoginEmail(e) {
-    e.preventDefault();
-
-    const email = document.getElementById('login-email').value.trim();
-    const senha = document.getElementById('login-senha').value;
-    const nome = document.getElementById('login-nome').value.trim();
-
-    try {
-        if (modoCadastro) {
-            if (!nome) {
-                alert('Por favor, informe seu nome completo.');
-                return;
-            }
-
-            // 1. Cria o usuário no Firebase
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            // 2. Salva o nome informado no perfil
-            await user.updateProfile({ displayName: nome });
-
-            // 3. Envia e-mail de verificação obrigatoriamente
-            await user.sendEmailVerification();
-
-            alert('Conta criada com sucesso! Enviamos um link de confirmação para ' + email + '. Por favor, acesse seu e-mail e confirme antes de entrar.');
-
-            // Desconecta e retorna para a tela de login
-            await firebase.auth().signOut();
-            alternarModoAuth();
-
-        } else {
-            // Login de conta existente
-            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            // Bloqueia caso o e-mail não esteja verificado
-            if (!user.emailVerified) {
-                alert('Atenção: Seu e-mail ainda não foi confirmado! Verifique sua caixa de entrada.');
-                await firebase.auth().signOut();
-                return;
-            }
-
-            // Libera o dashboard
-            perfilUsuario.nome = user.displayName || nome || email.split('@')[0];
-            perfilUsuario.email = user.email;
-            perfilUsuario.metodoConexao = 'email';
-
-            localStorage.setItem('pf_logado', 'true');
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-            document.getElementById('tela-login').classList.add('hidden');
-            carregarDadosPerfilUI();
-            atualizarUI();
-        }
-    } catch (error) {
-        console.error("Erro na autenticação:", error);
-
-        if (error.code === 'auth/email-already-in-use') {
-            alert('Este e-mail já está cadastrado. Clique em "Fazer Login" para acessar.');
-        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            alert('E-mail ou senha incorretos.');
-        } else if (error.code === 'auth/weak-password') {
-            alert('A senha deve conter pelo menos 6 caracteres.');
-        } else {
-            alert('Erro: ' + error.message);
-        }
-    }
-}
-
     <!-- BARRA SUPERIOR / MENU COMPLETO -->
     <header class="border-b header-bg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center border-b border-theme/60 gap-4">
@@ -1338,6 +1240,103 @@ async function fazerLoginEmail(e) {
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+
+let modoCadastro = false;
+
+// Alterna visualmente os campos entre "Login" e "Criar Conta"
+function alternarModoAuth() {
+    modoCadastro = !modoCadastro;
+
+    const boxNome = document.getElementById('box-campo-nome');
+    const inputNome = document.getElementById('login-nome');
+    const btnSubmit = document.getElementById('btn-submit-auth');
+    const txtAlternar = document.getElementById('texto-alternar-modo');
+    const btnLink = document.getElementById('btn-link-alternar');
+
+    if (modoCadastro) {
+        boxNome.classList.remove('hidden');
+        inputNome.setAttribute('required', 'required');
+        btnSubmit.textContent = 'Finalizar Cadastro';
+        txtAlternar.textContent = 'Já possui uma conta registrada?';
+        btnLink.textContent = 'Fazer Login';
+    } else {
+        boxNome.classList.add('hidden');
+        inputNome.removeAttribute('required');
+        btnSubmit.textContent = 'Entrar na Conta';
+        txtAlternar.textContent = 'Ainda não tem uma conta?';
+        btnLink.textContent = 'Criar conta';
+    }
+}
+
+// Processa o Login ou o Cadastro via Firebase Authentication
+async function fazerLoginEmail(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+    const nome = document.getElementById('login-nome').value.trim();
+
+    try {
+        if (modoCadastro) {
+            if (!nome) {
+                alert('Por favor, informe seu nome completo.');
+                return;
+            }
+
+            // 1. Cria o usuário no Firebase
+            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
+            const user = userCredential.user;
+
+            // 2. Salva o nome informado no perfil
+            await user.updateProfile({ displayName: nome });
+
+            // 3. Envia e-mail de verificação obrigatoriamente
+            await user.sendEmailVerification();
+
+            alert('Conta criada com sucesso! Enviamos um link de confirmação para ' + email + '. Por favor, acesse seu e-mail e confirme antes de entrar.');
+
+            // Desconecta e retorna para a tela de login
+            await firebase.auth().signOut();
+            alternarModoAuth();
+
+        } else {
+            // Login de conta existente
+            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
+            const user = userCredential.user;
+
+            // Bloqueia caso o e-mail não esteja verificado
+            if (!user.emailVerified) {
+                alert('Atenção: Seu e-mail ainda não foi confirmado! Verifique sua caixa de entrada.');
+                await firebase.auth().signOut();
+                return;
+            }
+
+            // Libera o dashboard
+            perfilUsuario.nome = user.displayName || nome || email.split('@')[0];
+            perfilUsuario.email = user.email;
+            perfilUsuario.metodoConexao = 'email';
+
+            localStorage.setItem('pf_logado', 'true');
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+            document.getElementById('tela-login').classList.add('hidden');
+            carregarDadosPerfilUI();
+            atualizarUI();
+        }
+    } catch (error) {
+        console.error("Erro na autenticação:", error);
+
+        if (error.code === 'auth/email-already-in-use') {
+            alert('Este e-mail já está cadastrado. Clique em "Fazer Login" para acessar.');
+        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            alert('E-mail ou senha incorretos.');
+        } else if (error.code === 'auth/weak-password') {
+            alert('A senha deve conter pelo menos 6 caracteres.');
+        } else {
+            alert('Erro: ' + error.message);
+        }
+    }
+}
 async function fazerLogout() {
     if (confirm('Deseja realmente encerrar a sua sessão?')) {
         try {
