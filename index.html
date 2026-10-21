@@ -1310,32 +1310,60 @@
             }
         }
 
-        function fazerLoginEmail(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
+// Função para cadastrar ou logar com E-mail e Senha exigindo verificação
+async function fazerLoginEmail(e) {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const senha = document.getElementById('login-senha').value;
+
+    try {
+        // Tenta realizar o login via Firebase Auth
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
+        const user = userCredential.user;
+
+        // VERIFICAÇÃO: O e-mail já foi confirmado?
+        if (!user.emailVerified) {
+            alert('Atenção: Seu e-mail ainda não foi confirmado! Enviamos um link de verificação para o seu e-mail.');
             
-            perfilUsuario.nome = email.split('@')[0];
-            perfilUsuario.email = email;
-            perfilUsuario.fotoUrl = '';
-            perfilUsuario.metodoConexao = 'email';
-
-            usuarioLogado = true;
-            localStorage.setItem('pf_logado', 'true');
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-            document.getElementById('tela-login').classList.add('hidden');
-            carregarDadosPerfilUI();
-            atualizarUI();
+            // Opcional: Reenvia o e-mail de confirmação caso o usuário não ache
+            await user.sendEmailVerification();
+            
+            // Desconecta o usuário impedindo o acesso ao sistema
+            await firebase.auth().signOut();
+            return;
         }
 
-        function fazerLogout() {
-            if (confirm('Deseja realmente encerrar a sua sessão?')) {
-                usuarioLogado = false;
-                localStorage.removeItem('pf_logado');
-                document.getElementById('tela-login').classList.remove('hidden');
+        // Se o e-mail estiver confirmado, libera o acesso
+        perfilUsuario.nome = user.displayName || email.split('@')[0];
+        perfilUsuario.email = user.email;
+        perfilUsuario.metodoConexao = 'email';
+
+        localStorage.setItem('pf_logado', 'true');
+        localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+        document.getElementById('tela-login').classList.add('hidden');
+        carregarDadosPerfilUI();
+        atualizarUI();
+
+    } catch (error) {
+        // Se o usuário não existir, cria a conta e envia o e-mail de confirmação
+        if (error.code === 'auth/user-not-found') {
+            try {
+                const novoUsuario = await firebase.auth().createUserWithEmailAndPassword(email, senha);
+                
+                // Envia o e-mail de confirmação para a caixa de entrada do usuário
+                await novoUsuario.user.sendEmailVerification();
+                
+                alert('Conta criada com sucesso! Enviamos um e-mail de confirmação. Por favor, acesse sua caixa de entrada e confirme antes de entrar.');
+                await firebase.auth().signOut();
+            } catch (createError) {
+                alert('Erro ao criar conta: ' + createError.message);
             }
+        } else {
+            alert('Erro ao realizar login: ' + error.message);
         }
-
+    }
+}
         // ================= INTERFACE & PERFIL =================
         function aplicarPersonalizacao() {
             document.body.className = `${temaAtual === 'dark' ? 'theme-dark' : 'theme-light'} ${animacaoAtiva ? 'anim-enabled' : 'anim-disabled'} font-sans min-h-screen`;
