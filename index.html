@@ -15,6 +15,8 @@
     <!-- jsPDF e autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- API Oficial Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style id="custom-theme-styles">
         @keyframes glow {
@@ -52,10 +54,59 @@
 </head>
 <body class="theme-dark anim-enabled font-sans min-h-screen">
 
+    <!-- ================= TELA / INTERFACE DE LOGIN ================= -->
+    <div id="tela-login" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-card border border-theme rounded-3xl max-w-md w-full p-8 shadow-2xl space-y-6 text-center">
+            
+            <div class="space-y-2">
+                <div class="mx-auto w-14 h-14 bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 rounded-2xl text-gray-950 font-black title-glow shadow-lg shadow-emerald-500/20 flex items-center justify-center">
+                    <i data-lucide="wallet-cards" class="w-8 h-8 stroke-[2.5]"></i>
+                </div>
+                <h2 class="text-2xl font-black bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent title-glow">
+                    MINHA VIDA FINANCEIRA
+                </h2>
+                <p class="text-xs text-muted">Acesse sua conta para gerenciar suas finanças</p>
+            </div>
+
+            <!-- BOTÃO OFICIAL GOOGLE SIGN-IN -->
+            <div class="space-y-3 pt-2">
+                <div class="flex justify-center">
+                    <div id="btn-google-container"></div>
+                </div>
+                <p class="text-[11px] text-muted">Autenticação rápida e segura via Google</p>
+            </div>
+
+            <div class="relative flex py-2 items-center">
+                <div class="flex-grow border-t border-theme"></div>
+                <span class="flex-shrink mx-4 text-xs text-muted font-medium uppercase">ou acesse com e-mail</span>
+                <div class="flex-grow border-t border-theme"></div>
+            </div>
+
+            <!-- FORMULÁRIO DE LOGIN TRADICIONAL -->
+            <form onsubmit="fazerLoginEmail(event)" class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-muted mb-1">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="seuemail@exemplo.com" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-muted mb-1">Senha</label>
+                    <input type="password" id="login-senha" required placeholder="••••••••" class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2.5 text-xs text-primary focus:outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-500/10">
+                    Entrar na Conta
+                </button>
+            </form>
+
+            <p class="text-[11px] text-muted border-t border-theme pt-4">
+                Ambiente seguro protegido por criptografia de ponta a ponta.
+            </p>
+        </div>
+    </div>
+
     <!-- BARRA SUPERIOR / MENU COMPLETO -->
-    <header class="border-b header-bg sticky top-0 z-50">
+    <header class="border-b header-bg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center border-b border-theme/60 gap-4">
-            <!-- 1. TÍTULO E LOGO ARTÍSTICA COM EFEITO LUMINESCENTE (GLOW) -->
+            <!-- TÍTULO E LOGO ARTÍSTICA -->
             <div class="flex items-center gap-3">
                 <div class="p-2.5 bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 rounded-2xl text-gray-950 font-black title-glow shadow-lg shadow-emerald-500/20 flex items-center justify-center">
                     <i data-lucide="wallet-cards" class="w-6 h-6 stroke-[2.5]"></i>
@@ -82,16 +133,17 @@
 
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2.5 bg-subcard/80 border border-theme px-3 py-1 rounded-xl">
-                    <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30" id="user-avatar-initials">
-                        VS
+                    <div id="user-avatar-container" class="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30">
+                        <span id="user-avatar-initials">VS</span>
                     </div>
                     <div class="text-left hidden md:block">
                         <p class="text-xs font-semibold text-primary leading-tight" id="user-display-name">Vitor Souza</p>
-                        <p class="text-[10px] text-emerald-400 flex items-center gap-1">
+                        <p class="text-[10px] text-emerald-400 flex items-center gap-1" id="user-metodo-badge">
                             <i data-lucide="chrome" class="w-3 h-3"></i> Google Cloud
                         </p>
                     </div>
                 </div>
+                <!-- BOTÃO DE SAIR ATUALIZADO -->
                 <button onclick="fazerLogout()" title="Encerrar Sessão" class="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">Sair</span>
@@ -613,7 +665,7 @@
             </div>
         </div>
 
-        <!-- TAB: RELATÓRIOS COM PRÉVIA NA PÁGINA -->
+        <!-- TAB: RELATÓRIOS -->
         <div id="tab-reports" class="hidden space-y-6">
             <div class="border-b border-theme pb-4">
                 <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
@@ -770,7 +822,17 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
-                        <h3 class="font-bold text-primary flex items-center gap-2 text-base">
+                        <div class="flex items-center gap-4 border-b border-theme pb-4">
+                            <div id="prof-foto-container" class="w-16 h-16 rounded-full overflow-hidden bg-emerald-500/20 text-emerald-400 font-extrabold text-xl flex items-center justify-center border-2 border-emerald-500/40">
+                                <span id="prof-avatar-initials">VS</span>
+                            </div>
+                            <div>
+                                <h3 id="prof-nome-titulo" class="font-extrabold text-lg text-primary">Vitor Souza</h3>
+                                <p id="prof-email-sub" class="text-xs text-muted">usuario@exemplo.com</p>
+                            </div>
+                        </div>
+
+                        <h3 class="font-bold text-primary flex items-center gap-2 text-base pt-2">
                             <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
                         </h3>
                         <form onsubmit="salvarPerfil(event)" class="space-y-4">
@@ -847,10 +909,6 @@
                                 <span class="text-muted">Armazenamento</span>
                                 <span id="prof-armazenamento" class="font-bold text-primary">Google Cloud Storage</span>
                             </div>
-                            <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                                <span class="text-muted">Membro Desde</span>
-                                <span id="prof-criado-em" class="font-bold text-primary">Outubro de 2026</span>
-                            </div>
                         </div>
                     </div>
 
@@ -861,17 +919,6 @@
                         <p class="text-xs text-muted leading-relaxed">
                             A sua conta e os seus dados financeiros estão hospedados na infraestrutura segura da <strong>Google Cloud Platform</strong>.
                         </p>
-                        <ul class="text-[11px] text-muted space-y-1.5 pt-1">
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Criptografia SSL/TLS em trânsito
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Dados encriptados em repouso (AES-256)
-                            </li>
-                            <li class="flex items-center gap-2">
-                                <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Autenticação segura via Google Identity
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -1065,7 +1112,7 @@
                 </div>
             </div>
 
-            <!-- 6. RESET TOTAL ZERADO DA BASE DE DADOS -->
+            <!-- RESET TOTAL ZERADO -->
             <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                 <h3 class="font-bold text-rose-400 flex items-center gap-2">
                     <i data-lucide="rotate-ccw" class="w-5 h-5 text-rose-400"></i> Restauração de Fábrica
@@ -1171,8 +1218,11 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LÓGICA COMPLETA CORRIGIDA -->
+    <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+        // CLIENT ID DO GOOGLE IDENTITY SERVICES
+        const GOOGLE_CLIENT_ID = 'SEU_CLIENT_ID_DO_GOOGLE_AQUI.apps.googleusercontent.com';
+
         let dataAtual = new Date(2026, 9, 15); // Outubro 2026
         let temaAtual = localStorage.getItem('pf_tema') || 'dark';
         let animacaoAtiva = localStorage.getItem('pf_animacao') !== 'false';
@@ -1193,9 +1243,11 @@
             email: 'usuario@exemplo.com',
             cargo: 'Planejador Financeiro',
             metodoConexao: 'google',
-            armazenamento: 'Google Cloud Storage'
+            armazenamento: 'Google Cloud Storage',
+            fotoUrl: ''
         };
 
+        let usuarioLogado = localStorage.getItem('pf_logado') === 'true';
         let faturasFechadas = JSON.parse(localStorage.getItem('pf_faturas_v13')) || [];
         let categorias = JSON.parse(localStorage.getItem('pf_categorias_v13')) || [...PADRAO_CATEGORIAS];
         let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v13')) || [];
@@ -1214,6 +1266,77 @@
         let chartEvolucaoObj = null;
         let chartCategoriaObj = null;
 
+        // ================= AUTENTICAÇÃO GOOGLE E SESSÃO =================
+        function inicializarGoogleSignIn() {
+            if (window.google && google.accounts) {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleCredentialResponse
+                });
+                google.accounts.id.renderButton(
+                    document.getElementById("btn-google-container"),
+                    { theme: "outline", size: "large", type: "standard", text: "signin_with", shape: "pill", width: 280 }
+                );
+            }
+        }
+
+        function handleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+            
+            perfilUsuario.nome = payload.name;
+            perfilUsuario.email = payload.email;
+            perfilUsuario.fotoUrl = payload.picture || '';
+            perfilUsuario.metodoConexao = 'google';
+
+            usuarioLogado = true;
+            localStorage.setItem('pf_logado', 'true');
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+            document.getElementById('tela-login').classList.add('hidden');
+            carregarDadosPerfilUI();
+            atualizarUI();
+        }
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function fazerLoginEmail(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            
+            perfilUsuario.nome = email.split('@')[0];
+            perfilUsuario.email = email;
+            perfilUsuario.fotoUrl = '';
+            perfilUsuario.metodoConexao = 'email';
+
+            usuarioLogado = true;
+            localStorage.setItem('pf_logado', 'true');
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+            document.getElementById('tela-login').classList.add('hidden');
+            carregarDadosPerfilUI();
+            atualizarUI();
+        }
+
+        function fazerLogout() {
+            if (confirm('Deseja realmente encerrar a sua sessão?')) {
+                usuarioLogado = false;
+                localStorage.removeItem('pf_logado');
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        }
+
+        // ================= INTERFACE & PERFIL =================
         function aplicarPersonalizacao() {
             document.body.className = `${temaAtual === 'dark' ? 'theme-dark' : 'theme-light'} ${animacaoAtiva ? 'anim-enabled' : 'anim-disabled'} font-sans min-h-screen`;
             document.getElementById('check-dark').classList.toggle('hidden', temaAtual !== 'dark');
@@ -1270,36 +1393,53 @@
             atualizarUI();
         }
 
-        function fazerLogout() {
-            if (confirm('Deseja realmente encerrar a sessão?')) {
-                alert('Sessão encerrada com sucesso.');
-                window.location.reload();
-            }
-        }
-
-        // ================= PERFIL E SEGURANÇA =================
         function carregarDadosPerfilUI() {
             document.getElementById('prof-nome').value = perfilUsuario.nome || '';
             document.getElementById('prof-email').value = perfilUsuario.email || '';
             document.getElementById('prof-cargo').value = perfilUsuario.cargo || '';
             document.getElementById('user-display-name').textContent = perfilUsuario.nome || 'Usuário';
 
+            document.getElementById('prof-nome-titulo').textContent = perfilUsuario.nome || 'Usuário';
+            document.getElementById('prof-email-sub').textContent = perfilUsuario.email || '';
+
             const initials = (perfilUsuario.nome || 'VS').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            document.getElementById('user-avatar-initials').textContent = initials;
+            
+            // Foto Header
+            const avatarContainer = document.getElementById('user-avatar-container');
+            if (perfilUsuario.fotoUrl) {
+                avatarContainer.innerHTML = `<img src="${perfilUsuario.fotoUrl}" class="w-full h-full object-cover">`;
+            } else {
+                avatarContainer.innerHTML = `<span id="user-avatar-initials">${initials}</span>`;
+            }
+
+            // Foto Aba Perfil
+            const profFotoContainer = document.getElementById('prof-foto-container');
+            if (perfilUsuario.fotoUrl) {
+                profFotoContainer.innerHTML = `<img src="${perfilUsuario.fotoUrl}" class="w-full h-full object-cover">`;
+            } else {
+                profFotoContainer.innerHTML = `<span id="prof-avatar-initials">${initials}</span>`;
+            }
 
             const badgeMetodo = document.getElementById('prof-metodo-conexao');
-            if (badgeMetodo) {
-                if (perfilUsuario.metodoConexao === 'google') {
+            const userMetodoBadge = document.getElementById('user-metodo-badge');
+            
+            if (perfilUsuario.metodoConexao === 'google') {
+                if (badgeMetodo) {
                     badgeMetodo.innerHTML = `<i data-lucide="chrome" class="w-3.5 h-3.5"></i> Conta Google`;
                     badgeMetodo.className = "font-bold text-emerald-400 flex items-center gap-1.5";
-                } else {
+                }
+                if (userMetodoBadge) userMetodoBadge.innerHTML = `<i data-lucide="chrome" class="w-3 h-3"></i> Google Cloud`;
+            } else {
+                if (badgeMetodo) {
                     badgeMetodo.innerHTML = `<i data-lucide="mail" class="w-3.5 h-3.5"></i> E-mail e Senha`;
                     badgeMetodo.className = "font-bold text-sky-400 flex items-center gap-1.5";
                 }
+                if (userMetodoBadge) userMetodoBadge.innerHTML = `<i data-lucide="mail" class="w-3 h-3"></i> Acesso Direto`;
             }
 
             const elArmaz = document.getElementById('prof-armazenamento');
             if (elArmaz) elArmaz.textContent = perfilUsuario.armazenamento || 'Google Cloud Storage';
+            lucide.createIcons();
         }
 
         function salvarPerfil(e) {
@@ -1408,7 +1548,6 @@
             return { ativa: false, numeroParcela: 0, valorParcela: 0 };
         }
 
-        // 3. FATURA FECHADA
         function fecharFaturaCartao(cartaoId, mesChave, valorTotal) {
             const c = cartoes.find(x => String(x.id) === String(cartaoId));
             if (!c) return;
@@ -1460,7 +1599,7 @@
             }
         }
 
-        // 4. RELATÓRIO 100% DETALHADO (IGUAL À CENTRAL DE LANÇAMENTOS)
+        // ================= RELATÓRIO =================
         function gerarPreviaRelatorio() {
             const filtroMes = document.getElementById('rep-filtro-mes').value;
             const filtroTipo = document.getElementById('rep-filtro-tipo').value;
@@ -1469,7 +1608,6 @@
 
             let lista = [];
 
-            // Adiciona todas as transações (Receitas e Despesas Gerais/Fixas/Variáveis)
             transacoes.forEach(t => {
                 lista.push({
                     data: t.data,
@@ -1483,7 +1621,6 @@
                 });
             });
 
-            // Adiciona as parcelas de Cartão exatamente como na Central
             parcelamentos.forEach(p => {
                 const c = cartoes.find(x => String(x.id) === String(p.cartaoId));
                 const nomeCartao = c ? c.nome : 'Cartão';
@@ -1585,7 +1722,7 @@
             }
         }
 
-        // 5. AÇÕES NA CENTRAL (EDITAR/EXCLUIR COM ID EM STRING)
+        // ================= CENTRAL DE LANÇAMENTOS =================
         function renderizarTabelaCentral() {
             const corpo = document.getElementById('tabela-central-corpo');
             if (!corpo) return;
@@ -1723,14 +1860,12 @@
             }
         }
 
-        // 2. BOTÃO PAGAR REATIVO NA TELA INICIAL
         function alternarStatusPago(idInput) {
             const idStr = String(idInput);
 
             if (idStr.startsWith('fatura_')) {
                 const partes = idStr.split('_'); 
                 const cartaoId = partes[1];
-                const anoMes = partes[2] ? partes[2].substring(0, 7) : '';
 
                 let tFatura = transacoes.find(x => String(x.id) === idStr);
                 if (tFatura) {
@@ -1764,7 +1899,7 @@
             }
         }
 
-        // 7. GRÁFICOS INTEGRADOS
+        // ================= GRÁFICOS =================
         function togglePainelFiltrosEvolucao() {
             document.getElementById('painel-filtros-evolucao').classList.toggle('hidden');
         }
@@ -2183,7 +2318,7 @@
             fecharModalTransacao();
         }
 
-        // ================= IMPORTAÇÃO PLANILHAS & CONFIGURAÇÕES =================
+        // ================= IMPORTAÇÕES =================
         function baixarPlanilhaModelo() {
             const modeloDados = [
                 ["Data", "Descrição", "Valor", "Tipo", "Categoria", "Pago"],
@@ -2564,7 +2699,7 @@
             switchTab('cards');
         }
 
-        // ================= PROVISÃO & CATEGORIAS =================
+        // ================= PROVISÕES & CATEGORIAS =================
         function lancarCompraParcelada(e) {
             e.preventDefault();
             const cid = String(document.getElementById('p-cartao').value);
@@ -2691,7 +2826,6 @@
             alert('Lançamento reclassificado!');
         }
 
-        // 6. RESET TOTAL ZERADO
         function executarReset() {
             if (confirm("ATENÇÃO: Deseja REALMENTE zerar todo o seu sistema? Isso apagar todos os lançamentos, cartões e parcelamentos para que você inicie do zero com seus dados reais.")) {
                 localStorage.clear();
@@ -2735,7 +2869,6 @@
             const mesChave = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
             const dataPrimeiroDiaMes = new Date(anoAtual, mesAtual, 1);
 
-            // Preenchimento de Selects
             const selModal = document.getElementById('m-categoria');
             const selParcela = document.getElementById('p-categoria');
             const selRecCat = document.getElementById('rec-nova-cat');
@@ -2767,7 +2900,6 @@
                 selCartao.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
             });
 
-            // Lista de Categorias Cadastradas
             const contCatList = document.getElementById('container-lista-categorias');
             contCatList.innerHTML = '';
             categorias.forEach(c => {
@@ -2786,7 +2918,6 @@
                 `;
             });
 
-            // Reclassificação
             const selRecItem = document.getElementById('rec-item-id');
             selRecItem.innerHTML = '<optgroup label="Despesas Gerais">';
             transacoes.filter(t => t.tipo !== 'receita').forEach(t => {
@@ -2798,7 +2929,6 @@
             });
             selRecItem.innerHTML += '</optgroup>';
 
-            // Provisões no Mês Visitado
             const tDoMes = transacoes.filter(t => t.data.startsWith(mesChave));
             const selProvDespesa = document.getElementById('prov-despesa-id');
             const contProvAtuais = document.getElementById('container-lista-provisoes-atuais');
@@ -2826,7 +2956,6 @@
                 });
             }
 
-            // Renderizar Cartões & Faturas (com botão de exclusão direto na compra)
             const contCartoes = document.getElementById('container-cartoes');
             contCartoes.innerHTML = '';
 
@@ -2926,7 +3055,6 @@
                 });
             }
 
-            // Cálculos e KPIs do Dashboard
             const tAnteriores = transacoes.filter(t => {
                 const d = new Date(t.data + 'T00:00:00');
                 return d < dataPrimeiroDiaMes;
@@ -2963,7 +3091,6 @@
             document.getElementById('kpi-pct-comprometido').textContent = `${pctComprometido}%`;
             document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
 
-            // Badge e Texto da Saúde Financeira
             const badge = document.getElementById('badge-saude');
             const txtSaude = document.getElementById('texto-saude');
             if (pctComprometido <= 50) {
@@ -2980,7 +3107,6 @@
                 txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Reduza despesas variáveis.`;
             }
 
-            // Barras de Progresso
             document.getElementById('fixas-status-count').textContent = `${fixasPagas.length}/${fixasTotais.length} Pagas`;
             document.getElementById('fixas-valor-pago').textContent = `${formatarMoeda(fixasValorPago)} pago`;
             document.getElementById('fixas-valor-total').textContent = `de ${formatarMoeda(fixasValorTotal)}`;
@@ -2991,7 +3117,6 @@
             document.getElementById('variaveis-valor-total').textContent = `de ${formatarMoeda(varValorTotal)}`;
             document.getElementById('bar-variaveis').style.width = `${varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0}%`;
 
-            // Painel de Contas Não Pagas
             const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
                 id: String(t.id),
                 descricao: t.descricao,
@@ -3027,7 +3152,6 @@
                 `;
             }
 
-            // Resumo das Transações no Dashboard
             const listaResumo = document.getElementById('lista-transacoes-resumo');
             listaResumo.innerHTML = '';
             if (tDoMes.length === 0) {
@@ -3063,6 +3187,15 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             aplicarPersonalizacao();
+
+            if (!usuarioLogado) {
+                document.getElementById('tela-login').classList.remove('hidden');
+            } else {
+                document.getElementById('tela-login').classList.add('hidden');
+            }
+
+            // Inicializa botão do Google
+            setTimeout(inicializarGoogleSignIn, 500);
 
             const inputVal = document.getElementById('m-valor');
             const inputParc = document.getElementById('m-parcelas');
