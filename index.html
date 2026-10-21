@@ -1673,12 +1673,10 @@
                     <td class="py-3 px-3">${statusCol}</td>
                     <td class="py-3 px-3 text-right font-extrabold ${valorCor}">${item.tipo === 'receita' ? '+' : '-'} ${formatarMoeda(item.valor)}</td>
                     <td class="py-3 px-3 text-center">
-                        ${!item.isUnitarioCartao ? `
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="abrirModalTransacao(${item.id}, '${item.origem}')" title="Editar Lançamento" class="p-1 text-muted hover:text-sky-400 transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="excluirLancamentoCentral(${item.id}, '${item.origem}')" title="Excluir Lançamento" class="p-1 text-muted hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                            </div>
-                        ` : '<span class="text-[10px] text-muted">Via Cartão</span>'}
+                        <div class="flex items-center justify-center gap-2">
+                            ${!item.isUnitarioCartao ? `<button onclick="abrirModalTransacao(${item.id}, '${item.origem}')" title="Editar Lançamento" class="p-1 text-muted hover:text-sky-400 transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>` : ''}
+                            <button onclick="excluirLancamentoCentral(${item.id}, '${item.origem}')" title="Excluir Lançamento" class="p-1 text-muted hover:text-rose-400 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
                     </td>
                 `;
                 corpo.appendChild(tr);
@@ -1698,7 +1696,7 @@
         }
 
         function excluirLancamentoCentral(id, origem) {
-            if (confirm('Deseja realmente excluir este lançamento? Esta ação atualizará os relatórios e saldo.')) {
+            if (confirm('Deseja realmente excluir este lançamento? Esta ação atualizará os relatórios, faturas e saldo.')) {
                 if (origem === 'trans') {
                     transacoes = transacoes.filter(x => x.id !== id);
                 } else if (origem === 'cartao') {
@@ -2767,7 +2765,7 @@
                 });
             }
 
-            // Renderizar Cartões & Faturas
+            // Renderizar Cartões & Faturas (com botão de exclusão direto na compra)
             const contCartoes = document.getElementById('container-cartoes');
             contCartoes.innerHTML = '';
 
@@ -2789,10 +2787,15 @@
                             totalFaturaCartao += infoP.valorParcela;
                             return `
                                 <div class="flex justify-between items-center text-xs py-1.5 border-b border-theme/40 last:border-0">
-                                    <div>
-                                        <span class="font-semibold text-primary">${p.descricao}</span>
-                                        <span class="text-[10px] text-purple-400 font-bold ml-2">Parcela ${infoP.numeroParcela}/${p.totalParcelas}</span>
-                                        <span class="text-[10px] text-muted ml-2">(${p.categoria})</span>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="excluirLancamentoCentral(${p.id}, 'cartao')" class="p-1 text-muted hover:text-rose-400 transition" title="Excluir Compra">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                        </button>
+                                        <div>
+                                            <span class="font-semibold text-primary">${p.descricao}</span>
+                                            <span class="text-[10px] text-purple-400 font-bold ml-2">Parcela ${infoP.numeroParcela}/${p.totalParcelas}</span>
+                                            <span class="text-[10px] text-muted ml-2">(${p.categoria})</span>
+                                        </div>
                                     </div>
                                     <span class="font-bold text-purple-400">${formatarMoeda(infoP.valorParcela)}</span>
                                 </div>
@@ -2860,7 +2863,7 @@
                 });
             }
 
-            // Cálculos e KPIs do Dashboard (CORRIGIDOS)
+            // Cálculos e KPIs do Dashboard
             const tAnteriores = transacoes.filter(t => {
                 const d = new Date(t.data + 'T00:00:00');
                 return d < dataPrimeiroDiaMes;
@@ -2907,7 +2910,6 @@
             const varPagas = varTotais.filter(t => t.pago);
             const varValorPago = varPagas.reduce((a, b) => a + b.valor, 0);
 
-            // SOMA COMPLETA: Fixas + Variáveis + Parcelas de Cartão no Mês
             const despesasMesTotais = fixasValorTotal + varValorTotal + totalFaturasMesAtual;
             const resultadoLiquidoMes = receitasMes - despesasMesTotais;
             const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
