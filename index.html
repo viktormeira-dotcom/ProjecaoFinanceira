@@ -1240,6 +1240,35 @@
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// 1. Configuração do teu projeto Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
+        authDomain: "viktormeira-dotcom.github.io",
+        projectId: "projecao-financeira-99bf1",
+        storageBucket: "projecao-financeira-99bf1.firebasestorage.app",
+        messagingSenderId: "830415002227",
+        appId: "1:830415002227:web:8ec9ce6c5cb94ba86ee806"
+    };
+
+    // 2. Inicializa o Firebase se ainda não tiver sido inicializado
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+    // --- A PARTIR DAQUI FICAM AS TUAS FUNÇÕES (fazerLoginEmail, alternarModoAuth, etc.) ---
+    let modoCadastro = false;
+
+    function alternarModoAuth() {
+        // ...
+    }
+
+    async function fazerLoginEmail(e) {
+        // ...
+    }
 
 let modoCadastro = false;
 
