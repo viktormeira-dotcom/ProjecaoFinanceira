@@ -1220,6 +1220,43 @@
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+async function fazerLogout() {
+    if (confirm('Deseja realmente encerrar a sua sessão?')) {
+        try {
+            // 1. Desconecta o usuário do Firebase Authentication (caso esteja usando o SDK)
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                await firebase.auth().signOut();
+            }
+
+            // 2. Limpa os dados de sessão salvos no navegador
+            localStorage.removeItem('pf_logado');
+            localStorage.removeItem('pf_perfil_v13');
+            
+            usuarioLogado = false;
+
+            // 3. Reseta o formulário de login para o estado inicial
+            const inputEmail = document.getElementById('login-email');
+            const inputSenha = document.getElementById('login-senha');
+            if (inputEmail) inputEmail.value = '';
+            if (inputSenha) inputSenha.value = '';
+
+            // 4. Exibe a tela de login novamente na interface
+            const telaLogin = document.getElementById('tela-login');
+            if (telaLogin) {
+                telaLogin.classList.remove('hidden');
+            } else {
+                // Caso a tela de login não exista como overlay na mesma página, recarrega a janela
+                window.location.reload();
+            }
+
+        } catch (error) {
+            console.error("Erro ao realizar logout no Firebase:", error);
+            // Garante que o usuário consiga sair visualmente mesmo se houver erro de rede
+            localStorage.removeItem('pf_logado');
+            window.location.reload();
+        }
+    }
+}
         // CLIENT ID DO GOOGLE IDENTITY SERVICES
         const GOOGLE_CLIENT_ID = '830415002227-oi9u5s088isi9rni89eb3ejrqoqqel0a.apps.googleusercontent.com';
 
