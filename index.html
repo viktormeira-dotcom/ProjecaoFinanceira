@@ -10,9 +10,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (xlsx) para Leitura e Exportação de Excel/CSV -->
+    <!-- SheetJS (xlsx) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- jsPDF e autoTable para exportação PDF -->
+    <!-- jsPDF e autoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
@@ -46,20 +46,17 @@
 
     <!-- BARRA SUPERIOR / MENU COMPLETO -->
     <header class="border-b header-bg sticky top-0 z-50">
-        <!-- Linha Superior: Logo, Navegação de Mês, Busca, Identificação do Usuário e Botão Sair -->
         <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap justify-between items-center border-b border-theme/60 gap-4">
-            <!-- Brand / Logo do Projeto -->
             <div class="flex items-center gap-3">
                 <div class="p-2 bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-emerald-400">
                     <i data-lucide="line-chart" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-base tracking-wide text-primary">CONTROLE FINANCEIRO</h1>
+                    <h1 class="font-extrabold text-base tracking-wide text-primary">FINANÇAS PRO</h1>
                     <p class="text-[10px] text-muted">Gestão & Projeção Financeira</p>
                 </div>
             </div>
 
-            <!-- Navegação de Meses & Busca Rápida -->
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2 bg-subcard px-3 py-1 rounded-lg border border-theme text-xs font-medium">
                     <button onclick="mudarMes(-1)" class="hover:text-emerald-400"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
@@ -72,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- Conta do Usuário Conectado + Botão Sair -->
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2.5 bg-subcard/80 border border-theme px-3 py-1 rounded-xl">
                     <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30" id="user-avatar-initials">
@@ -92,7 +88,6 @@
             </div>
         </div>
 
-        <!-- Linha Inferior: Abas de Navegação -->
         <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between overflow-x-auto gap-2">
             <div class="flex items-center gap-1.5 min-w-max">
                 <button onclick="switchTab('dashboard')" id="btn-tab-dash" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
@@ -240,7 +235,7 @@
                     <h3 class="font-bold text-primary">Despesas não pagas</h3>
                     <p id="sub-contas-pendentes" class="text-xs text-muted">Contas pendentes de out. de 26</p>
                 </div>
-                <div id="container-despesas-pendentes" class="border border-dashed border-theme rounded-xl p-8 text-center text-muted text-sm">
+                <div id="container-despesas-pendentes" class="border border-dashed border-theme rounded-xl p-4 text-center text-muted text-sm">
                     Nada por aqui...
                 </div>
             </div>
@@ -616,7 +611,6 @@
                 <p class="text-sm text-muted mt-1">Configure os filtros desejados, visualize a prévia dos dados na página e exporte para PDF ou Excel.</p>
             </div>
 
-            <!-- Painel de Filtros Avançados -->
             <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
                 <h3 class="font-bold text-primary text-sm flex items-center gap-2">
                     <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> Filtros de Seleção do Relatório
@@ -653,7 +647,6 @@
                 </div>
             </div>
 
-            <!-- Tabela de Prévia na Página -->
             <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
                     <div>
@@ -764,9 +757,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- COLUNA ESQUERDA (2 Cols): Dados Pessoais e Ações da Conta -->
                 <div class="lg:col-span-2 space-y-6">
-                    <!-- Card 1: Dados Pessoais -->
                     <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-primary flex items-center gap-2 text-base">
                             <i data-lucide="id-card" class="w-5 h-5 text-emerald-400"></i> Dados Pessoais
@@ -794,7 +785,6 @@
                         </form>
                     </div>
 
-                    <!-- Card 2: Segurança & Opções da Conta -->
                     <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-primary flex items-center gap-2 text-base">
                             <i data-lucide="key-round" class="w-5 h-5 text-sky-400"></i> Segurança & Opções da Conta
@@ -826,9 +816,7 @@
                     </div>
                 </div>
 
-                <!-- COLUNA DIREITA (1 Col): Status & Hospedagem Google -->
                 <div class="space-y-6">
-                    <!-- Card 3: Status da Conta -->
                     <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                         <h3 class="font-bold text-primary flex items-center gap-2 text-base">
                             <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i> Status da Conta
@@ -855,7 +843,6 @@
                         </div>
                     </div>
 
-                    <!-- Card 4: Proteção Google -->
                     <div class="bg-card border border-theme rounded-2xl p-6 space-y-3">
                         <div class="flex items-center gap-2 text-sky-400 font-bold text-sm">
                             <i data-lucide="cloud-shield" class="w-5 h-5"></i> Proteção & Segurança Google
@@ -881,7 +868,6 @@
 
         <!-- TAB: CONFIGURAÇÕES -->
         <div id="tab-settings" class="hidden space-y-6">
-            <!-- IMPORTAÇÃO DE CARTÕES DE CRÉDITO (CSV / XLSX) -->
             <div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
                     <div>
@@ -979,7 +965,6 @@
                 <p class="text-sm text-muted mt-1">Gerencie suas preferências, importe planilhas (CSV/XLSX) com mapeamento dinâmico ou restaure as configurações de fábrica.</p>
             </div>
 
-            <!-- IMPORTAÇÃO CSV / XLSX -->
             <div class="bg-card border border-theme rounded-2xl p-6 space-y-6">
                 <div class="flex flex-wrap justify-between items-center gap-4 border-b border-theme pb-4">
                     <div>
@@ -1069,7 +1054,6 @@
                 </div>
             </div>
 
-            <!-- RESET DO SISTEMA -->
             <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
                 <h3 class="font-bold text-rose-400 flex items-center gap-2">
                     <i data-lucide="rotate-ccw" class="w-5 h-5 text-rose-400"></i> Restauração de Fábrica
@@ -1088,7 +1072,7 @@
 
     </main>
 
-    <!-- MODAL DE LANÇAMENTO / EDIÇÃO UNIFICADA -->
+    <!-- MODAL DE LANÇAMENTO -->
     <div id="modal-transacao" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-card border border-theme rounded-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center border-b border-theme pb-3">
@@ -1227,12 +1211,12 @@
             armazenamento: 'Google Cloud Storage'
         };
 
-        let faturasFechadas = JSON.parse(localStorage.getItem('pf_faturas_v12')) || [];
-        let categorias = JSON.parse(localStorage.getItem('pf_categorias_v12')) || [...PADRAO_CATEGORIAS];
-        let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v12')) || [...PADRAO_TRANSACOES];
-        let cartoes = JSON.parse(localStorage.getItem('pf_cartoes_v12')) || [...PADRAO_CARTOES];
-        let parcelamentos = JSON.parse(localStorage.getItem('pf_parcelamentos_v12')) || [...PADRAO_PARCELAMENTOS];
-        let perfilUsuario = JSON.parse(localStorage.getItem('pf_perfil_v12')) || { ...PADRAO_PERFIL };
+        let faturasFechadas = JSON.parse(localStorage.getItem('pf_faturas_v13')) || [];
+        let categorias = JSON.parse(localStorage.getItem('pf_categorias_v13')) || [...PADRAO_CATEGORIAS];
+        let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v13')) || [...PADRAO_TRANSACOES];
+        let cartoes = JSON.parse(localStorage.getItem('pf_cartoes_v13')) || [...PADRAO_CARTOES];
+        let parcelamentos = JSON.parse(localStorage.getItem('pf_parcelamentos_v13')) || [...PADRAO_PARCELAMENTOS];
+        let perfilUsuario = JSON.parse(localStorage.getItem('pf_perfil_v13')) || { ...PADRAO_PERFIL };
 
         let relatorioDadosPrevia = [];
         let dadosBrutosPlanilha = [];
@@ -1338,7 +1322,7 @@
             perfilUsuario.nome = document.getElementById('prof-nome').value;
             perfilUsuario.email = document.getElementById('prof-email').value;
             perfilUsuario.cargo = document.getElementById('prof-cargo').value;
-            localStorage.setItem('pf_perfil_v12', JSON.stringify(perfilUsuario));
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
             carregarDadosPerfilUI();
             alert('Dados do perfil salvos com sucesso!');
         }
@@ -1359,7 +1343,7 @@
             const novoEmail = prompt('Digite o novo e-mail para esta conta:', perfilUsuario.email);
             if (novoEmail && novoEmail.trim() !== '' && novoEmail !== perfilUsuario.email) {
                 perfilUsuario.email = novoEmail.trim();
-                localStorage.setItem('pf_perfil_v12', JSON.stringify(perfilUsuario));
+                localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
                 carregarDadosPerfilUI();
                 alert('E-mail de acesso atualizado com sucesso!');
             }
@@ -2666,12 +2650,12 @@
         }
 
         function salvarStorage() {
-            localStorage.setItem('pf_categorias_v12', JSON.stringify(categorias));
-            localStorage.setItem('pf_transacoes_v12', JSON.stringify(transacoes));
-            localStorage.setItem('pf_cartoes_v12', JSON.stringify(cartoes));
-            localStorage.setItem('pf_parcelamentos_v12', JSON.stringify(parcelamentos));
-            localStorage.setItem('pf_faturas_v12', JSON.stringify(faturasFechadas));
-            localStorage.setItem('pf_perfil_v12', JSON.stringify(perfilUsuario));
+            localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
+            localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
+            localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
+            localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
+            localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
             atualizarUI();
         }
 
@@ -2682,7 +2666,7 @@
             else atualizarUI();
         }
 
-        // ================= RECONSTRUÇÃO DA INTERFACE =================
+        // ================= RECONSTRUÇÃO DA INTERFACE (FUNÇÃO CORRIGIDA) =================
         function atualizarUI() {
             document.getElementById('label-mes-ano').textContent = formatarMesAno(dataAtual);
             document.getElementById('cartao-mes-rotulo').textContent = formatarMesAno(dataAtual);
@@ -2690,6 +2674,7 @@
             const mesAtual = dataAtual.getMonth();
             const anoAtual = dataAtual.getFullYear();
             const mesChave = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+            const dataPrimeiroDiaMes = new Date(anoAtual, mesAtual, 1);
 
             // Preenchimento de Selects
             const selModal = document.getElementById('m-categoria');
@@ -2754,9 +2739,39 @@
             });
             selRecItem.innerHTML += '</optgroup>';
 
+            // Provisões no Mês Visitado
+            const tDoMes = transacoes.filter(t => t.data.startsWith(mesChave));
+            const selProvDespesa = document.getElementById('prov-despesa-id');
+            const contProvAtuais = document.getElementById('container-lista-provisoes-atuais');
+            selProvDespesa.innerHTML = '';
+            contProvAtuais.innerHTML = '';
+
+            const fixasDoMes = tDoMes.filter(t => t.tipo === 'despesa_fixa');
+            if (fixasDoMes.length === 0) {
+                selProvDespesa.innerHTML = '<option value="">Nenhuma despesa fixa neste mês</option>';
+                contProvAtuais.innerHTML = '<p class="text-xs text-muted">Nenhuma despesa fixa lançada no mês atual.</p>';
+            } else {
+                fixasDoMes.forEach(f => {
+                    selProvDespesa.innerHTML += `<option value="${f.id}">${f.descricao} (${formatarMoeda(f.valor)}) - Vence dia ${new Date(f.data + 'T00:00:00').getDate()}</option>`;
+                    contProvAtuais.innerHTML += `
+                        <div class="flex justify-between items-center bg-subcard p-3.5 rounded-xl border border-theme">
+                            <div>
+                                <p class="font-semibold text-sm text-primary">${f.descricao}</p>
+                                <p class="text-xs text-muted">Valor: ${formatarMoeda(f.valor)} | Vencimento: ${f.data}</p>
+                            </div>
+                            <button onclick="abrirProvisaoRapida(${f.id})" class="px-3 py-1.5 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-bold rounded-lg border border-emerald-500/20 transition flex items-center gap-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Replicar
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+
             // Renderizar Cartões & Faturas
             const contCartoes = document.getElementById('container-cartoes');
             contCartoes.innerHTML = '';
+
+            let totalFaturasMesAtual = 0;
 
             if (cartoes.length === 0) {
                 contCartoes.innerHTML = `<p class="text-muted text-sm">Nenhum cartão cadastrado.</p>`;
@@ -2765,13 +2780,13 @@
                     const idFatura = `fatura_${c.id}_${mesChave}`;
                     const faturaFechadaObj = faturasFechadas.find(f => f.id === idFatura);
 
-                    let totalFaturaMes = 0;
+                    let totalFaturaCartao = 0;
                     const compras = parcelamentos.filter(p => p.cartaoId === c.id);
 
                     const comprasHTML = compras.map(p => {
                         const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
                         if (infoP.ativa) {
-                            totalFaturaMes += infoP.valorParcela;
+                            totalFaturaCartao += infoP.valorParcela;
                             return `
                                 <div class="flex justify-between items-center text-xs py-1.5 border-b border-theme/40 last:border-0">
                                     <div>
@@ -2786,10 +2801,12 @@
                         return '';
                     }).join('');
 
+                    totalFaturasMesAtual += totalFaturaCartao;
+
                     let estadoFaturaHTML = '';
                     if (!faturaFechadaObj) {
                         estadoFaturaHTML = `
-                            <button onclick="fecharFaturaCartao(${c.id}, '${mesChave}', ${totalFaturaMes})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
+                            <button onclick="fecharFaturaCartao(${c.id}, '${mesChave}', ${totalFaturaCartao})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
                                 <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar Fatura
                             </button>
                         `;
@@ -2830,7 +2847,7 @@
                                 <div class="text-right flex items-center gap-4">
                                     <div>
                                         <p class="text-xs text-muted">Total Fatura</p>
-                                        <p class="font-extrabold text-purple-400 text-base">${formatarMoeda(totalFaturaMes)}</p>
+                                        <p class="font-extrabold text-purple-400 text-base">${formatarMoeda(totalFaturaCartao)}</p>
                                     </div>
                                     ${estadoFaturaHTML}
                                 </div>
@@ -2843,8 +2860,41 @@
                 });
             }
 
-            // Cálculos e KPIs do Dashboard
-            const tDoMes = transacoes.filter(t => t.data.startsWith(mesChave));
+            // Cálculos e KPIs do Dashboard (CORRIGIDOS)
+            const tAnteriores = transacoes.filter(t => {
+                const d = new Date(t.data + 'T00:00:00');
+                return d < dataPrimeiroDiaMes;
+            });
+
+            const receitasAnteriores = tAnteriores.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
+            const despesasAnteriores = tAnteriores.filter(t => t.tipo !== 'receita').reduce((a, b) => a + b.valor, 0);
+
+            let faturasAnterioresTotais = 0;
+            if (tAnteriores.length > 0 || parcelamentos.length > 0) {
+                let menorData = new Date(anoAtual, mesAtual, 1);
+                transacoes.forEach(t => {
+                    const d = new Date(t.data + 'T00:00:00');
+                    if (d < menorData) menorData = d;
+                });
+                parcelamentos.forEach(p => {
+                    const d = new Date((p.dataInicio || p.data) + 'T00:00:00');
+                    if (d < menorData) menorData = d;
+                });
+
+                let cursor = new Date(menorData.getFullYear(), menorData.getMonth(), 1);
+                while (cursor < dataPrimeiroDiaMes) {
+                    const cAno = cursor.getFullYear();
+                    const cMes = cursor.getMonth();
+                    parcelamentos.forEach(p => {
+                        const infoP = calcularParcelaAtivaNoMes(p, cAno, cMes);
+                        if (infoP.ativa) faturasAnterioresTotais += infoP.valorParcela;
+                    });
+                    cursor.setMonth(cursor.getMonth() + 1);
+                }
+            }
+
+            const saldoAnteriorAcumulado = receitasAnteriores - despesasAnteriores - faturasAnterioresTotais;
+
             const receitasMes = tDoMes.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
             
             const fixasTotais = tDoMes.filter(t => t.tipo === 'despesa_fixa');
@@ -2857,17 +2907,37 @@
             const varPagas = varTotais.filter(t => t.pago);
             const varValorPago = varPagas.reduce((a, b) => a + b.valor, 0);
 
-            const despesasMes = fixasValorTotal + varValorTotal;
-            const resultadoLiquidoMes = receitasMes - despesasMes;
+            // SOMA COMPLETA: Fixas + Variáveis + Parcelas de Cartão no Mês
+            const despesasMesTotais = fixasValorTotal + varValorTotal + totalFaturasMesAtual;
+            const resultadoLiquidoMes = receitasMes - despesasMesTotais;
+            const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
+
+            const pctComprometido = receitasMes > 0 ? Math.min(Math.round((despesasMesTotais / receitasMes) * 100), 100) : 0;
 
             document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
-            document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMes);
-            document.getElementById('kpi-saldo').textContent = formatarMoeda(resultadoLiquidoMes);
+            document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
+            document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
+            document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
             document.getElementById('kpi-economia').textContent = formatarMoeda(resultadoLiquidoMes);
-
-            const pctComprometido = receitasMes > 0 ? Math.min(Math.round((despesasMes / receitasMes) * 100), 100) : 0;
             document.getElementById('kpi-pct-comprometido').textContent = `${pctComprometido}%`;
-            document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMes)} de ${formatarMoeda(receitasMes)}`;
+            document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
+
+            // Badge e Texto da Saúde Financeira
+            const badge = document.getElementById('badge-saude');
+            const txtSaude = document.getElementById('texto-saude');
+            if (pctComprometido <= 50) {
+                badge.textContent = 'Excelente';
+                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Excelente controle financeiro!`;
+            } else if (pctComprometido <= 80) {
+                badge.textContent = 'Atenção';
+                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Mantenha os olhos abertos.`;
+            } else {
+                badge.textContent = 'Crítico';
+                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Reduza despesas variáveis.`;
+            }
 
             // Barras de Progresso
             document.getElementById('fixas-status-count').textContent = `${fixasPagas.length}/${fixasTotais.length} Pagas`;
@@ -2879,6 +2949,97 @@
             document.getElementById('variaveis-valor-pago').textContent = `${formatarMoeda(varValorPago)} pago`;
             document.getElementById('variaveis-valor-total').textContent = `de ${formatarMoeda(varValorTotal)}`;
             document.getElementById('bar-variaveis').style.width = `${varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0}%`;
+
+            // Painel de Contas Não Pagas
+            const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
+                id: t.id,
+                descricao: t.descricao,
+                valor: t.valor,
+                data: t.data,
+                tipoOrigem: 'trans'
+            }));
+
+            cartoes.forEach(c => {
+                let totalFaturaCartaoP = 0;
+                parcelamentos.filter(p => p.cartaoId === c.id).forEach(p => {
+                    const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
+                    if (infoP.ativa) totalFaturaCartaoP += infoP.valorParcela;
+                });
+
+                if (totalFaturaCartaoP > 0) {
+                    const diaVenc = String(c.vencimento).padStart(2, '0');
+                    const mesFmt = String(mesAtual + 1).padStart(2, '0');
+                    const dataVenc = `${anoAtual}-${mesFmt}-${diaVenc}`;
+                    const idUnicoFatura = `fatura_${c.id}_${dataVenc}`;
+
+                    const registroPagamento = transacoes.find(x => x.id === idUnicoFatura);
+                    const jaEstaPaga = registroPagamento ? registroPagamento.pago : false;
+
+                    if (!jaEstaPaga) {
+                        pendentes.push({
+                            id: idUnicoFatura,
+                            cartaoId: c.id,
+                            descricao: `Fatura ${c.nome}`,
+                            valor: totalFaturaCartaoP,
+                            data: dataVenc,
+                            tipoOrigem: 'fatura_cartao'
+                        });
+                    }
+                }
+            });
+
+            const contP = document.getElementById('container-despesas-pendentes');
+            document.getElementById('sub-contas-pendentes').textContent = `Contas pendentes de ${formatarMesAno(dataAtual).toLowerCase()}`;
+
+            if (pendentes.length === 0) {
+                contP.innerHTML = `<div class="text-center text-muted text-sm py-2">Nada por aqui... Todas as contas e faturas do mês estão em dia!</div>`;
+            } else {
+                contP.innerHTML = `
+                    <div class="space-y-2">
+                        ${pendentes.map(p => `
+                            <div class="flex items-center justify-between bg-subcard p-3 rounded-xl border border-theme">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-2 h-2 rounded-full ${p.tipoOrigem === 'fatura_cartao' ? 'bg-purple-400' : 'bg-amber-400'}"></span>
+                                    <div>
+                                        <p class="text-sm font-medium text-primary">${p.descricao}</p>
+                                        <p class="text-xs text-muted">Vence em: ${p.data}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-sm font-bold text-rose-400">${formatarMoeda(p.valor)}</span>
+                                    <button onclick="alternarStatusPago('${p.id}')" class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-medium rounded-lg border border-emerald-500/20 transition">Pagar</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            // Resumo das Transações no Dashboard
+            const listaResumo = document.getElementById('lista-transacoes-resumo');
+            listaResumo.innerHTML = '';
+            if (tDoMes.length === 0) {
+                listaResumo.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-muted text-sm">Nenhuma transação encontrada neste mês.</td></tr>`;
+            } else {
+                tDoMes.slice(0, 5).forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-subcard transition border-b border-theme';
+                    let badgeTipo = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                    let labelTipo = 'Receita';
+                    if (t.tipo === 'despesa_fixa') { badgeTipo = 'bg-rose-500/10 text-rose-400 border-rose-500/20'; labelTipo = 'Despesa Fixa'; }
+                    if (t.tipo === 'despesa_variavel') { badgeTipo = 'bg-sky-500/10 text-sky-400 border-sky-500/20'; labelTipo = 'Despesa Variável'; }
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-3 text-xs text-muted">${t.data}</td>
+                        <td class="py-3 px-3 font-medium text-primary">${t.descricao}</td>
+                        <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ${badgeTipo}">${labelTipo}</span></td>
+                        <td class="py-3 px-3 text-xs text-muted">${t.categoria || 'Geral'}</td>
+                        <td class="py-3 px-3">${t.pago ? '<span class="text-emerald-400 font-semibold">Pago</span>' : '<span class="text-amber-400 font-semibold">Pendente</span>'}</td>
+                        <td class="py-3 px-3 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${formatarMoeda(t.valor)}</td>
+                    `;
+                    listaResumo.appendChild(tr);
+                });
+            }
 
             renderEvolucaoComFiltros();
             renderGraficoCategoria(tDoMes);
