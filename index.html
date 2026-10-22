@@ -3113,180 +3113,208 @@
                     selFiltroCentralCat.innerHTML += `<option value="${c}">${c}</option>`;
                     selFiltroEvCat.innerHTML += `<option value="${c}">${c}</option>`;
                     selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
-            });
+});
+            }
 
             const selMCartao = document.getElementById('m-cartao-id');
             const selCartao = document.getElementById('p-cartao');
-            selMCartao.innerHTML = selCartao.innerHTML = '';
-            cartoes.forEach(c => {
-                selMCartao.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-                selCartao.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
-            });
+            if (selMCartao && selCartao) {
+                selMCartao.innerHTML = selCartao.innerHTML = '';
+                cartoes.forEach(c => {
+                    selMCartao.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+                    selCartao.innerHTML += `<option value="${c.id}">${c.nome}</option>`;
+                });
+            }
 
             const contCatList = document.getElementById('container-lista-categorias');
-            contCatList.innerHTML = '';
-            categorias.forEach(c => {
-                contCatList.innerHTML += `
-                    <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
-                        <span class="font-medium text-sm text-primary flex items-center gap-2"><i data-lucide="tag" class="w-4 h-4 text-emerald-400"></i> ${c}</span>
-                        <div class="flex items-center gap-2">
-                            <button onclick="renomearCategoria('${c}')" class="px-2.5 py-1 text-xs bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-gray-950 font-medium rounded-lg border border-sky-500/20 transition flex items-center gap-1">
-                                <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Editar
-                            </button>
-                            <button onclick="excluirCategoria('${c}')" class="px-2.5 py-1 text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white font-medium rounded-lg border border-rose-500/20 transition flex items-center gap-1">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            const selRecItem = document.getElementById('rec-item-id');
-            selRecItem.innerHTML = '<optgroup label="Despesas Gerais">';
-            transacoes.filter(t => t.tipo !== 'receita').forEach(t => {
-                selRecItem.innerHTML += `<option value="trans_${t.id}">${t.descricao} (${formatarMoeda(t.valor)}) - Atual: ${t.categoria}</option>`;
-            });
-            selRecItem.innerHTML += '</optgroup><optgroup label="Compras Cartão Parceladas">';
-            parcelamentos.forEach(p => {
-                selRecItem.innerHTML += `<option value="parc_${p.id}">${p.descricao} (${p.totalParcelas}x) - Atual: ${p.categoria || 'Geral'}</option>`;
-            });
-            selRecItem.innerHTML += '</optgroup>';
-
-            const tDoMes = transacoes.filter(t => t.data.startsWith(mesChave));
-            const selProvDespesa = document.getElementById('prov-despesa-id');
-            const contProvAtuais = document.getElementById('container-lista-provisoes-atuais');
-            selProvDespesa.innerHTML = '';
-            contProvAtuais.innerHTML = '';
-
-            const fixasDoMes = tDoMes.filter(t => t.tipo === 'despesa_fixa');
-            if (fixasDoMes.length === 0) {
-                selProvDespesa.innerHTML = '<option value="">Nenhuma despesa fixa neste mês</option>';
-                contProvAtuais.innerHTML = '<p class="text-xs text-muted">Nenhuma despesa fixa lançada no mês atual.</p>';
-            } else {
-                fixasDoMes.forEach(f => {
-                    selProvDespesa.innerHTML += `<option value="${f.id}">${f.descricao} (${formatarMoeda(f.valor)}) - Vence dia ${new Date(f.data + 'T00:00:00').getDate()}</option>`;
-                    contProvAtuais.innerHTML += `
-                        <div class="flex justify-between items-center bg-subcard p-3.5 rounded-xl border border-theme">
-                            <div>
-                                <p class="font-semibold text-sm text-primary">${f.descricao}</p>
-                                <p class="text-xs text-muted">Valor: ${formatarMoeda(f.valor)} | Vencimento: ${f.data}</p>
+            if (contCatList) {
+                contCatList.innerHTML = '';
+                categorias.forEach(c => {
+                    contCatList.innerHTML += `
+                        <div class="flex justify-between items-center bg-subcard p-3 rounded-xl border border-theme">
+                            <span class="font-medium text-sm text-primary flex items-center gap-2"><i data-lucide="tag" class="w-4 h-4 text-emerald-400"></i> ${c}</span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="renomearCategoria('${c}')" class="px-2.5 py-1 text-xs bg-sky-500/10 text-sky-400 hover:bg-sky-500 hover:text-gray-950 font-medium rounded-lg border border-sky-500/20 transition flex items-center gap-1">
+                                    <i data-lucide="edit-2" class="w-3.5 h-3.5"></i> Editar
+                                </button>
+                                <button onclick="excluirCategoria('${c}')" class="px-2.5 py-1 text-xs bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white font-medium rounded-lg border border-rose-500/20 transition flex items-center gap-1">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Excluir
+                                </button>
                             </div>
-                            <button onclick="abrirProvisaoRapida('${f.id}')" class="px-3 py-1.5 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-bold rounded-lg border border-emerald-500/20 transition flex items-center gap-1">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Replicar
-                            </button>
                         </div>
                     `;
                 });
+            }
+
+            const selRecItem = document.getElementById('rec-item-id');
+            if (selRecItem) {
+                selRecItem.innerHTML = '<optgroup label="Despesas Gerais">';
+                transacoes.filter(t => t.tipo !== 'receita').forEach(t => {
+                    selRecItem.innerHTML += `<option value="trans_${t.id}">${t.descricao} (${formatarMoeda(t.valor)}) - Atual: ${t.categoria}</option>`;
+                });
+                selRecItem.innerHTML += '</optgroup><optgroup label="Compras Cartão Parceladas">';
+                parcelamentos.forEach(p => {
+                    selRecItem.innerHTML += `<option value="parc_${p.id}">${p.descricao} (${p.totalParcelas}x) - Atual: ${p.categoria || 'Geral'}</option>`;
+                });
+                selRecItem.innerHTML += '</optgroup>';
+            }
+
+            const tDoMes = transacoes.filter(t => t.data && t.data.startsWith(mesChave));
+            const selProvDespesa = document.getElementById('prov-despesa-id');
+            const contProvAtuais = document.getElementById('container-lista-provisoes-atuais');
+            if (selProvDespesa && contProvAtuais) {
+                selProvDespesa.innerHTML = '';
+                contProvAtuais.innerHTML = '';
+
+                const fixasDoMes = tDoMes.filter(t => t.tipo === 'despesa_fixa');
+                if (fixasDoMes.length === 0) {
+                    selProvDespesa.innerHTML = '<option value="">Nenhuma despesa fixa neste mês</option>';
+                    contProvAtuais.innerHTML = '<p class="text-xs text-muted">Nenhuma despesa fixa lançada no mês atual.</p>';
+                } else {
+                    fixasDoMes.forEach(f => {
+                        selProvDespesa.innerHTML += `<option value="${f.id}">${f.descricao} (${formatarMoeda(f.valor)}) - Vence dia ${new Date(f.data + 'T00:00:00').getDate()}</option>`;
+                        contProvAtuais.innerHTML += `
+                            <div class="flex justify-between items-center bg-subcard p-3.5 rounded-xl border border-theme">
+                                <div>
+                                    <p class="font-semibold text-sm text-primary">${f.descricao}</p>
+                                    <p class="text-xs text-muted">Valor: ${formatarMoeda(f.valor)} | Vencimento: ${f.data}</p>
+                                </div>
+                                <button onclick="abrirProvisaoRapida('${f.id}')" class="px-3 py-1.5 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-bold rounded-lg border border-emerald-500/20 transition flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Replicar
+                                </button>
+                            </div>
+                        `;
+                    });
+                }
             }
 
             const contCartoes = document.getElementById('container-cartoes');
-            contCartoes.innerHTML = '';
+            if (contCartoes) contCartoes.innerHTML = '';
 
             let totalFaturasMesAtual = 0;
 
-            if (cartoes.length === 0) {
-                contCartoes.innerHTML = `<p class="text-muted text-sm">Nenhum cartão cadastrado.</p>`;
-            } else {
-                cartoes.forEach(c => {
-                    const idFatura = `fatura_${c.id}_${mesChave}`;
-                    const faturaFechadaObj = faturasFechadas.find(f => String(f.id) === String(idFatura));
+            if (contCartoes) {
+                if (cartoes.length === 0) {
+                    contCartoes.innerHTML = `<p class="text-muted text-sm">Nenhum cartão cadastrado.</p>`;
+                } else {
+                    cartoes.forEach(c => {
+                        const idFatura = `fatura_${c.id}_${mesChave}`;
+                        const faturaFechadaObj = faturasFechadas.find(f => String(f.id) === String(idFatura));
 
-                    let totalFaturaCartao = 0;
-                    const compras = parcelamentos.filter(p => String(p.cartaoId) === String(c.id));
+                        let totalFaturaCartao = 0;
+                        const compras = parcelamentos.filter(p => String(p.cartaoId) === String(c.id));
 
-                    const comprasHTML = compras.map(p => {
-                        const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
-                        if (infoP.ativa) {
-                            totalFaturaCartao += infoP.valorParcela;
-                            return `
-                                <div class="flex justify-between items-center text-xs py-1.5 border-b border-theme/40 last:border-0">
-                                    <div class="flex items-center gap-2">
-                                        <button onclick="excluirLancamentoCentral('${p.id}', 'cartao')" class="p-1 text-muted hover:text-rose-400 transition" title="Excluir Compra">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                        </button>
-                                        <div>
-                                            <span class="font-semibold text-primary">${p.descricao}</span>
-                                            <span class="text-[10px] text-purple-400 font-bold ml-2">Parcela ${infoP.numeroParcela}/${p.totalParcelas}</span>
-                                            <span class="text-[10px] text-muted ml-2">(${p.categoria})</span>
+                        const comprasHTML = compras.map(p => {
+                            const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
+                            if (infoP.ativa) {
+                                totalFaturaCartao += infoP.valorParcela;
+                                return `
+                                    <div class="flex justify-between items-center text-xs py-1.5 border-b border-theme/40 last:border-0">
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="excluirLancamentoCentral('${p.id}', 'cartao')" class="p-1 text-muted hover:text-rose-400 transition" title="Excluir Compra">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                            </button>
+                                            <div>
+                                                <span class="font-semibold text-primary">${p.descricao}</span>
+                                                <span class="text-[10px] text-purple-400 font-bold ml-2">Parcela ${infoP.numeroParcela}/${p.totalParcelas}</span>
+                                                <span class="text-[10px] text-muted ml-2">(${p.categoria})</span>
+                                            </div>
                                         </div>
+                                        <span class="font-bold text-purple-400">${formatarMoeda(infoP.valorParcela)}</span>
                                     </div>
-                                    <span class="font-bold text-purple-400">${formatarMoeda(infoP.valorParcela)}</span>
+                                `;
+                            }
+                            return '';
+                        }).join('');
+
+                        if (faturaFechadaObj) {
+                            totalFaturasMesAtual += faturaFechadaObj.valor;
+                        } else {
+                            totalFaturasMesAtual += totalFaturaCartao;
+                        }
+
+                        let estadoFaturaHTML = '';
+                        if (!faturaFechadaObj) {
+                            estadoFaturaHTML = `
+                                <button onclick="fecharFaturaCartao('${c.id}', '${mesChave}', ${totalFaturaCartao})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
+                                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar Fatura
+                                </button>
+                            `;
+                        } else if (!faturaFechadaObj.pago) {
+                            estadoFaturaHTML = `
+                                <div class="flex items-center gap-2">
+                                    <button onclick="alternarEstadoPagamentoFatura('${idFatura}', true)" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition">
+                                        Pagar Fatura
+                                    </button>
+                                    <button onclick="reabrirFaturaCartao('${idFatura}')" class="px-2 py-1.5 bg-subcard border border-theme text-muted hover:text-primary text-xs rounded-xl" title="Reabrir Fatura">
+                                        <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            estadoFaturaHTML = `
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl font-bold text-xs flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Fatura Paga
+                                    </span>
+                                    <button onclick="alternarEstadoPagamentoFatura('${idFatura}', false)" class="px-2 py-1 text-xs text-amber-400 hover:underline">
+                                        Voltar a Pendente
+                                    </button>
                                 </div>
                             `;
                         }
-                        return '';
-                    }).join('');
 
-                    if (faturaFechadaObj) {
-                        totalFaturasMesAtual += faturaFechadaObj.valor;
-                    }
-
-                    let estadoFaturaHTML = '';
-                    if (!faturaFechadaObj) {
-                        estadoFaturaHTML = `
-                            <button onclick="fecharFaturaCartao('${c.id}', '${mesChave}', ${totalFaturaCartao})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
-                                <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar Fatura
-                            </button>
-                        `;
-                    } else if (!faturaFechadaObj.pago) {
-                        estadoFaturaHTML = `
-                            <div class="flex items-center gap-2">
-                                <button onclick="alternarEstadoPagamentoFatura('${idFatura}', true)" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition">
-                                    Pagar Fatura
-                                </button>
-                                <button onclick="reabrirFaturaCartao('${idFatura}')" class="px-2 py-1.5 bg-subcard border border-theme text-muted hover:text-primary text-xs rounded-xl" title="Reabrir Fatura">
-                                    <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        estadoFaturaHTML = `
-                            <div class="flex items-center gap-2">
-                                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl font-bold text-xs flex items-center gap-1">
-                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Fatura Paga
-                                </span>
-                                <button onclick="alternarEstadoPagamentoFatura('${idFatura}', false)" class="px-2 py-1 text-xs text-amber-400 hover:underline">
-                                    Voltar a Pendente
-                                </button>
-                            </div>
-                        `;
-                    }
-
-                    contCartoes.innerHTML += `
-                        <div class="bg-subcard border border-theme rounded-2xl p-5 space-y-4">
-                            <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
-                                <div>
-                                    <h4 class="font-bold text-primary flex items-center gap-2 text-base">
-                                        ${c.nome}
-                                        <button onclick="editarCartao('${c.id}')" class="text-muted hover:text-sky-400" title="Editar Cartão"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                                    </h4>
-                                    <p class="text-xs text-muted">Fecha dia ${c.fechamento} | Vence dia ${c.vencimento}</p>
-                                </div>
-                                <div class="text-right flex items-center gap-4">
+                        contCartoes.innerHTML += `
+                            <div class="bg-subcard border border-theme rounded-2xl p-5 space-y-4">
+                                <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
                                     <div>
-                                        <p class="text-xs text-muted">Total Fatura</p>
-                                        <p class="font-extrabold text-purple-400 text-base">${formatarMoeda(totalFaturaCartao)}</p>
+                                        <h4 class="font-bold text-primary flex items-center gap-2 text-base">
+                                            ${c.nome}
+                                            <button onclick="editarCartao('${c.id}')" class="text-muted hover:text-sky-400" title="Editar Cartão"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        </h4>
+                                        <p class="text-xs text-muted">Fecha dia ${c.fechamento} | Vence dia ${c.vencimento}</p>
                                     </div>
-                                    ${estadoFaturaHTML}
+                                    <div class="text-right flex items-center gap-4">
+                                        <div>
+                                            <p class="text-xs text-muted">Total Fatura</p>
+                                            <p class="font-extrabold text-purple-400 text-base">${formatarMoeda(faturaFechadaObj ? faturaFechadaObj.valor : totalFaturaCartao)}</p>
+                                        </div>
+                                        ${estadoFaturaHTML}
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    ${comprasHTML || '<p class="text-xs text-muted">Sem compras ativas neste mês.</p>'}
                                 </div>
                             </div>
-                            <div class="space-y-1">
-                                ${comprasHTML || '<p class="text-xs text-muted">Sem compras ativas neste mês.</p>'}
-                            </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
             }
 
             const tAnteriores = transacoes.filter(t => {
+                if (!t.data) return false;
                 const d = new Date(t.data + 'T00:00:00');
                 return d < dataPrimeiroDiaMes;
             });
 
             const receitasAnteriores = tAnteriores.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
-            const despesasAnteriores = tAnteriores.filter(t => t.tipo !== 'receita').reduce((a, b) => a + b.valor, 0);
+            const despesasAnteriores = tAnteriores.filter(t => t.tipo !== 'receita' && !t.isFaturaConsolidada).reduce((a, b) => a + b.valor, 0);
 
-            const saldoAnteriorAcumulado = receitasAnteriores - despesasAnteriores;
+            let parcelasAnterioresCartao = 0;
+            parcelamentos.forEach(p => {
+                if (!p.dataInicio) return;
+                const dataIni = new Date(p.dataInicio + 'T00:00:00');
+                const anoIni = dataIni.getFullYear();
+                const mesIni = dataIni.getMonth();
+
+                const diffMeses = (anoAtual - anoIni) * 12 + (mesAtual - mesIni);
+                if (diffMeses > 0) {
+                    const pagasAnteriores = Math.min(diffMeses, p.totalParcelas);
+                    parcelasAnterioresCartao += (pagasAnteriores * p.valorParcela);
+                }
+            });
+
+            const saldoAnteriorAcumulado = receitasAnteriores - despesasAnteriores - parcelasAnterioresCartao;
 
             const receitasMes = tDoMes.filter(t => t.tipo === 'receita').reduce((a, b) => a + b.valor, 0);
             
@@ -3316,18 +3344,20 @@
 
             const badge = document.getElementById('badge-saude');
             const txtSaude = document.getElementById('texto-saude');
-            if (pctComprometido <= 50) {
-                badge.textContent = 'Excelente';
-                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Excelente controle financeiro!`;
-            } else if (pctComprometido <= 80) {
-                badge.textContent = 'Atenção';
-                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
-                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Mantenha os olhos abertos.`;
-            } else {
-                badge.textContent = 'Crítico';
-                badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
-                txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Reduza despesas variáveis.`;
+            if (badge && txtSaude) {
+                if (pctComprometido <= 50) {
+                    badge.textContent = 'Excelente';
+                    badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Excelente controle financeiro!`;
+                } else if (pctComprometido <= 80) {
+                    badge.textContent = 'Atenção';
+                    badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                    txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Mantenha os olhos abertos.`;
+                } else {
+                    badge.textContent = 'Crítico';
+                    badge.className = 'px-3 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20';
+                    txtSaude.textContent = `${pctComprometido}% da renda comprometida neste mês — Reduza despesas variáveis.`;
+                }
             }
 
             document.getElementById('fixas-status-count').textContent = `${fixasPagas.length}/${fixasTotais.length} Pagas`;
@@ -3351,53 +3381,57 @@
             const contP = document.getElementById('container-despesas-pendentes');
             document.getElementById('sub-contas-pendentes').textContent = `Contas pendentes de ${formatarMesAno(dataAtual).toLowerCase()}`;
 
-            if (pendentes.length === 0) {
-                contP.innerHTML = `<div class="text-center text-muted text-sm py-2">Nada por aqui... Todas as contas e faturas do mês estão em dia!</div>`;
-            } else {
-                contP.innerHTML = `
-                    <div class="space-y-2">
-                        ${pendentes.map(p => `
-                            <div class="flex items-center justify-between bg-subcard p-3 rounded-xl border border-theme">
-                                <div class="flex items-center gap-3">
-                                    <span class="w-2 h-2 rounded-full ${p.tipoOrigem === 'fatura_cartao' ? 'bg-purple-400' : 'bg-amber-400'}"></span>
-                                    <div>
-                                        <p class="text-sm font-medium text-primary">${p.descricao}</p>
-                                        <p class="text-xs text-muted">Vence em: ${p.data}</p>
+            if (contP) {
+                if (pendentes.length === 0) {
+                    contP.innerHTML = `<div class="text-center text-muted text-sm py-2">Nada por aqui... Todas as contas e faturas do mês estão em dia!</div>`;
+                } else {
+                    contP.innerHTML = `
+                        <div class="space-y-2">
+                            ${pendentes.map(p => `
+                                <div class="flex items-center justify-between bg-subcard p-3 rounded-xl border border-theme">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2 h-2 rounded-full ${p.tipoOrigem === 'fatura_cartao' ? 'bg-purple-400' : 'bg-amber-400'}"></span>
+                                        <div>
+                                            <p class="text-sm font-medium text-primary">${p.descricao}</p>
+                                            <p class="text-xs text-muted">Vence em: ${p.data}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-sm font-bold text-rose-400">${formatarMoeda(p.valor)}</span>
+                                        <button onclick="alternarStatusPago('${p.id}')" class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-medium rounded-lg border border-emerald-500/20 transition">Pagar</button>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-sm font-bold text-rose-400">${formatarMoeda(p.valor)}</span>
-                                    <button onclick="alternarStatusPago('${p.id}')" class="px-2.5 py-1 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-gray-950 font-medium rounded-lg border border-emerald-500/20 transition">Pagar</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
+                            `).join('')}
+                        </div>
+                    `;
+                }
             }
 
             const listaResumo = document.getElementById('lista-transacoes-resumo');
-            listaResumo.innerHTML = '';
-            if (tDoMes.length === 0) {
-                listaResumo.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-muted text-sm">Nenhuma transação encontrada neste mês.</td></tr>`;
-            } else {
-                tDoMes.slice(0, 5).forEach(t => {
-                    const tr = document.createElement('tr');
-                    tr.className = 'hover:bg-subcard transition border-b border-theme';
-                    let badgeTipo = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                    let labelTipo = 'Receita';
-                    if (t.tipo === 'despesa_fixa') { badgeTipo = 'bg-rose-500/10 text-rose-400 border-rose-500/20'; labelTipo = 'Despesa Fixa'; }
-                    if (t.tipo === 'despesa_variavel') { badgeTipo = 'bg-sky-500/10 text-sky-400 border-sky-500/20'; labelTipo = 'Despesa Variável'; }
+            if (listaResumo) {
+                listaResumo.innerHTML = '';
+                if (tDoMes.length === 0) {
+                    listaResumo.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-muted text-sm">Nenhuma transação encontrada neste mês.</td></tr>`;
+                } else {
+                    tDoMes.slice(0, 5).forEach(t => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'hover:bg-subcard transition border-b border-theme';
+                        let badgeTipo = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                        let labelTipo = 'Receita';
+                        if (t.tipo === 'despesa_fixa') { badgeTipo = 'bg-rose-500/10 text-rose-400 border-rose-500/20'; labelTipo = 'Despesa Fixa'; }
+                        if (t.tipo === 'despesa_variavel') { badgeTipo = 'bg-sky-500/10 text-sky-400 border-sky-500/20'; labelTipo = 'Despesa Variável'; }
 
-                    tr.innerHTML = `
-                        <td class="py-3 px-3 text-xs text-muted">${t.data}</td>
-                        <td class="py-3 px-3 font-medium text-primary">${t.descricao}</td>
-                        <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ${badgeTipo}">${labelTipo}</span></td>
-                        <td class="py-3 px-3 text-xs text-muted">${t.categoria || 'Geral'}</td>
-                        <td class="py-3 px-3">${t.pago ? '<span class="text-emerald-400 font-semibold">Pago</span>' : '<span class="text-amber-400 font-semibold">Pendente</span>'}</td>
-                        <td class="py-3 px-3 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${formatarMoeda(t.valor)}</td>
-                    `;
-                    listaResumo.appendChild(tr);
-                });
+                        tr.innerHTML = `
+                            <td class="py-3 px-3 text-xs text-muted">${t.data}</td>
+                            <td class="py-3 px-3 font-medium text-primary">${t.descricao}</td>
+                            <td class="py-3 px-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-medium border ${badgeTipo}">${labelTipo}</span></td>
+                            <td class="py-3 px-3 text-xs text-muted">${t.categoria || 'Geral'}</td>
+                            <td class="py-3 px-3">${t.pago ? '<span class="text-emerald-400 font-semibold">Pago</span>' : '<span class="text-amber-400 font-semibold">Pendente</span>'}</td>
+                            <td class="py-3 px-3 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-400' : 'text-rose-400'}">${formatarMoeda(t.valor)}</td>
+                        `;
+                        listaResumo.appendChild(tr);
+                    });
+                }
             }
 
             renderEvolucaoComFiltros();
@@ -3411,13 +3445,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             aplicarPersonalizacao();
 
-            if (!usuarioLogado) {
-                document.getElementById('tela-login').classList.remove('hidden');
-            } else {
-                document.getElementById('tela-login').classList.add('hidden');
-            }
-
-            // Inicializa botão do Google
             setTimeout(inicializarGoogleSignIn, 500);
 
             const inputVal = document.getElementById('m-valor');
