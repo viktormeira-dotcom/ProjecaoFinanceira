@@ -1242,6 +1242,20 @@
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+        // Função auxiliar para parse do JWT retornado pelo Google
+        function parseJwt(token) {
+            try {
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return {};
+            }
+        }
+
 (function() {
     // Lista de domínios/hosts locais proibidos
     const hostsLocais = ['localhost', '127.0.0.1', ''];
@@ -1251,7 +1265,6 @@
 
     // Verifica se está rodando via arquivo local (file://) ou em um servidor local
     if (protocoloAtual === 'file:' || hostsLocais.includes(hostnameAtual) || hostnameAtual.endsWith('.local')) {
-        // Redireciona para uma página de erro ou bloqueio
         document.body.innerHTML = `
             <div style="text-align: center; padding: 50px; font-family: sans-serif;">
                 <h1>Acesso Negado</h1>
@@ -1261,6 +1274,7 @@
         throw new Error("Execução em ambiente local bloqueada.");
     }
 })();
+
         // Configuração do projeto Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
@@ -1307,89 +1321,79 @@
             }
         }
 
-        // Processa o Login ou o Cadastro via Firebase Authentication
+        // Processa o Login ou o Cadastro via Firebase Authentication por E-mail
         async function fazerLoginEmail(e) {
-    e.preventDefault();
+            e.preventDefault();
 
-    const email = document.getElementById('login-email').value.trim();
-    const senha = document.getElementById('login-senha').value;
-    const nome = document.getElementById('login-nome').value.trim();
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            const nome = document.getElementById('login-nome').value.trim();
 
-    try {
-        if (modoCadastro) {
-            if (!nome) {
-                alert('Por favor, informe seu nome completo.');
-                return;
+            try {
+                if (modoCadastro) {
+                    if (!nome) {
+                        alert('Por favor, informe seu nome completo.');
+                        return;
+                    }
+
+                    // 1. Cria o usuário no Firebase Authentication
+                    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
+                    const user = userCredential.user;
+
+                    // 2. Atualiza o perfil visual do usuário no Firebase Auth
+                    await user.updateProfile({ displayName: nome });
+
+                    // 3. Estrutura os dados padrão do perfil
+                    const novoPerfil = {
+                        ...PADRAO_PERFIL,
+                        nome: nome,
+                        email: email,
+                        metodoConexao: 'email'
+                    };
+
+                    // 4. SALVA O DOCUMENTO INICIAL NO CLOUD FIRESTORE
+                    await db.collection('usuarios').doc(user.uid).set({
+                        transacoes: transacoes,
+                        cartoes: cartoes,
+                        parcelamentos: parcelamentos,
+                        categorias: categorias,
+                        faturasFechadas: faturasFechadas,
+                        perfilUsuario: novoPerfil,
+                        ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    // 5. Envia o e-mail de verificação
+                    await user.sendEmailVerification();
+
+                    alert('Conta criada e registrada no banco de dados com sucesso! Enviamos um e-mail de confirmação para ' + email + '. Por favor, acesse seu e-mail e confirme antes de entrar.');
+
+                    await firebase.auth().signOut();
+                    alternarModoAuth();
+
+                } else {
+                    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
+                    const user = userCredential.user;
+
+                    if (!user.emailVerified) {
+                        alert('Atenção: Seu e-mail ainda não foi confirmado! Verifique sua caixa de entrada.');
+                        await firebase.auth().signOut();
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error("Erro na autenticação ou gravação do Firestore:", error);
+
+                if (error.code === 'auth/email-already-in-use') {
+                    alert('Este e-mail já está cadastrado. Clique em "Fazer Login" para acessar.');
+                } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    alert('E-mail ou senha incorretos.');
+                } else if (error.code === 'auth/weak-password') {
+                    alert('A senha deve conter pelo menos 6 caracteres.');
+                } else {
+                    alert('Erro na autenticação: ' + error.message);
+                }
             }
-
-            // 1. Cria o usuário no Firebase Authentication
-            const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            // 2. Atualiza o perfil visual do usuário no Firebase Auth
-            await user.updateProfile({ displayName: nome });
-
-            // 3. Estrutura os dados padrão do perfil
-            const novoPerfil = {
-                ...PADRAO_PERFIL,
-                nome: nome,
-                email: email,
-                metodoConexao: 'email'
-            };
-
-            // 4. SALVA O DOCUMENTO INICIAL NO CLOUD FIRESTORE
-            await db.collection('usuarios').doc(user.uid).set({
-                transacoes: transacoes,
-                cartoes: cartoes,
-                parcelamentos: parcelamentos,
-                categorias: categorias,
-                faturasFechadas: faturasFechadas,
-                perfilUsuario: novoPerfil,
-                ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
-            }, { merge: true });
-
-            // 5. Envia o e-mail de verificação
-            await user.sendEmailVerification();
-
-            alert('Conta criada e registrada no banco de dados com sucesso! Enviamos um e-mail de confirmação para ' + email + '. Por favor, acesse seu e-mail e confirme antes de entrar.');
-
-            await firebase.auth().signOut();
-            alternarModoAuth();
-
-        } else {
-            const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
-            const user = userCredential.user;
-
-            if (!user.emailVerified) {
-                alert('Atenção: Seu e-mail ainda não foi confirmado! Verifique sua caixa de entrada.');
-                await firebase.auth().signOut();
-                return;
-            }
-
-            perfilUsuario.nome = user.displayName || nome || email.split('@')[0];
-            perfilUsuario.email = user.email;
-            perfilUsuario.metodoConexao = 'email';
-
-            localStorage.setItem('pf_logado', 'true');
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-            document.getElementById('tela-login').classList.add('hidden');
-            carregarDadosPerfilUI();
         }
-    } catch (error) {
-        console.error("Erro na autenticação ou gravação do Firestore:", error);
-
-        if (error.code === 'auth/email-already-in-use') {
-            alert('Este e-mail já está cadastrado. Clique em "Fazer Login" para acessar.');
-        } else if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            alert('E-mail ou senha incorretos.');
-        } else if (error.code === 'auth/weak-password') {
-            alert('A senha deve conter pelo menos 6 caracteres.');
-        } else {
-            alert('Erro na autenticação: ' + error.message);
-        }
-    }
-}
 
         async function fazerLogout() {
             if (confirm('Deseja realmente encerrar a sua sessão?')) {
@@ -1474,39 +1478,61 @@
             if (user) {
                 currentUser = user;
                 usuarioLogado = true;
+                localStorage.setItem('pf_logado', 'true');
                 document.getElementById('tela-login').classList.add('hidden');
                 
-                // Carrega do Firestore para nuvem
+                // Carrega do Firestore para nuvem de forma unificada
                 await carregarDadosFirestore(user.uid);
             } else {
                 currentUser = null;
                 usuarioLogado = false;
+                localStorage.removeItem('pf_logado');
                 document.getElementById('tela-login').classList.remove('hidden');
             }
         });
 
         async function carregarDadosFirestore(uid) {
             try {
-                const doc = await db.collection('usuarios').doc(uid).get();
-                if (doc.exists) {
-                    const data = doc.data();
+                const docRef = db.collection('usuarios').doc(uid);
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    const data = docSnap.data();
                     if (data.transacoes) transacoes = data.transacoes;
                     if (data.cartoes) cartoes = data.cartoes;
                     if (data.parcelamentos) parcelamentos = data.parcelamentos;
                     if (data.categorias) categorias = data.categorias;
                     if (data.faturasFechadas) faturasFechadas = data.faturasFechadas;
                     if (data.perfilUsuario) perfilUsuario = data.perfilUsuario;
+                } else {
+                    // Se o documento do usuário ainda não existe, cria com os valores padrões
+                    if (currentUser) {
+                        perfilUsuario.nome = currentUser.displayName || perfilUsuario.nome;
+                        perfilUsuario.email = currentUser.email || perfilUsuario.email;
+                        perfilUsuario.fotoUrl = currentUser.photoURL || perfilUsuario.fotoUrl;
+                    }
 
-                    // Atualiza cache local
-                    localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
-                    localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
-                    localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
-                    localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
-                    localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
-                    localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+                    await docRef.set({
+                        transacoes: transacoes,
+                        cartoes: cartoes,
+                        parcelamentos: parcelamentos,
+                        categorias: categorias,
+                        faturasFechadas: faturasFechadas,
+                        perfilUsuario: perfilUsuario,
+                        ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
+
+                // Atualiza cache local
+                localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
+                localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
+                localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
+                localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
+                localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
+                localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
             } catch (err) {
-                console.error("Erro ao carregar dados do Firestore:", err);
+                console.error("Erro ao carregar/salvar dados no Firestore:", err);
             } finally {
                 carregarDadosPerfilUI();
                 atualizarUI();
@@ -1556,40 +1582,19 @@
             }
         }
 
-function handleCredentialResponse(response) {
-    const payload = parseJwt(response.credential);
-    
-    perfilUsuario.nome = payload.name;
-    perfilUsuario.email = payload.email;
-    perfilUsuario.fotoUrl = payload.picture || '';
-    perfilUsuario.metodoConexao = 'google';
+        function handleCredentialResponse(response) {
+            const payload = parseJwt(response.credential);
+            
+            perfilUsuario.nome = payload.name || 'Usuário Google';
+            perfilUsuario.email = payload.email || '';
+            perfilUsuario.fotoUrl = payload.picture || '';
+            perfilUsuario.metodoConexao = 'google';
 
-    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-    firebase.auth().signInWithCredential(credential).then(async (userCredential) => {
-        const user = userCredential.user;
-        currentUser = user;
-
-        // Verifica se o documento já existe, se não existir, cria o registro inicial
-        const docRef = db.collection('usuarios').doc(user.uid);
-        const docSnap = await docRef.get();
-
-        if (!docSnap.exists) {
-            await docRef.set({
-                transacoes: transacoes,
-                cartoes: cartoes,
-                parcelamentos: parcelamentos,
-                categorias: categorias,
-                faturasFechadas: faturasFechadas,
-                perfilUsuario: perfilUsuario,
-                ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+            firebase.auth().signInWithCredential(credential).catch(err => {
+                alert("Erro ao autenticar no Google Firebase: " + err.message);
             });
         }
-
-        document.getElementById('tela-login').classList.add('hidden');
-        carregarDadosPerfilUI();
-        atualizarUI();
-    }).catch(err => alert("Erro ao autenticar no Google Firebase: " + err.message));
-}
 
         // ================= INTERFACE & PERFIL =================
         function aplicarPersonalizacao() {
@@ -3108,7 +3113,7 @@ function handleCredentialResponse(response) {
             else atualizarUI();
         }
 
-        // ================= RECONSTRUÇÃO DA INTERFACE (CORRIGIDA) =================
+        // ================= RECONSTRUÇÃO DA INTERFACE =================
         function atualizarUI() {
             document.getElementById('label-mes-ano').textContent = formatarMesAno(dataAtual);
             document.getElementById('cartao-mes-rotulo').textContent = formatarMesAno(dataAtual);
