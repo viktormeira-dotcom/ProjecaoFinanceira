@@ -1242,6 +1242,25 @@
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
+(function() {
+    // Lista de domínios/hosts locais proibidos
+    const hostsLocais = ['localhost', '127.0.0.1', ''];
+
+    const hostnameAtual = window.location.hostname;
+    const protocoloAtual = window.location.protocol;
+
+    // Verifica se está rodando via arquivo local (file://) ou em um servidor local
+    if (protocoloAtual === 'file:' || hostsLocais.includes(hostnameAtual) || hostnameAtual.endsWith('.local')) {
+        // Redireciona para uma página de erro ou bloqueio
+        document.body.innerHTML = `
+            <div style="text-align: center; padding: 50px; font-family: sans-serif;">
+                <h1>Acesso Negado</h1>
+                <p>Este sistema não é permitido para execução em ambiente local.</p>
+            </div>
+        `;
+        throw new Error("Execução em ambiente local bloqueada.");
+    }
+})();
         // Configuração do projeto Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
