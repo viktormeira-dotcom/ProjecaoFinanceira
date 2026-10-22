@@ -5,7 +5,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <!-- Firebase Authentication -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <!-- Firebase Firestore (opcional, se usar o banco) -->
+    <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <meta charset="UTF-8">
@@ -1244,12 +1244,12 @@
     <script>
         // Configuração do projeto Firebase
         const firebaseConfig = {
-        apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
-        authDomain: "viktormeira-dotcom.github.io",
-        projectId: "projecao-financeira-99bf1",
-        storageBucket: "projecao-financeira-99bf1.firebasestorage.app",
-        messagingSenderId: "830415002227",
-        appId: "1:830415002227:web:8ec9ce6c5cb94ba86ee806"
+            apiKey: "AIzaSyBgJ5o4L5cjeih8-nJ-hNuMw06zHQERnQI",
+            authDomain: "viktormeira-dotcom.github.io",
+            projectId: "projecao-financeira-99bf1",
+            storageBucket: "projecao-financeira-99bf1.firebasestorage.app",
+            messagingSenderId: "830415002227",
+            appId: "1:830415002227:web:8ec9ce6c5cb94ba86ee806"
         };
 
         // Inicializa o Firebase
@@ -1257,7 +1257,9 @@
             firebase.initializeApp(firebaseConfig);
         }
 
+        const db = firebase.firestore();
         let modoCadastro = false;
+        let currentUser = null;
 
         // Alterna a interface visual entre "Login" e "Criar Conta"
         function alternarModoAuth() {
@@ -1299,45 +1301,44 @@
                         return;
                     }
 
-                    // 1. Cria a conta no Firebase Auth
                     const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, senha);
                     const user = userCredential.user;
 
-                    // 2. Atualiza o perfil com o Nome Completo
                     await user.updateProfile({ displayName: nome });
 
-                    // 3. Envia o e-mail de confirmação obrigatório
+                    const novoPerfil = {
+                        ...PADRAO_PERFIL,
+                        nome: nome,
+                        email: email,
+                        metodoConexao: 'email'
+                    };
+
+                    await db.collection('usuarios').doc(user.uid).set({
+                        transacoes: transacoes,
+                        cartoes: cartoes,
+                        parcelamentos: parcelamentos,
+                        categorias: categorias,
+                        faturasFechadas: faturasFechadas,
+                        perfilUsuario: novoPerfil,
+                        ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
                     await user.sendEmailVerification();
 
                     alert('Conta criada com sucesso! Enviamos um link de confirmação para ' + email + '. Por favor, acesse seu e-mail e confirme antes de entrar.');
 
-                    // Desconecta e retorna para a tela de login
                     await firebase.auth().signOut();
                     alternarModoAuth();
 
                 } else {
-                    // Login de conta existente
                     const userCredential = await firebase.auth().signInWithEmailAndPassword(email, senha);
                     const user = userCredential.user;
 
-                    // Bloqueia acesso se o e-mail não foi verificado
                     if (!user.emailVerified) {
                         alert('Atenção: Seu e-mail ainda não foi confirmado! Verifique sua caixa de entrada.');
                         await firebase.auth().signOut();
                         return;
                     }
-
-                    // Preenche dados do perfil e libera o dashboard
-                    perfilUsuario.nome = user.displayName || nome || email.split('@')[0];
-                    perfilUsuario.email = user.email;
-                    perfilUsuario.metodoConexao = 'email';
-
-                    localStorage.setItem('pf_logado', 'true');
-                    localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-                    document.getElementById('tela-login').classList.add('hidden');
-                    carregarDadosPerfilUI();
-                    atualizarUI();
                 }
             } catch (error) {
                 console.error("Erro na autenticação:", error);
@@ -1432,6 +1433,96 @@
         let chartEvolucaoObj = null;
         let chartCategoriaObj = null;
 
+        // ================= SINCRONIZAÇÃO FIRESTORE =================
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                usuarioLogado = true;
+                localStorage.setItem('pf_logado', 'true');
+                document.getElementById('tela-login').classList.add('hidden');
+                
+                await carregarDadosFirestore(user.uid);
+            } else {
+                currentUser = null;
+                usuarioLogado = false;
+                localStorage.removeItem('pf_logado');
+                document.getElementById('tela-login').classList.remove('hidden');
+            }
+        });
+
+        async function carregarDadosFirestore(uid) {
+            try {
+                const docRef = db.collection('usuarios').doc(uid);
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+                    if (data.transacoes) transacoes = data.transacoes;
+                    if (data.cartoes) cartoes = data.cartoes;
+                    if (data.parcelamentos) parcelamentos = data.parcelamentos;
+                    if (data.categorias) categorias = data.categorias;
+                    if (data.faturasFechadas) faturasFechadas = data.faturasFechadas;
+                    if (data.perfilUsuario) perfilUsuario = data.perfilUsuario;
+                } else {
+                    if (currentUser) {
+                        perfilUsuario.nome = currentUser.displayName || perfilUsuario.nome;
+                        perfilUsuario.email = currentUser.email || perfilUsuario.email;
+                        perfilUsuario.fotoUrl = currentUser.photoURL || perfilUsuario.fotoUrl;
+                    }
+
+                    await docRef.set({
+                        transacoes: transacoes,
+                        cartoes: cartoes,
+                        parcelamentos: parcelamentos,
+                        categorias: categorias,
+                        faturasFechadas: faturasFechadas,
+                        perfilUsuario: perfilUsuario,
+                        ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+
+                localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
+                localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
+                localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
+                localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
+                localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
+                localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+            } catch (err) {
+                console.error("Erro ao carregar dados do Firestore:", err);
+            } finally {
+                carregarDadosPerfilUI();
+                atualizarUI();
+            }
+        }
+
+        async function salvarStorage() {
+            localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
+            localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
+            localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
+            localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
+            localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
+            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+
+            if (currentUser) {
+                try {
+                    await db.collection('usuarios').doc(currentUser.uid).set({
+                        transacoes,
+                        cartoes,
+                        parcelamentos,
+                        categorias,
+                        faturasFechadas,
+                        perfilUsuario,
+                        ultimaupdate: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                } catch (e) {
+                    console.error("Erro ao salvar no Firestore:", e);
+                }
+            }
+
+            atualizarUI();
+        }
+
         // ================= AUTENTICAÇÃO GOOGLE E SESSÃO =================
         function inicializarGoogleSignIn() {
             if (window.google && google.accounts) {
@@ -1454,13 +1545,10 @@
             perfilUsuario.fotoUrl = payload.picture || '';
             perfilUsuario.metodoConexao = 'google';
 
-            usuarioLogado = true;
-            localStorage.setItem('pf_logado', 'true');
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-
-            document.getElementById('tela-login').classList.add('hidden');
-            carregarDadosPerfilUI();
-            atualizarUI();
+            const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+            firebase.auth().signInWithCredential(credential).catch(err => {
+                alert("Erro na autenticação do Google via Firebase: " + err.message);
+            });
         }
 
         function parseJwt(token) {
@@ -1544,7 +1632,6 @@
 
             const initials = (perfilUsuario.nome || 'VS').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
             
-            // Foto Header
             const avatarContainer = document.getElementById('user-avatar-container');
             if (perfilUsuario.fotoUrl) {
                 avatarContainer.innerHTML = `<img src="${perfilUsuario.fotoUrl}" class="w-full h-full object-cover">`;
@@ -1552,7 +1639,6 @@
                 avatarContainer.innerHTML = `<span id="user-avatar-initials">${initials}</span>`;
             }
 
-            // Foto Aba Perfil
             const profFotoContainer = document.getElementById('prof-foto-container');
             if (perfilUsuario.fotoUrl) {
                 profFotoContainer.innerHTML = `<img src="${perfilUsuario.fotoUrl}" class="w-full h-full object-cover">`;
@@ -1587,7 +1673,7 @@
             perfilUsuario.nome = document.getElementById('prof-nome').value;
             perfilUsuario.email = document.getElementById('prof-email').value;
             perfilUsuario.cargo = document.getElementById('prof-cargo').value;
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+            salvarStorage();
             carregarDadosPerfilUI();
             alert('Dados do perfil salvos com sucesso!');
         }
@@ -1608,7 +1694,7 @@
             const novoEmail = prompt('Digite o novo e-mail para esta conta:', perfilUsuario.email);
             if (novoEmail && novoEmail.trim() !== '' && novoEmail !== perfilUsuario.email) {
                 perfilUsuario.email = novoEmail.trim();
-                localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
+                salvarStorage();
                 carregarDadosPerfilUI();
                 alert('E-mail de acesso atualizado com sucesso!');
             }
@@ -1618,6 +1704,9 @@
             if (confirm('ATENÇÃO: Deseja realmente excluir permanentemente sua conta e remover todos os seus dados alojados na nuvem? Esta ação não pode ser desfeita.')) {
                 const digitar = prompt('Para confirmar a exclusão, digite "EXCLUIR":');
                 if (digitar === 'EXCLUIR') {
+                    if (currentUser) {
+                        db.collection('usuarios').doc(currentUser.uid).delete();
+                    }
                     localStorage.clear();
                     alert('Sua conta foi excluída permanentemente. O sistema será reiniciado.');
                     window.location.reload();
@@ -2968,6 +3057,9 @@
 
         function executarReset() {
             if (confirm("ATENÇÃO: Deseja REALMENTE zerar todo o seu sistema? Isso apagar todos os lançamentos, cartões e parcelamentos para que você inicie do zero com seus dados reais.")) {
+                if (currentUser) {
+                    db.collection('usuarios').doc(currentUser.uid).delete();
+                }
                 localStorage.clear();
                 categorias = [...PADRAO_CATEGORIAS];
                 transacoes = [];
@@ -2980,16 +3072,6 @@
                 carregarDadosPerfilUI();
                 alert("Sistema reiniciado com sucesso! Agora ele está 100% zerado e pronto para uso.");
             }
-        }
-
-        function salvarStorage() {
-            localStorage.setItem('pf_categorias_v13', JSON.stringify(categorias));
-            localStorage.setItem('pf_transacoes_v13', JSON.stringify(transacoes));
-            localStorage.setItem('pf_cartoes_v13', JSON.stringify(cartoes));
-            localStorage.setItem('pf_parcelamentos_v13', JSON.stringify(parcelamentos));
-            localStorage.setItem('pf_faturas_v13', JSON.stringify(faturasFechadas));
-            localStorage.setItem('pf_perfil_v13', JSON.stringify(perfilUsuario));
-            atualizarUI();
         }
 
         function filtrarPesquisaGeral() {
@@ -3017,19 +3099,20 @@
             const selFiltroEvCat = document.getElementById('ev-filtro-categoria');
             const selRepCat = document.getElementById('rep-filtro-categoria');
 
-            selModal.innerHTML = selParcela.innerHTML = selRecCat.innerHTML = selMapFallback.innerHTML = '';
-            selFiltroCentralCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
-            selFiltroEvCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
-            selRepCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
+            if (selModal) {
+                selModal.innerHTML = selParcela.innerHTML = selRecCat.innerHTML = selMapFallback.innerHTML = '';
+                selFiltroCentralCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
+                selFiltroEvCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
+                selRepCat.innerHTML = '<option value="todas">Todas as Categorias</option>';
 
-            categorias.forEach(c => {
-                selModal.innerHTML += `<option value="${c}">${c}</option>`;
-                selParcela.innerHTML += `<option value="${c}">${c}</option>`;
-                selRecCat.innerHTML += `<option value="${c}">${c}</option>`;
-                selMapFallback.innerHTML += `<option value="${c}">${c}</option>`;
-                selFiltroCentralCat.innerHTML += `<option value="${c}">${c}</option>`;
-                selFiltroEvCat.innerHTML += `<option value="${c}">${c}</option>`;
-                selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
+                categorias.forEach(c => {
+                    selModal.innerHTML += `<option value="${c}">${c}</option>`;
+                    selParcela.innerHTML += `<option value="${c}">${c}</option>`;
+                    selRecCat.innerHTML += `<option value="${c}">${c}</option>`;
+                    selMapFallback.innerHTML += `<option value="${c}">${c}</option>`;
+                    selFiltroCentralCat.innerHTML += `<option value="${c}">${c}</option>`;
+                    selFiltroEvCat.innerHTML += `<option value="${c}">${c}</option>`;
+                    selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
             });
 
             const selMCartao = document.getElementById('m-cartao-id');
