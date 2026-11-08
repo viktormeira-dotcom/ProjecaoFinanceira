@@ -3733,12 +3733,32 @@ function solicitarConfirmacaoAcao(acao) {
   if (containerLista) {
     containerLista.innerHTML = '';
 
+    // Obtém as categorias do aplicativo ou usa lista padrão
+    const listaCategorias = (typeof categorias !== 'undefined' && Array.isArray(categorias) && categorias.length > 0)
+      ? categorias
+      : ['Renda', 'Moradia', 'Alimentação', 'Contas', 'Transporte', 'Lazer', 'Cartão de Crédito', 'Geral', 'Impostos'];
+
     itens.forEach((item, index) => {
-      let tNorm = (item.tipoLancamento || 'despesa_fixa').toLowerCase();
+      // Normalização do tipo
+      let tNorm = (item.tipoLancamento || item.tipo || 'despesa_fixa').toLowerCase();
       if (tNorm.includes('fixa')) tNorm = 'despesa_fixa';
       else if (tNorm.includes('variavel') || tNorm.includes('variável')) tNorm = 'despesa_variavel';
       else if (tNorm.includes('receita')) tNorm = 'receita';
       else if (tNorm.includes('cartao') || tNorm.includes('cartão')) tNorm = 'cartao';
+
+      // Normalização da categoria
+      const catAtual = item.categoria ? (item.categoria.charAt(0).toUpperCase() + item.categoria.slice(1)) : 'Geral';
+      if (!listaCategorias.includes(catAtual)) {
+        listaCategorias.push(catAtual);
+      }
+
+      // Normalização do Status (Pago / Pendente)
+      const ePago = item.pago === true || String(item.pago).toLowerCase() === 'pago' || String(item.pago).toLowerCase() === 'true';
+
+      // Monta as opções do select de categorias
+      const opcoesCategoriasHTML = listaCategorias.map(c => 
+        `<option value="${c}" ${c.toLowerCase() === catAtual.toLowerCase() ? 'selected' : ''}>${c}</option>`
+      ).join('');
 
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item-confirmacao-box';
@@ -3747,25 +3767,33 @@ function solicitarConfirmacaoAcao(acao) {
       itemDiv.innerHTML = `
         <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">Lançamento #${index + 1}</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-          <label style="font-size:11px;">Descrição:
-            <input type="text" id="edit-desc-${index}" value="${item.descricao || ''}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          <label style="font-size:11px; color:#475569;">Descrição:
+            <input type="text" id="edit-desc-${index}" value="${item.descricao || ''}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
           </label>
-          <label style="font-size:11px;">Valor (R$):
-            <input type="number" step="0.01" id="edit-valor-${index}" value="${Math.abs(item.valor || 0)}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          <label style="font-size:11px; color:#475569;">Valor (R$):
+            <input type="number" step="0.01" id="edit-valor-${index}" value="${Math.abs(item.valor || 0)}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
           </label>
-          <label style="font-size:11px;">Data:
-            <input type="date" id="edit-data-${index}" value="${item.data || new Date().toISOString().split('T')[0]}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          <label style="font-size:11px; color:#475569;">Data:
+            <input type="date" id="edit-data-${index}" value="${item.data || new Date().toISOString().split('T')[0]}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
           </label>
-          <label style="font-size:11px;">Tipo / Origem:
-            <select id="edit-tipo-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          <label style="font-size:11px; color:#475569;">Tipo / Origem:
+            <select id="edit-tipo-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
               <option value="despesa_fixa" ${tNorm === 'despesa_fixa' ? 'selected' : ''}>Despesa Fixa</option>
               <option value="despesa_variavel" ${tNorm === 'despesa_variavel' ? 'selected' : ''}>Despesa Variável</option>
               <option value="receita" ${tNorm === 'receita' ? 'selected' : ''}>Receita</option>
               <option value="cartao" ${tNorm === 'cartao' ? 'selected' : ''}>Cartão de Crédito</option>
             </select>
           </label>
-          <label style="font-size:11px; grid-column: span 2;">Categoria:
-            <input type="text" id="edit-cat-${index}" value="${item.categoria || 'Contas'}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          <label style="font-size:11px; color:#475569;">Categoria:
+            <select id="edit-cat-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
+              ${opcoesCategoriasHTML}
+            </select>
+          </label>
+          <label style="font-size:11px; color:#475569;">Status de Pagamento:
+            <select id="edit-status-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a;">
+              <option value="pago" ${ePago ? 'selected' : ''}>Pago / Recebido</option>
+              <option value="pendente" ${!ePago ? 'selected' : ''}>Pendente / Não pago</option>
+            </select>
           </label>
         </div>
       `;
@@ -3782,6 +3810,7 @@ function solicitarConfirmacaoAcao(acao) {
       const elData = document.getElementById(`edit-data-${index}`);
       const elTipo = document.getElementById(`edit-tipo-${index}`);
       const elCat = document.getElementById(`edit-cat-${index}`);
+      const elStatus = document.getElementById(`edit-status-${index}`);
 
       return {
         ...item,
@@ -3789,7 +3818,8 @@ function solicitarConfirmacaoAcao(acao) {
         valor: elValor ? parseFloat(elValor.value) : item.valor,
         data: elData ? elData.value : item.data,
         tipoLancamento: elTipo ? elTipo.value : item.tipoLancamento,
-        categoria: elCat ? elCat.value : item.categoria
+        categoria: elCat ? elCat.value : item.categoria,
+        pago: elStatus ? (elStatus.value === 'pago') : item.pago
       };
     });
 
@@ -3809,17 +3839,39 @@ function executarAcaoConfirmada(acao) {
           item.valor || 0,
           item.data,
           item.tipoLancamento || 'despesa_fixa',
-          item.categoria || 'Contas'
+          item.categoria || 'Geral',
+          item.pago
         );
       }
     });
     addMsgAssistente(`Registrado(s) ${itens.length} lançamento(s) com sucesso no sistema!`, 'ia');
   } 
+  else if (tipo === 'EDITAR' && Array.isArray(itens)) {
+    itens.forEach(item => {
+      if (typeof transacoes !== 'undefined') {
+        const index = transacoes.findIndex(t => 
+          (item.id && String(t.id) === String(item.id)) || 
+          (item.descricao && t.descricao.toLowerCase().includes(item.descricao.toLowerCase()))
+        );
+        if (index !== -1) {
+          if (item.descricao) transacoes[index].descricao = item.descricao;
+          if (item.valor !== undefined) transacoes[index].valor = (transacoes[index].tipo === 'receita') ? Math.abs(item.valor) : -Math.abs(item.valor);
+          if (item.data) transacoes[index].data = item.data;
+          if (item.tipoLancamento) transacoes[index].tipo = item.tipoLancamento;
+          if (item.categoria) transacoes[index].categoria = item.categoria;
+          if (item.pago !== undefined) transacoes[index].pago = item.pago;
+        }
+      }
+    });
+    if (typeof salvarStorage === 'function') salvarStorage();
+    if (typeof atualizarUI === 'function') atualizarUI();
+    addMsgAssistente(`Lançamento(s) atualizado(s) com sucesso!`, 'ia');
+  }
   else if (tipo === 'EXCLUIR' && Array.isArray(itens)) {
     itens.forEach(item => {
       if (typeof transacoes !== 'undefined') {
         const index = transacoes.findIndex(t => 
-          (item.id && t.id === item.id) || 
+          (item.id && String(t.id) === String(item.id)) || 
           (item.descricao && t.descricao.toLowerCase().includes(item.descricao.toLowerCase()))
         );
         if (index !== -1) transacoes.splice(index, 1);
@@ -3831,7 +3883,7 @@ function executarAcaoConfirmada(acao) {
   }
 }
 
-function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Contas') {
+function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Geral', pago = false) {
   try {
     if (typeof transacoes === 'undefined') {
       addMsgAssistente('Base transacoes não encontrada.', 'ia');
@@ -3864,7 +3916,7 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
       tipo: tipoFormatado,
       data: dataFinal,
       categoria: catFormatada,
-      pago: false
+      pago: pago === true || String(pago).toLowerCase() === 'pago'
     });
 
     if (typeof salvarStorage === 'function') salvarStorage();
@@ -3875,9 +3927,7 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
   } catch (e) {
     addMsgAssistente('Erro ao lançar: ' + e.message, 'ia');
   }
-}
-
-function gerarPDFExclusivoAssistente(mes) {
+}function gerarPDFExclusivoAssistente(mes) {
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
