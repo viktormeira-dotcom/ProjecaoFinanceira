@@ -3621,14 +3621,12 @@ function pararGravacaoAudio() {
   }
 }
 
-// Função principal de comunicação com a Cloud Function do Gemini (com suporte Multimodal)
+// Função principal de comunicação com a Cloud Function com Confirmação Prévia e Suporte a Data
 async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    // 1. Identifica se há um usuário realmente logado no sistema
     let estaLogado = false;
-
     if (typeof usuarioLogado !== 'undefined' && usuarioLogado !== null && usuarioLogado !== '') {
       estaLogado = true;
     } else if (localStorage.getItem('usuario') || localStorage.getItem('user') || localStorage.getItem('token')) {
@@ -3637,17 +3635,15 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       estaLogado = true;
     }
 
-    // 2. Envia os dados apenas se estiver logado
     const transacoesEnvio = estaLogado ? (typeof transacoes !== 'undefined' ? transacoes : []) : [];
+    const hojeIso = new Date().toISOString().split('T')[0];
 
-    // 3. Captura os totais exibidos na tela
     const totaisPainel = {
       receitas: document.querySelector('.card-receitas .valor, [data-total-receitas]')?.innerText || '',
       despesas: document.querySelector('.card-despesas .valor, [data-total-despesas]')?.innerText || '',
       saldoAcumulado: document.querySelector('.card-saldo .valor, [data-saldo-acumulado]')?.innerText || ''
     };
 
-    // 4. Dispara a requisição com texto + arquivo (se houver)
     const response = await fetch(urlFunction, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3656,57 +3652,22 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         transacoesContexto: transacoesEnvio,
         totaisTela: totaisPainel,
         usuarioAutenticado: estaLogado,
-        arquivo: arquivoParam // Envia a estrutura Base64 para a Cloud Function
+        arquivo: arquivoParam,
+        dataHoje: hojeIso
       })
     });
 
     const data = await response.json();
 
-    // 5. Renderiza a resposta no chat
     if (data.resposta) {
       addMsgAssistente(data.resposta, 'ia');
     } else {
       addMsgAssistente('Senhor(a), não foi possível obter uma resposta válida no momento.', 'ia');
     }
 
-    // 6. Executa as AÇÕES (CRIAR, EDITAR, EXCLUIR)
+    // Se houver uma ação solicitada pela IA, exibe o modal de confirmação antes de executar
     if (estaLogado && data.acao && data.acao.tipo) {
-      const { tipo, dados } = data.acao;
-
-      if (tipo === 'CRIAR' && dados) {
-        if (typeof executarLancamentoAssistente === 'function') {
-          executarLancamentoAssistente(dados.descricao || 'Lançamento via IA', dados.valor || 0);
-        }
-      } 
-      else if (tipo === 'EXCLUIR' && dados) {
-        if (typeof transacoes !== 'undefined') {
-          const index = transacoes.findIndex(t => 
-            (dados.id && t.id === dados.id) || 
-            (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
-          );
-          if (index !== -1) {
-            const removido = transacoes.splice(index, 1)[0];
-            if (typeof salvarStorage === 'function') salvarStorage();
-            if (typeof atualizarUI === 'function') atualizarUI();
-            addMsgAssistente(`Lançamento "${removido.descricao || dados.descricao}" excluído com sucesso!`, 'ia');
-          }
-        }
-      }
-      else if (tipo === 'EDITAR' && dados) {
-        if (typeof transacoes !== 'undefined') {
-          const item = transacoes.find(t => 
-            (dados.id && t.id === dados.id) || 
-            (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
-          );
-          if (item) {
-            if (typeof dados.valor !== 'undefined') item.valor = -Math.abs(dados.valor);
-            if (dados.descricao) item.descricao = dados.descricao;
-            if (typeof salvarStorage === 'function') salvarStorage();
-            if (typeof atualizarUI === 'function') atualizarUI();
-            addMsgAssistente(`Lançamento "${item.descricao}" atualizado com sucesso!`, 'ia');
-          }
-        }
-      }
+      solicitarConfirmacaoAcao(data.acao);
     }
 
   } catch (error) {
@@ -3714,14 +3675,120 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Senhor(a), desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-function executarLancamentoAssistente(desc,valor){
-  try{
-    if(typeof transacoes==='undefined'){addMsgAssistente('Base transacoes não encontrada.','ia');return;}
-    transacoes.push({id:Date.now(),descricao:desc.substring(0,60),valor:-Math.abs(valor),tipo:'Despesa Fixa',data:'2026-12-01',categoria:'Outros',pago:false});
-    if(typeof salvarStorage==='function')salvarStorage();
-    if(typeof atualizarUI==='function')atualizarUI();
-    addMsgAssistente(`Senhor(a), lançamento de R$ ${valor.toFixed(2)} referente a "${desc}" executado com sucesso em 01/12/2026.`,'ia');
-  }catch(e){addMsgAssistente('Erro: '+e.message,'ia');}
+
+// Exibe o modal de confirmação e aguarda a decisão do usuário
+function solicitarConfirmacaoAcao(acao) {
+  const modal = document.getElementById('modal-confirmacao-assistente');
+  const textoModal = document.getElementById('texto-confirmacao-assistente');
+  const btnConfirmar = document.getElementById('btn-confirmar-assistente');
+
+  if (!modal || !btnConfirmar) {
+    // Caso o modal não esteja presente no DOM, executa diretamente
+    executarAcaoConfirmada(acao);
+    return;
+  }
+
+  const { tipo, dados } = acao;
+  let mensagemConfirmacao = "";
+
+  if (tipo === 'CRIAR') {
+    mensagemConfirmacao = `Deseja confirmar a inclusão do lançamento abaixo?\n\n• Descrição: ${dados.descricao}\n• Valor: R$ ${Math.abs(dados.valor).toFixed(2)}\n• Data: ${dados.data || 'Hoje'}`;
+  } else if (tipo === 'EXCLUIR') {
+    mensagemConfirmacao = `Deseja confirmar a EXCLUSÃO do lançamento "${dados.descricao}"?`;
+  } else if (tipo === 'EDITAR') {
+    mensagemConfirmacao = `Deseja confirmar a ALTERAÇÃO do lançamento "${dados.descricao}"?`;
+  }
+
+  if (textoModal) textoModal.innerText = mensagemConfirmacao;
+  modal.style.display = 'flex';
+
+  // Configura a ação no clique do botão "Confirmar"
+  btnConfirmar.onclick = function() {
+    fecharModalAssistente();
+    executarAcaoConfirmada(acao);
+  };
+}
+
+// Executa a ação após a confirmação do usuário
+function executarAcaoConfirmada(acao) {
+  const { tipo, dados } = acao;
+
+  if (tipo === 'CRIAR' && dados) {
+    executarLancamentoAssistente(
+      dados.descricao || 'Lançamento via IA',
+      dados.valor || 0,
+      dados.data,
+      dados.tipoLancamento || 'Despesa Fixa',
+      dados.categoria || 'Outros'
+    );
+  } 
+  else if (tipo === 'EXCLUIR' && dados) {
+    if (typeof transacoes !== 'undefined') {
+      const index = transacoes.findIndex(t => 
+        (dados.id && t.id === dados.id) || 
+        (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
+      );
+      if (index !== -1) {
+        const removido = transacoes.splice(index, 1)[0];
+        if (typeof salvarStorage === 'function') salvarStorage();
+        if (typeof atualizarUI === 'function') atualizarUI();
+        addMsgAssistente(`Lançamento "${removido.descricao || dados.descricao}" excluído com sucesso!`, 'ia');
+      }
+    }
+  }
+  else if (tipo === 'EDITAR' && dados) {
+    if (typeof transacoes !== 'undefined') {
+      const item = transacoes.find(t => 
+        (dados.id && t.id === dados.id) || 
+        (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
+      );
+      if (item) {
+        if (typeof dados.valor !== 'undefined') item.valor = (dados.tipoLancamento === 'receita') ? Math.abs(dados.valor) : -Math.abs(dados.valor);
+        if (dados.descricao) item.descricao = dados.descricao;
+        if (dados.data) item.data = dados.data;
+        if (typeof salvarStorage === 'function') salvarStorage();
+        if (typeof atualizarUI === 'function') atualizarUI();
+        addMsgAssistente(`Lançamento "${item.descricao}" atualizado com sucesso!`, 'ia');
+      }
+    }
+  }
+}
+// Função nativa de lançamento ajustada para aceitar a data dinâmica
+function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'Despesa Fixa', categoria = 'Outros') {
+  try {
+    if (typeof transacoes === 'undefined') {
+      addMsgAssistente('Base transacoes não encontrada.', 'ia');
+      return;
+    }
+
+    // Se não for informada data, usa a data atual (YYYY-MM-DD)
+    const hojeStr = new Date().toISOString().split('T')[0];
+    const dataFinal = dataLancamento || hojeStr;
+
+    // Formata o valor de acordo com o tipo (receita positiva, despesa negativa)
+    const valorNum = (tipo.toLowerCase().includes('receita')) ? Math.abs(valor) : -Math.abs(valor);
+
+    transacoes.push({
+      id: Date.now(),
+      descricao: desc.substring(0, 60),
+      valor: valorNum,
+      tipo: tipo,
+      data: dataFinal,
+      categoria: categoria,
+      pago: false
+    });
+
+    if (typeof salvarStorage === 'function') salvarStorage();
+    if (typeof atualizarUI === 'function') atualizarUI();
+
+    // Formata data em pt-BR para confirmação visual no chat
+    const [ano, mes, dia] = dataFinal.split('-');
+    const dataBr = `${dia}/${mes}/${ano}`;
+
+    addMsgAssistente(`Senhor(a), lançamento de R$ ${Math.abs(valor).toFixed(2)} referente a "${desc}" executado com sucesso em ${dataBr}.`, 'ia');
+  } catch (e) {
+    addMsgAssistente('Erro: ' + e.message, 'ia');
+  }
 }
 function gerarPDFExclusivoAssistente(mes){
   try{
