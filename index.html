@@ -3857,7 +3857,9 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    let estaLogado = false;
+    // 💡 VERIFICAÇÃO DE LOGIN CORRIGIDA: Usa a variável usuarioLogado e o estado da tela de login
+    let estaLogado = typeof usuarioLogado !== 'undefined' ? usuarioLogado : false;
+    
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
       estaLogado = true;
     }
@@ -4057,7 +4059,7 @@ function executarAcaoConfirmada(acao) {
         );
         if (index !== -1) {
           if (item.descricao) transacoes[index].descricao = item.descricao;
-          if (item.valor !== undefined) transacoes[index].valor = (transacoes[index].tipo === 'receita') ? Math.abs(item.valor) : -Math.abs(item.valor);
+          if (item.valor !== undefined) transacoes[index].valor = Math.abs(item.valor);
           if (item.data) transacoes[index].data = item.data;
           if (item.tipoLancamento) transacoes[index].tipo = item.tipoLancamento;
           if (item.categoria) transacoes[index].categoria = item.categoria;
@@ -4109,7 +4111,8 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
       }
     }
 
-    const valorNum = (tipoFormatado === 'receita') ? Math.abs(valor) : -Math.abs(valor);
+    // Mantém o valor como número positivo para bater com o padrão da interface
+    const valorNum = Math.abs(valor);
 
     transacoes.push({
       id: String(Date.now() + Math.random()),
@@ -4125,7 +4128,7 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
     if (typeof atualizarUI === 'function') atualizarUI();
 
     const [ano, mes, dia] = dataFinal.split('-');
-    addMsgAssistente(`Lançamento de R$ ${Math.abs(valor).toFixed(2)} referente a "${desc}" executado com sucesso em ${dia}/${mes}/${ano}.`, 'ia');
+    addMsgAssistente(`Lançamento de R$ ${valorNum.toFixed(2)} referente a "${desc}" executado com sucesso em ${dia}/${mes}/${ano}.`, 'ia');
   } catch (e) {
     addMsgAssistente('Erro ao lançar: ' + e.message, 'ia');
   }
