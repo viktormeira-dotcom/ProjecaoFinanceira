@@ -3511,14 +3511,21 @@
     <button type="button" onclick="enviarComandoAssistente()" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:9px 14px;cursor:pointer">Enviar</button>
   </div>
 </div>
-<div id="modal-confirmacao-assistente"><div id="modal-box-assistente">
-  <h3 style="margin:0 0 10px;font-weight:800;color:#0f172a">Confirmação Necessária</h3>
-  <p id="texto-confirmacao-assistente" style="font-size:14px;line-height:1.6;color:#334155;white-space:pre-line"></p>
-  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
-    <button onclick="fecharModalAssistente()" style="padding:9px 15px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;cursor:pointer">Cancelar</button>
-    <button id="btn-confirmar-assistente" style="padding:9px 16px;border:none;border-radius:10px;background:#0f172a;color:#fff;cursor:pointer;font-weight:700">Confirmar, por gentileza</button>
+<!-- Estrutura do Modal de Confirmação Interativo com Formulário de Edição -->
+<div id="modal-confirmacao-assistente" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100000; align-items:center; justify-content:center; padding:16px;">
+  <div id="modal-box-assistente" style="background:#fff; border-radius:14px; width:100%; max-width:550px; padding:20px; max-height:85vh; overflow-y:auto; color:#0f172a;">
+    <h3 style="margin-top:0; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Conferir Lançamentos</h3>
+    <p style="font-size:13px; color:#64748b;">Revise ou altere os campos abaixo antes de efetuar o registro no sistema:</p>
+    
+    <!-- O JavaScript injetará aqui os campos de edição item a item -->
+    <div id="lista-itens-confirmacao"></div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:18px;">
+      <button type="button" onclick="fecharModalAssistente()" style="padding:9px 15px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; cursor:pointer;">Cancelar</button>
+      <button type="button" id="btn-confirmar-assistente" style="padding:9px 16px; border:none; border-radius:10px; background:#0f172a; color:#fff; font-weight:700; cursor:pointer;">Confirmar e Salvar</button>
+    </div>
   </div>
-</div></div>
+</div>
 <script>
 let acaoPendenteAssistente=null;
 function toggleChatAssistente(){const j=document.getElementById('janela-chat');j.style.display=j.style.display==='flex'?'none':'flex';}
@@ -3676,84 +3683,116 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   }
 }
 
-// Exibe o modal de confirmação e aguarda a decisão do usuário
+// Exibe os lançamentos (único ou múltiplos) em campos editáveis no modal
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
-  const textoModal = document.getElementById('texto-confirmacao-assistente');
+  const containerLista = document.getElementById('lista-itens-confirmacao');
   const btnConfirmar = document.getElementById('btn-confirmar-assistente');
 
   if (!modal || !btnConfirmar) {
-    // Caso o modal não esteja presente no DOM, executa diretamente
     executarAcaoConfirmada(acao);
     return;
   }
 
-  const { tipo, dados } = acao;
-  let mensagemConfirmacao = "";
+  // Normaliza itens simples ou múltiplos
+  const itens = acao.itens || (acao.dados ? [acao.dados] : []);
+  
+  if (containerLista) {
+    containerLista.innerHTML = '';
 
-  if (tipo === 'CRIAR') {
-    mensagemConfirmacao = `Deseja confirmar a inclusão do lançamento abaixo?\n\n• Descrição: ${dados.descricao}\n• Valor: R$ ${Math.abs(dados.valor).toFixed(2)}\n• Data: ${dados.data || 'Hoje'}`;
-  } else if (tipo === 'EXCLUIR') {
-    mensagemConfirmacao = `Deseja confirmar a EXCLUSÃO do lançamento "${dados.descricao}"?`;
-  } else if (tipo === 'EDITAR') {
-    mensagemConfirmacao = `Deseja confirmar a ALTERAÇÃO do lançamento "${dados.descricao}"?`;
+    itens.forEach((item, index) => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'item-confirmacao-box';
+      itemDiv.style.cssText = "border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:12px; background:#f8fafc;";
+      
+      itemDiv.innerHTML = `
+        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">Lançamento #${index + 1}</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+          <label style="font-size:11px;">Descrição:
+            <input type="text" id="edit-desc-${index}" value="${item.descricao || ''}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          </label>
+          <label style="font-size:11px;">Valor (R$):
+            <input type="number" step="0.01" id="edit-valor-${index}" value="${Math.abs(item.valor || 0)}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          </label>
+          <label style="font-size:11px;">Data:
+            <input type="date" id="edit-data-${index}" value="${item.data || new Date().toISOString().split('T')[0]}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          </label>
+          <label style="font-size:11px;">Tipo:
+            <select id="edit-tipo-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+              <option value="Despesa Fixa" ${item.tipoLancamento === 'Despesa Fixa' ? 'selected' : ''}>Despesa Fixa</option>
+              <option value="Despesa Variável" ${item.tipoLancamento === 'Despesa Variável' ? 'selected' : ''}>Despesa Variável</option>
+              <option value="Receita" ${item.tipoLancamento === 'Receita' ? 'selected' : ''}>Receita</option>
+              <option value="Cartão de Crédito" ${item.tipoLancamento === 'Cartão de Crédito' ? 'selected' : ''}>Cartão de Crédito</option>
+            </select>
+          </label>
+          <label style="font-size:11px; grid-column: span 2;">Categoria:
+            <input type="text" id="edit-cat-${index}" value="${item.categoria || 'Outros'}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+          </label>
+        </div>
+      `;
+      containerLista.appendChild(itemDiv);
+    });
   }
 
-  if (textoModal) textoModal.innerText = mensagemConfirmacao;
   modal.style.display = 'flex';
 
-  // Configura a ação no clique do botão "Confirmar"
   btnConfirmar.onclick = function() {
-    fecharModalAssistente();
-    executarAcaoConfirmada(acao);
+    // Coleta os valores atualizados pelo usuário na tela de edição
+    const itensAtualizados = itens.map((item, index) => {
+      const elDesc = document.getElementById(`edit-desc-${index}`);
+      const elValor = document.getElementById(`edit-valor-${index}`);
+      const elData = document.getElementById(`edit-data-${index}`);
+      const elTipo = document.getElementById(`edit-tipo-${index}`);
+      const elCat = document.getElementById(`edit-cat-${index}`);
+
+      return {
+        ...item,
+        descricao: elDesc ? elDesc.value : item.descricao,
+        valor: elValor ? parseFloat(elValor.value) : item.valor,
+        data: elData ? elData.value : item.data,
+        tipoLancamento: elTipo ? elTipo.value : item.tipoLancamento,
+        categoria: elCat ? elCat.value : item.categoria
+      };
+    });
+
+    if (typeof fecharModalAssistente === 'function') fecharModalAssistente();
+    executarAcaoConfirmada({ tipo: acao.tipo, itens: itensAtualizados });
   };
 }
 
-// Executa a ação após a confirmação do usuário
+// Executa os lançamentos atualizados após confirmação do usuário
 function executarAcaoConfirmada(acao) {
-  const { tipo, dados } = acao;
+  const { tipo, itens } = acao;
 
-  if (tipo === 'CRIAR' && dados) {
-    executarLancamentoAssistente(
-      dados.descricao || 'Lançamento via IA',
-      dados.valor || 0,
-      dados.data,
-      dados.tipoLancamento || 'Despesa Fixa',
-      dados.categoria || 'Outros'
-    );
+  if (tipo === 'CRIAR' && Array.isArray(itens)) {
+    itens.forEach(item => {
+      if (typeof executarLancamentoAssistente === 'function') {
+        executarLancamentoAssistente(
+          item.descricao || 'Lançamento via IA',
+          item.valor || 0,
+          item.data,
+          item.tipoLancamento || 'Despesa Fixa',
+          item.categoria || 'Outros'
+        );
+      }
+    });
+    addMsgAssistente(`Registrado(s) ${itens.length} lançamento(s) com sucesso no sistema!`, 'ia');
   } 
-  else if (tipo === 'EXCLUIR' && dados) {
-    if (typeof transacoes !== 'undefined') {
-      const index = transacoes.findIndex(t => 
-        (dados.id && t.id === dados.id) || 
-        (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
-      );
-      if (index !== -1) {
-        const removido = transacoes.splice(index, 1)[0];
-        if (typeof salvarStorage === 'function') salvarStorage();
-        if (typeof atualizarUI === 'function') atualizarUI();
-        addMsgAssistente(`Lançamento "${removido.descricao || dados.descricao}" excluído com sucesso!`, 'ia');
+  else if (tipo === 'EXCLUIR' && Array.isArray(itens)) {
+    itens.forEach(item => {
+      if (typeof transacoes !== 'undefined') {
+        const index = transacoes.findIndex(t => 
+          (item.id && t.id === item.id) || 
+          (item.descricao && t.descricao.toLowerCase().includes(item.descricao.toLowerCase()))
+        );
+        if (index !== -1) transacoes.splice(index, 1);
       }
-    }
+    });
+    if (typeof salvarStorage === 'function') salvarStorage();
+    if (typeof atualizarUI === 'function') atualizarUI();
+    addMsgAssistente(`Lançamento(s) excluído(s) com sucesso!`, 'ia');
   }
-  else if (tipo === 'EDITAR' && dados) {
-    if (typeof transacoes !== 'undefined') {
-      const item = transacoes.find(t => 
-        (dados.id && t.id === dados.id) || 
-        (dados.descricao && t.descricao.toLowerCase().includes(dados.descricao.toLowerCase()))
-      );
-      if (item) {
-        if (typeof dados.valor !== 'undefined') item.valor = (dados.tipoLancamento === 'receita') ? Math.abs(dados.valor) : -Math.abs(dados.valor);
-        if (dados.descricao) item.descricao = dados.descricao;
-        if (dados.data) item.data = dados.data;
-        if (typeof salvarStorage === 'function') salvarStorage();
-        if (typeof atualizarUI === 'function') atualizarUI();
-        addMsgAssistente(`Lançamento "${item.descricao}" atualizado com sucesso!`, 'ia');
-      }
-    }
-  }
-}
-// Função nativa de lançamento ajustada para aceitar a data dinâmica
+}// Função nativa de lançamento ajustada para aceitar a data dinâmica
 function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'Despesa Fixa', categoria = 'Outros') {
   try {
     if (typeof transacoes === 'undefined') {
