@@ -3610,26 +3610,53 @@ function pararGravacaoAudio() {
 }
 
 // Função principal de comunicação com a Cloud Function do Gemini
-async function processarComandoFormalAssistente(cmdO) {
+async function processarComandoFormalAssistente(cmd0) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
+    // 1. Obtém as transações filtradas do utilizador/estado atual
+    const transacoesAtuais = typeof transacoes !== 'undefined' ? transacoes : [];
+
+    // 2. Envia mensagem, transações e totais do painel para a IA
     const response = await fetch(urlFunction, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mensagem: cmdO,
-        transacoesContexto: typeof transacoes !== 'undefined' ? transacoes : []
+        mensagem: cmd0,
+        transacoesContexto: transacoesAtuais
       })
     });
 
     const data = await response.json();
 
+    // 3. Exibe a resposta de texto no chat
     if (data.resposta) {
       addMsgAssistente(data.resposta, 'ia');
     } else {
       addMsgAssistente('Senhor(a), não foi possível obter uma resposta válida no momento.', 'ia');
     }
+
+    // 4. Se a IA retornou uma ação (CRIAR, EDITAR ou EXCLUIR), executa no site!
+    if (data.acao && data.acao.tipo) {
+      const { tipo, dados } = data.acao;
+
+      if (tipo === 'CRIAR' && dados) {
+        executarLancamentoAssistente(dados.descricao || 'Lançamento IA', dados.valor || 0);
+      } 
+      else if (tipo === 'EXCLUIR' && dados) {
+        // Exemplo de exclusão na sua lista de transações
+        if (typeof transacoes !== 'undefined') {
+          const index = transacoes.findIndex(t => t.id === dados.id || t.descricao === dados.descricao);
+          if (index !== -1) {
+            transacoes.splice(index, 1);
+            if (typeof salvarStorage === 'function') salvarStorage();
+            if (typeof atualizarUI === 'function') atualizarUI();
+            addMsgAssistente(`Lançamento "${dados.descricao}" removido com sucesso.`, 'ia');
+          }
+        }
+      }
+    }
+
   } catch (error) {
     console.error('Erro de conexão:', error);
     addMsgAssistente('Senhor(a), desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
