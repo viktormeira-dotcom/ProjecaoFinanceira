@@ -3711,15 +3711,20 @@
 </div>
 
 <script>
+// Variáveis globais do Assistente
 let acaoPendenteAssistente = null;
+let gravadorAudio = null;
+let gravando = false;
 
+// Função para abrir/fechar o chat (chamada pelo botão flutuante)
 function toggleChatAssistente() {
   const j = document.getElementById('janela-chat');
   if (j) {
     if (j.classList.contains('minimized')) {
       j.classList.remove('minimized');
     }
-    j.style.display = (j.style.display === 'flex') ? 'none' : 'flex';
+    const estiloAtual = window.getComputedStyle(j).display;
+    j.style.display = (estiloAtual === 'none' || j.style.display === 'none' || !j.style.display) ? 'flex' : 'none';
   }
 }
 
@@ -3759,9 +3764,6 @@ function addMsgAssistente(t, tp) {
     cont.scrollTop = 99999;
   }
 }
-
-let gravadorAudio = null;
-let gravando = false;
 
 function enviarComandoAssistente() {
   const input = document.getElementById('chat-input-assistente');
@@ -3874,7 +3876,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     }
 
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
-    // 💡 CAPTURA OS CARTÕES CADASTRADOS NO SISTEMA
     const cartoesEnvio = (typeof cartoes !== 'undefined' && Array.isArray(cartoes)) ? cartoes : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
@@ -3911,34 +3912,29 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       })
     });
 
-const data = await response.json();
+    const data = await response.json();
 
     let respostaExibicao = data.resposta;
     let acaoObjeto = data.acao;
 
-    // 🛡️ REPARO AUTOMÁTICO PARA ARQUIVOS MULTILANÇAMENTOS COM TEXTO TRUNCADO
     if (typeof data.resposta === 'string' && (data.resposta.trim().startsWith('{') || data.resposta.includes('"acao":'))) {
       try {
         let jsonStr = data.resposta.trim();
         
-        // Remove tags de código se vierem soltas
         if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
         if (jsonStr.startsWith('```')) jsonStr = jsonStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
 
-        // Tenta fazer o parse direto
         try {
           const parsedInterno = JSON.parse(jsonStr);
           if (parsedInterno.resposta) respostaExibicao = parsedInterno.resposta;
           if (parsedInterno.acao) acaoObjeto = parsedInterno.acao;
         } catch (errParse) {
-          // Se o JSON foi cortado no meio por limite de tamanho, tenta reconstruir o array de itens válidos
           const matchResposta = jsonStr.match(/"resposta"\s*:\s*"([^"]+)"/);
           if (matchResposta && matchResposta[1]) respostaExibicao = matchResposta[1];
 
           const matchItens = jsonStr.match(/"itens"\s*:\s*\[([\s\S]*)/);
           if (matchItens && matchItens[1]) {
             let conteudoItens = '[' + matchItens[1];
-            // Tenta fechar o array truncado na última vírgula válida
             const ultimoObjetoFechado = conteudoItens.lastIndexOf('}');
             if (ultimoObjetoFechado !== -1) {
               conteudoItens = conteudoItens.substring(0, ultimoObjetoFechado + 1) + ']';
@@ -3963,6 +3959,13 @@ const data = await response.json();
     if (acaoObjeto && acaoObjeto.tipo) {
       solicitarConfirmacaoAcao(acaoObjeto);
     }
+
+  } catch (error) {
+    console.error('Erro de conexão:', error);
+    addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
+  }
+}
+
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
@@ -4035,7 +4038,6 @@ function solicitarConfirmacaoAcao(acao) {
             </select>
           </label>
 
-          <!-- CAMPOS DINÂMICOS PARA CARTÃO DE CRÉDITO -->
           <div id="box-cartao-especifico-${index}" style="display: ${tNorm === 'cartao' ? 'contents' : 'none'};">
             <label style="font-size:11px; color:#475569;">Cartão Destino:
               <select id="edit-cartao-${index}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
@@ -4107,38 +4109,50 @@ function executarAcaoConfirmada(acao) {
   const { tipo, itens } = acao;
 
   if (tipo === 'CRIAR' && Array.isArray(itens)) {
+    let gravadosComSucesso = 0;
+
     itens.forEach(item => {
-      if (item.tipoLancamento === 'cartao') {
-        if (typeof lancarCompraParcelada === 'function') {
-          lancarCompraParcelada(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
-        } else if (typeof adicionarCompraCartao === 'function') {
-          adicionarCompraCartao(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
-        } else {
-          executarLancamentoAssistente(
-            item.descricao || 'Lançamento via IA',
-            item.valor || 0,
-            item.data,
-            'cartao',
-            item.categoria || 'Geral',
-            false,
-            item.cartaoNome || 'Generico',
-            item.parcelas || 1
-          );
+      let tNorm = (item.tipoLancamento || item.tipo || 'despesa_fixa').toLowerCase();
+      if (tNorm.includes('cartao') || tNorm.includes('cartão')) tNorm = 'cartao';
+
+      if (tNorm === 'cartao') {
+        const cMatch = (typeof cartoes !== 'undefined' && Array.isArray(cartoes))
+          ? cartoes.find(c => String(c.nome).toLowerCase() === String(item.cartaoNome || item.cartao).toLowerCase())
+          : null;
+
+        const cartaoIdFinal = cMatch ? String(cMatch.id) : (cartoes && cartoes[0] ? String(cartoes[0].id) : '1');
+        const numParcelas = parseInt(item.parcelas) || 1;
+        const numValorTotal = parseFloat(item.valor) || 0;
+
+        if (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) {
+          parcelamentos.push({
+            id: String(Date.now() + Math.random()),
+            cartaoId: cartaoIdFinal,
+            descricao: item.descricao || 'Lançamento IA',
+            categoria: item.categoria || 'Geral',
+            valorTotal: numValorTotal,
+            totalParcelas: numParcelas,
+            valorParcela: numValorTotal / numParcelas,
+            dataInicio: item.data || new Date().toISOString().split('T')[0]
+          });
+          gravadosComSucesso++;
         }
       } else {
-        if (typeof executarLancamentoAssistente === 'function') {
-          executarLancamentoAssistente(
-            item.descricao || 'Lançamento via IA',
-            item.valor || 0,
-            item.data,
-            item.tipoLancamento || 'despesa_fixa',
-            item.categoria || 'Geral',
-            item.pago
-          );
-        }
+        executarLancamentoAssistente(
+          item.descricao || 'Lançamento via IA',
+          item.valor || 0,
+          item.data,
+          item.tipoLancamento || 'despesa_fixa',
+          item.categoria || 'Geral',
+          item.pago
+        );
+        gravadosComSucesso++;
       }
     });
-    addMsgAssistente(`Registrado(s) ${itens.length} lançamento(s) com sucesso no sistema!`, 'ia');
+
+    if (typeof salvarStorage === 'function') salvarStorage();
+    if (typeof atualizarUI === 'function') atualizarUI();
+    addMsgAssistente(`Registrado(s) ${gravadosComSucesso} lançamento(s) com sucesso no sistema!`, 'ia');
   } 
   else if (tipo === 'EDITAR' && Array.isArray(itens)) {
     itens.forEach(item => {
@@ -4154,11 +4168,6 @@ function executarAcaoConfirmada(acao) {
           if (item.tipoLancamento) transacoes[index].tipo = item.tipoLancamento;
           if (item.categoria) transacoes[index].categoria = item.categoria;
           if (item.pago !== undefined) transacoes[index].pago = item.pago;
-          if (item.cartaoNome) {
-            transacoes[index].cartaoNome = item.cartaoNome;
-            transacoes[index].cartao = item.cartaoNome;
-          }
-          if (item.parcelas) transacoes[index].parcelas = item.parcelas;
         }
       }
     });
@@ -4182,12 +4191,9 @@ function executarAcaoConfirmada(acao) {
   }
 }
 
-function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Geral', pago = false, cartaoNome = null, parcelas = 1) {
+function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Geral', pago = false) {
   try {
-    if (typeof transacoes === 'undefined') {
-      addMsgAssistente('Base transacoes não encontrada.', 'ia');
-      return;
-    }
+    if (typeof transacoes === 'undefined') return;
 
     const hojeStr = new Date().toISOString().split('T')[0];
     const dataFinal = dataLancamento || hojeStr;
@@ -4196,7 +4202,6 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
     if (tipoFormatado.includes('fixa')) tipoFormatado = 'despesa_fixa';
     else if (tipoFormatado.includes('variavel') || tipoFormatado.includes('variável')) tipoFormatado = 'despesa_variavel';
     else if (tipoFormatado.includes('receita')) tipoFormatado = 'receita';
-    else if (tipoFormatado.includes('cartao') || tipoFormatado.includes('cartão')) tipoFormatado = 'cartao';
 
     const catFormatada = categoria ? (categoria.charAt(0).toUpperCase() + categoria.slice(1)) : 'Geral';
 
@@ -4218,21 +4223,9 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
       pago: pago === true || String(pago).toLowerCase() === 'pago'
     };
 
-    if (tipoFormatado === 'cartao') {
-      novoObjeto.cartaoNome = cartaoNome || 'Generico';
-      novoObjeto.cartao = cartaoNome || 'Generico';
-      novoObjeto.parcelas = parcelas || 1;
-    }
-
     transacoes.push(novoObjeto);
-
-    if (typeof salvarStorage === 'function') salvarStorage();
-    if (typeof atualizarUI === 'function') atualizarUI();
-
-    const [ano, mes, dia] = dataFinal.split('-');
-    addMsgAssistente(`Lançamento de R$ ${valorNum.toFixed(2)} referente a "${desc}" executado com sucesso em ${dia}/${mes}/${ano}.`, 'ia');
   } catch (e) {
-    addMsgAssistente('Erro ao lançar: ' + e.message, 'ia');
+    console.error('Erro no lançamento assistente:', e);
   }
 }
 
@@ -4261,5 +4254,4 @@ function gerarPDFExclusivoAssistente(mes) {
     addMsgAssistente('Erro PDF: ' + e.message, 'ia');
   }
 }
-</script>
-<!-- ===== FIM ASSISTENTE FORMAL ===== -->
+</script><!-- ===== FIM ASSISTENTE FORMAL ===== -->
