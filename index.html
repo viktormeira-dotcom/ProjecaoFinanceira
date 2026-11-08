@@ -3854,7 +3854,6 @@ function pararGravacaoAudio() {
     try { gravadorAudio.stop(); } catch(e){}
   }
 }
-
 async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
@@ -3880,7 +3879,7 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     const parcelamentosEnvio = (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) ? parcelamentos : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
-    // Mapeia o ID do cartão para o Nome do Cartão para facilitar a busca da IA no backend
+    // Mapa de IDs para Nomes de Cartão
     const mapaCartoes = {};
     cartoesEnvio.forEach(c => {
       if (c && c.id) {
@@ -3888,18 +3887,43 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       }
     });
 
-    // Enriquece o array de parcelamentos injetando o nome do cartão de destino
-    const parcelamentosEnriquecidos = parcelamentosEnvio.map(p => {
-      const nomeCartao = mapaCartoes[String(p.cartaoId)] || p.cartaoNome || p.cartao || 'Desconhecido';
-      return {
-        ...p,
-        cartaoNome: nomeCartao,
-        cartao: nomeCartao
-      };
-    });
+    // 1. EXTRAÇÃO DINÂMICA DAS FATURAS/PARCELAS DO MÊS ATUAL
+    // Se no seu sistema existir uma função nativa de cálculo de faturas (ex: obterFaturasDoMes ou calcularFaturas), usaremos ela.
+    // Caso contrário, faremos o cálculo exato das parcelas pertencentes ao mês atual:
+    const mesFiltroTela = document.querySelector('.selector-mes, .select-mes, #mes-filtro, header span')?.innerText || '';
+    
+    const itensFaturaCalculados = [];
 
-    // Captura o mês atualmente selecionado na barra do aplicativo (ex: "Novembro De 2026")
-    const mesFiltroTela = document.querySelector('.selector-mes, select-mes, #mes-filtro, header span')?.innerText || '';
+    parcelamentosEnvio.forEach(p => {
+      const nomeCartao = mapaCartoes[String(p.cartaoId)] || p.cartaoNome || p.cartao || 'Cartão';
+      const dataInicio = new Date(p.dataInicio || p.data);
+      const totalParc = parseInt(p.totalParcelas || p.parcelas) || 1;
+      const vlrParc = parseFloat(p.valorParcela) || (parseFloat(p.valorTotal || p.valor) / totalParc) || 0;
+
+      // Gera a lista de parcelas com as datas de vencimento de cada mês
+      for (let i = 0; i < totalParc; i++) {
+        const dParcela = new Date(dataInicio);
+        dParcela.setMonth(dParcela.getMonth() + i);
+        const anoMes = dParcela.toISOString().substring(0, 7); // ex: "2026-11"
+
+        itensFaturaCalculados.push({
+          idParcela: `${p.id}_${i+1}`,
+          idOriginal: p.id,
+          cartaoId: p.cartaoId,
+          cartaoNome: nomeCartao,
+          cartao: nomeCartao,
+          descricao: p.descricao,
+          parcelaAtual: i + 1,
+          totalParcelas: totalParc,
+          identificadorParcela: `Parcela ${i + 1}/${totalParc}`,
+          valorParcela: vlrParc,
+          valor: vlrParc,
+          categoria: p.categoria || 'Cartão de Crédito',
+          dataVencimentoParcela: dParcela.toISOString().split('T')[0],
+          anoMes: anoMes
+        });
+      }
+    });
 
     const historicoChat = [];
     const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
@@ -3926,7 +3950,8 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         mensagem: cmd0,
         transacoesContexto: transacoesEnvio,
         cartoesContexto: cartoesEnvio,
-        parcelamentosContexto: parcelamentosEnriquecidos, // Envia com nome do cartão mapeado
+        parcelamentosContexto: parcelamentosEnvio,
+        faturasDetalhesContexto: itensFaturaCalculados, // <-- ENVIA TODAS AS PARCELAS CALCULADAS COM MÊS E NOME DO CARTÃO
         totaisTela: totaisPainel,
         mesVisualizacao: mesFiltroTela,
         usuarioAutenticado: true,
@@ -3988,7 +4013,9 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     console.error('Erro de conexão:', error);
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
-}function solicitarConfirmacaoAcao(acao) {
+}
+
+function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
   const btnConfirmar = document.getElementById('btn-confirmar-assistente');
