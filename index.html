@@ -3614,8 +3614,10 @@ async function processarComandoFormalAssistente(cmd0) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    // 1. Verifica se o usuário está autenticado no seu sistema
-    const estaLogado = typeof usuarioLogado !== 'undefined' && usuarioLogado !== null;
+// 1. Verifica rigorosamente se o utilizador está realmente logado:
+// Se o formulário/ecrã de login estiver visível no ecrã, ele NÃO está logado!
+const formularioLoginVisivel = !!document.querySelector('form, input[type="email"], .login-container'); 
+const estaLogado = !formularioLoginVisivel && typeof usuarioLogado !== 'undefined' && usuarioLogado !== null;
 
     // 2. Garante o isolamento de dados: envia as transações apenas se estiver logado
     const transacoesEnvio = estaLogado ? (typeof transacoes !== 'undefined' ? transacoes : []) : [];
