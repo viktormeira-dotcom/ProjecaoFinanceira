@@ -3628,27 +3628,52 @@ function pararGravacaoAudio() {
   }
 }
 
-// Função principal de comunicação com a Cloud Function com Confirmação Prévia e Suporte a Data
+// Função principal de comunicação com a Cloud Function com checagem rígida de autenticação
 async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
+    // 1. Validação Rígida de Autenticação Real no Firebase Auth
     let estaLogado = false;
-    if (typeof usuarioLogado !== 'undefined' && usuarioLogado !== null && usuarioLogado !== '') {
-      estaLogado = true;
-    } else if (localStorage.getItem('usuario') || localStorage.getItem('user') || localStorage.getItem('token')) {
-      estaLogado = true;
-    } else if (typeof transacoes !== 'undefined' && Array.isArray(transacoes) && transacoes.length > 0) {
+
+    // Checa se existe um usuário autenticado ativo no Firebase Auth
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
       estaLogado = true;
     }
+    
+    // Trava de segurança adicional: se a tela de login estiver visível (não contiver a classe 'hidden'), força deslogado
+    const telaLogin = document.getElementById('tela-login');
+    if (telaLogin && !telaLogin.classList.contains('hidden')) {
+      estaLogado = false;
+    }
 
-    const transacoesEnvio = estaLogado ? (typeof transacoes !== 'undefined' ? transacoes : []) : [];
+    // 2. Se o usuário NÃO estiver logado, bloqueia imediatamente no frontend e recusa a consulta
+    if (!estaLogado) {
+      addMsgAssistente('Para que eu possa consultar suas finanças, relatórios, faturas ou registrar novos lançamentos, por favor faça login na sua conta.', 'ia');
+      return;
+    }
+
+    // 3. Prepara os dados de contexto apenas para o usuário efetivamente autenticado
+    const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
+    // Captura o histórico recente de mensagens do chat (últimas 6)
+    const historicoChat = [];
+    const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
+    const ultimasMsgs = Array.from(elementosMsgs).slice(-6);
+
+    ultimasMsgs.forEach(el => {
+      const eUsuario = el.classList.contains('msg-user');
+      historicoChat.push({
+        tipo: eUsuario ? 'user' : 'ia',
+        texto: el.innerText
+      });
+    });
+
     const totaisPainel = {
-      receitas: document.querySelector('.card-receitas .valor, [data-total-receitas]')?.innerText || '',
-      despesas: document.querySelector('.card-despesas .valor, [data-total-despesas]')?.innerText || '',
-      saldoAcumulado: document.querySelector('.card-saldo .valor, [data-saldo-acumulado]')?.innerText || ''
+      receitas: document.getElementById('kpi-receitas')?.innerText || '',
+      despesas: document.getElementById('kpi-despesas')?.innerText || '',
+      saldoAcumulado: document.getElementById('kpi-saldo')?.innerText || ''
     };
 
     const response = await fetch(urlFunction, {
@@ -3658,9 +3683,10 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         mensagem: cmd0,
         transacoesContexto: transacoesEnvio,
         totaisTela: totaisPainel,
-        usuarioAutenticado: estaLogado,
+        usuarioAutenticado: true,
         arquivo: arquivoParam,
-        dataHoje: hojeIso
+        dataHoje: hojeIso,
+        historicoChat: historicoChat
       })
     });
 
@@ -3672,8 +3698,7 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       addMsgAssistente('Senhor(a), não foi possível obter uma resposta válida no momento.', 'ia');
     }
 
-    // Se houver uma ação solicitada pela IA, exibe o modal de confirmação antes de executar
-    if (estaLogado && data.acao && data.acao.tipo) {
+    if (data.acao && data.acao.tipo) {
       solicitarConfirmacaoAcao(data.acao);
     }
 
@@ -3682,7 +3707,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Senhor(a), desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-
 // Exibe os lançamentos (único ou múltiplos) em campos editáveis no modal
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
