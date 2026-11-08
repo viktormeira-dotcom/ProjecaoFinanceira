@@ -4003,6 +4003,222 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
+processarComandoFormalAssistente(textoComando, objetoArquivo);
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function alternarGravacaoAudio() {
+  const btn = document.getElementById('btn-audio-assistente');
+  
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('O seu navegador não suporta reconhecimento de voz por áudio.');
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!gravando) {
+    gravadorAudio = new SpeechRecognition();
+    gravadorAudio.lang = 'pt-BR';
+    gravadorAudio.continuous = false;
+    gravadorAudio.interimResults = false;
+
+    gravadorAudio.onstart = function() {
+      gravando = true;
+      if (btn) {
+        btn.style.background = '#ef4444';
+        btn.style.color = '#ffffff';
+      }
+    };
+
+    gravadorAudio.onresult = function(event) {
+      const textoTranscrito = event.results[0][0].transcript;
+      const inputChat = document.getElementById('chat-input-assistente');
+      if (inputChat) inputChat.value = textoTranscrito;
+      if (typeof enviarComandoAssistente === 'function') enviarComandoAssistente();
+    };
+
+    gravadorAudio.onerror = function(event) {
+      console.error('Erro de áudio:', event.error);
+      pararGravacaoAudio();
+    };
+
+    gravadorAudio.onend = function() {
+      pararGravacaoAudio();
+    };
+
+    gravadorAudio.start();
+  } else {
+    pararGravacaoAudio();
+  }
+}
+
+function pararGravacaoAudio() {
+  gravando = false;
+  const btn = document.getElementById('btn-audio-assistente');
+  if (btn) {
+    btn.style.background = '#f1f5f9';
+    btn.style.color = '#475569';
+  }
+  if (gravadorAudio) {
+    try { gravadorAudio.stop(); } catch(e){}
+  }
+}
+
+async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
+  const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
+
+  try {
+    let estaLogado = typeof usuarioLogado !== 'undefined' ? usuarioLogado : false;
+    
+    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+      estaLogado = true;
+    }
+    
+    const telaLogin = document.getElementById('tela-login');
+    if (telaLogin && !telaLogin.classList.contains('hidden')) {
+      estaLogado = false;
+    }
+
+    if (!estaLogado) {
+      addMsgAssistente('Para que eu possa consultar suas finanças, relatórios, faturas ou registrar novos lançamentos, por favor faça login na sua conta.', 'ia');
+      return;
+    }
+
+    const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
+    const cartoesEnvio = (typeof cartoes !== 'undefined' && Array.isArray(cartoes)) ? cartoes : [];
+    const parcelamentosEnvio = (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) ? parcelamentos : [];
+    const hojeIso = new Date().toISOString().split('T')[0];
+
+    const faturasCalculadasDoSistema = [];
+    const dataRef = (typeof dataAtual !== 'undefined') ? dataAtual : new Date();
+    const anoAtual = dataRef.getFullYear();
+    const mesAtual = dataRef.getMonth();
+    const mesChave = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+
+    cartoesEnvio.forEach(c => {
+      const comprasDoCartao = parcelamentosEnvio.filter(p => String(p.cartaoId) === String(c.id));
+      const itensFaturaMes = [];
+
+      comprasDoCartao.forEach(p => {
+        if (typeof calcularParcelaAtivaNoMes === 'function') {
+          const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
+          if (infoP && infoP.ativa) {
+            itensFaturaMes.push({
+              idParcelamento: p.id,
+              descricao: p.descricao,
+              parcelaAtual: infoP.numeroParcela,
+              totalParcelas: p.totalParcelas,
+              rotuloParcela: `${infoP.numeroParcela}/${p.totalParcelas}`,
+              valorParcela: infoP.valorParcela,
+              categoria: p.categoria || 'Geral'
+            });
+          }
+        }
+      });
+
+      faturasCalculadasDoSistema.push({
+        cartaoId: String(c.id),
+        cartaoNome: c.nome,
+        mesReferencia: mesChave,
+        valorTotalFatura: itensFaturaMes.reduce((acc, item) => acc + item.valorParcela, 0),
+        itensFatura: itensFaturaMes
+      });
+    });
+
+    const historicoChat = [];
+    const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
+    const ultimasMsgs = Array.from(elementosMsgs).slice(-6);
+
+    ultimasMsgs.forEach(el => {
+      const eUsuario = el.classList.contains('msg-user');
+      historicoChat.push({
+        tipo: eUsuario ? 'user' : 'ia',
+        texto: el.innerText
+      });
+    });
+
+    const totaisPainel = {
+      receitas: document.getElementById('kpi-receitas')?.innerText || '',
+      despesas: document.getElementById('kpi-despesas')?.innerText || '',
+      saldoAcumulado: document.getElementById('kpi-saldo')?.innerText || ''
+    };
+
+    const labelMes = document.getElementById('label-mes-ano')?.innerText || document.querySelector('.selector-mes')?.innerText || '';
+
+    const response = await fetch(urlFunction, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mensagem: cmd0,
+        transacoesContexto: transacoesEnvio,
+        cartoesContexto: cartoesEnvio,
+        parcelamentosContexto: parcelamentosEnvio,
+        faturasCalculadasContexto: faturasCalculadasDoSistema,
+        totaisTela: totaisPainel,
+        mesVisualizacao: labelMes,
+        usuarioAutenticado: true,
+        arquivo: arquivoParam,
+        dataHoje: hojeIso,
+        historicoChat: historicoChat
+      })
+    });
+
+    const data = await response.json();
+
+    let respostaExibicao = data.resposta;
+    let acaoObjeto = data.acao;
+
+    if (typeof data.resposta === 'string' && (data.resposta.trim().startsWith('{') || data.resposta.includes('"acao":'))) {
+      try {
+        let jsonStr = data.resposta.trim();
+        if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        if (jsonStr.startsWith('```')) jsonStr = jsonStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
+
+        try {
+          const parsedInterno = JSON.parse(jsonStr);
+          if (parsedInterno.resposta) respostaExibicao = parsedInterno.resposta;
+          if (parsedInterno.acao) acaoObjeto = parsedInterno.acao;
+        } catch (errParse) {
+          const matchResposta = jsonStr.match(/"resposta"\s*:\s*"([^"]+)"/);
+          if (matchResposta && matchResposta[1]) respostaExibicao = matchResposta[1];
+
+          const matchItens = jsonStr.match(/"itens"\s*:\s*\[([\s\S]*)/);
+          if (matchItens && matchItens[1]) {
+            let conteudoItens = '[' + matchItens[1];
+            const ultimoObjetoFechado = conteudoItens.lastIndexOf('}');
+            if (ultimoObjetoFechado !== -1) {
+              conteudoItens = conteudoItens.substring(0, ultimoObjetoFechado + 1) + ']';
+              try {
+                const itensReconstruidos = JSON.parse(conteudoItens);
+                acaoObjeto = { tipo: 'CRIAR', itens: itensReconstruidos };
+              } catch (e2) {}
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Erro no tratamento defensivo do HTML:', e);
+      }
+    }
+
+    if (respostaExibicao) {
+      addMsgAssistente(respostaExibicao, 'ia');
+    } else {
+      addMsgAssistente('Desculpe, não foi possível obter uma resposta válida no momento.', 'ia');
+    }
+
+    if (acaoObjeto && acaoObjeto.tipo) {
+      solicitarConfirmacaoAcao(acaoObjeto);
+    }
+
+  } catch (error) {
+    console.error('Erro de conexão:', error);
+    addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
+  }
+}
+
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
@@ -4013,7 +4229,6 @@ function solicitarConfirmacaoAcao(acao) {
     return;
   }
 
-  // Cria cópia de trabalho dos itens
   let itensTemp = [...(acao.itens || (acao.dados ? [acao.dados] : []))];
 
   function renderizarItensModal() {
@@ -4116,7 +4331,6 @@ function solicitarConfirmacaoAcao(acao) {
     });
   }
 
-  // Função para remover 1 item específico
   window.removerItemConfirmacaoAssistente = function(idx) {
     itensTemp.splice(idx, 1);
     renderizarItensModal();
@@ -4233,18 +4447,33 @@ function executarAcaoConfirmada(acao) {
     addMsgAssistente(`Lançamento(s) atualizado(s) com sucesso!`, 'ia');
   }
   else if (tipo === 'EXCLUIR' && Array.isArray(itens)) {
+    let excluidosCount = 0;
+
     itens.forEach(item => {
-      if (typeof transacoes !== 'undefined') {
-        const index = transacoes.findIndex(t => 
-          (item.id && String(t.id) === String(item.id)) || 
-          (item.descricao && t.descricao.toLowerCase().includes(item.descricao.toLowerCase()))
-        );
-        if (index !== -1) transacoes.splice(index, 1);
+      if (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) {
+        const tamanhoInicial = transacoes.length;
+        window.transacoes = transacoes.filter(t => {
+          const idBate = item.id && String(t.id) === String(item.id);
+          const descBate = item.descricao && t.descricao.toLowerCase().includes(item.descricao.toLowerCase());
+          return !(idBate || descBate);
+        });
+        if (transacoes.length < tamanhoInicial) excluidosCount++;
+      }
+
+      if (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) {
+        const tamanhoInicialP = parcelamentos.length;
+        window.parcelamentos = parcelamentos.filter(p => {
+          const idBate = item.id && String(p.id) === String(item.id);
+          const descBate = item.descricao && p.descricao.toLowerCase().includes(item.descricao.toLowerCase());
+          return !(idBate || descBate);
+        });
+        if (parcelamentos.length < tamanhoInicialP) excluidosCount++;
       }
     });
+
     if (typeof salvarStorage === 'function') salvarStorage();
     if (typeof atualizarUI === 'function') atualizarUI();
-    addMsgAssistente(`Lançamento(s) excluído(s) com sucesso!`, 'ia');
+    addMsgAssistente(`${excluidosCount > 0 ? excluidosCount : itens.length} lançamento(s) excluído(s) com sucesso!`, 'ia');
   }
 }
 
@@ -4310,4 +4539,5 @@ function gerarPDFExclusivoAssistente(mes) {
   } catch (e) {
     addMsgAssistente('Erro PDF: ' + e.message, 'ia');
   }
-}</script>
+}
+</script>
