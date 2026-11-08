@@ -3490,7 +3490,7 @@
 <button id="btn-chat-assistente" onclick="toggleChatAssistente()">💬</button>
 <div id="janela-chat">
   <div id="chat-header">
-    <span>Assistente - Atendimento Formal</span>
+    <span>Sua IA - Assistente Financeira</span>
     <button onclick="toggleChatAssistente()" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
   </div>
   <div id="chat-mensagens">
@@ -3527,10 +3527,27 @@
   </div>
 </div>
 <script>
-let acaoPendenteAssistente=null;
-function toggleChatAssistente(){const j=document.getElementById('janela-chat');j.style.display=j.style.display==='flex'?'none':'flex';}
-function fecharModalAssistente(){document.getElementById('modal-confirmacao-assistente').style.display='none';acaoPendenteAssistente=null;}
-function addMsgAssistente(t,tp){const d=document.createElement('div');d.className=tp==='user'?'msg-user':'msg-ia';d.innerText=t;document.getElementById('chat-mensagens').appendChild(d);document.getElementById('chat-mensagens').scrollTop=99999;}
+<script>
+let acaoPendenteAssistente = null;
+
+function toggleChatAssistente() {
+  const j = document.getElementById('janela-chat');
+  j.style.display = j.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function fecharModalAssistente() {
+  document.getElementById('modal-confirmacao-assistente').style.display = 'none';
+  acaoPendenteAssistente = null;
+}
+
+function addMsgAssistente(t, tp) {
+  const d = document.createElement('div');
+  d.className = tp === 'user' ? 'msg-user' : 'msg-ia';
+  d.innerText = t;
+  document.getElementById('chat-mensagens').appendChild(d);
+  document.getElementById('chat-mensagens').scrollTop = 99999;
+}
+
 let gravadorAudio = null;
 let gravando = false;
 
@@ -3554,19 +3571,17 @@ function lerArquivoAssistente(input) {
   
   const reader = new FileReader();
   reader.onload = function(e) {
-    const base64Data = e.target.result; // Data URL completo em Base64
+    const base64Data = e.target.result;
     const objetoArquivo = {
       base64: base64Data,
       mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg')
     };
 
     const textoComando = `Analise as informações financeiras deste arquivo anexado (${file.name}) e realize o lançamento correspondente.`;
-    
-    // Chama o processamento enviando o comando e o arquivo multimodal
     processarComandoFormalAssistente(textoComando, objetoArquivo);
   };
 
-  reader.readAsDataURL(file); // Converte corretamente PDFs e Imagens para formato binário Base64
+  reader.readAsDataURL(file);
 }
 
 // Gravação de Áudio (Speech-to-Text do Navegador)
@@ -3628,36 +3643,32 @@ function pararGravacaoAudio() {
   }
 }
 
-// Função principal de comunicação com a Cloud Function com checagem rígida de autenticação
+// Comunicação principal com a Cloud Function com checagem rígida de autenticação
 async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    // 1. Validação Rígida de Autenticação Real no Firebase Auth
+    // Validação Rígida de Autenticação Real no Firebase Auth
     let estaLogado = false;
-
-    // Checa se existe um usuário autenticado ativo no Firebase Auth
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
       estaLogado = true;
     }
     
-    // Trava de segurança adicional: se a tela de login estiver visível (não contiver a classe 'hidden'), força deslogado
+    // Se a tela de login estiver aberta, força status deslogado
     const telaLogin = document.getElementById('tela-login');
     if (telaLogin && !telaLogin.classList.contains('hidden')) {
       estaLogado = false;
     }
 
-    // 2. Se o usuário NÃO estiver logado, bloqueia imediatamente no frontend e recusa a consulta
     if (!estaLogado) {
       addMsgAssistente('Para que eu possa consultar suas finanças, relatórios, faturas ou registrar novos lançamentos, por favor faça login na sua conta.', 'ia');
       return;
     }
 
-    // 3. Prepara os dados de contexto apenas para o usuário efetivamente autenticado
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
-    // Captura o histórico recente de mensagens do chat (últimas 6)
+    // Captura histórico recente do chat (últimas 6 mensagens)
     const historicoChat = [];
     const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
     const ultimasMsgs = Array.from(elementosMsgs).slice(-6);
@@ -3707,7 +3718,8 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Senhor(a), desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-// Exibe os lançamentos (único ou múltiplos) em campos editáveis no modal
+
+// Exibe os lançamentos (únicos ou múltiplos) em campos editáveis no modal
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
@@ -3718,13 +3730,19 @@ function solicitarConfirmacaoAcao(acao) {
     return;
   }
 
-  // Normaliza itens simples ou múltiplos
   const itens = acao.itens || (acao.dados ? [acao.dados] : []);
   
   if (containerLista) {
     containerLista.innerHTML = '';
 
     itens.forEach((item, index) => {
+      // Normalização estrita do tipo de lançamento para os valores do <select>
+      let tNorm = (item.tipoLancamento || 'despesa_fixa').toLowerCase();
+      if (tNorm.includes('fixa')) tNorm = 'despesa_fixa';
+      else if (tNorm.includes('variavel') || tNorm.includes('variável')) tNorm = 'despesa_variavel';
+      else if (tNorm.includes('receita')) tNorm = 'receita';
+      else if (tNorm.includes('cartao') || tNorm.includes('cartão')) tNorm = 'cartao';
+
       const itemDiv = document.createElement('div');
       itemDiv.className = 'item-confirmacao-box';
       itemDiv.style.cssText = "border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:12px; background:#f8fafc;";
@@ -3741,16 +3759,16 @@ function solicitarConfirmacaoAcao(acao) {
           <label style="font-size:11px;">Data:
             <input type="date" id="edit-data-${index}" value="${item.data || new Date().toISOString().split('T')[0]}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
           </label>
-          <label style="font-size:11px;">Tipo:
+          <label style="font-size:11px;">Tipo / Origem:
             <select id="edit-tipo-${index}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
-              <option value="Despesa Fixa" ${item.tipoLancamento === 'Despesa Fixa' ? 'selected' : ''}>Despesa Fixa</option>
-              <option value="Despesa Variável" ${item.tipoLancamento === 'Despesa Variável' ? 'selected' : ''}>Despesa Variável</option>
-              <option value="Receita" ${item.tipoLancamento === 'Receita' ? 'selected' : ''}>Receita</option>
-              <option value="Cartão de Crédito" ${item.tipoLancamento === 'Cartão de Crédito' ? 'selected' : ''}>Cartão de Crédito</option>
+              <option value="despesa_fixa" ${tNorm === 'despesa_fixa' ? 'selected' : ''}>Despesa Fixa</option>
+              <option value="despesa_variavel" ${tNorm === 'despesa_variavel' ? 'selected' : ''}>Despesa Variável</option>
+              <option value="receita" ${tNorm === 'receita' ? 'selected' : ''}>Receita</option>
+              <option value="cartao" ${tNorm === 'cartao' ? 'selected' : ''}>Cartão de Crédito</option>
             </select>
           </label>
           <label style="font-size:11px; grid-column: span 2;">Categoria:
-            <input type="text" id="edit-cat-${index}" value="${item.categoria || 'Outros'}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
+            <input type="text" id="edit-cat-${index}" value="${item.categoria || 'Contas'}" style="width:100%; padding:6px; border:1px solid #cbd5e1; border-radius:6px;">
           </label>
         </div>
       `;
@@ -3761,7 +3779,6 @@ function solicitarConfirmacaoAcao(acao) {
   modal.style.display = 'flex';
 
   btnConfirmar.onclick = function() {
-    // Coleta os valores atualizados pelo usuário na tela de edição
     const itensAtualizados = itens.map((item, index) => {
       const elDesc = document.getElementById(`edit-desc-${index}`);
       const elValor = document.getElementById(`edit-valor-${index}`);
@@ -3784,7 +3801,7 @@ function solicitarConfirmacaoAcao(acao) {
   };
 }
 
-// Executa os lançamentos atualizados após confirmação do usuário
+// Executa ações confirmadas com inserção correta dos tipos e inclusão de novas categorias
 function executarAcaoConfirmada(acao) {
   const { tipo, itens } = acao;
 
@@ -3795,8 +3812,8 @@ function executarAcaoConfirmada(acao) {
           item.descricao || 'Lançamento via IA',
           item.valor || 0,
           item.data,
-          item.tipoLancamento || 'Despesa Fixa',
-          item.categoria || 'Outros'
+          item.tipoLancamento || 'despesa_fixa',
+          item.categoria || 'Contas'
         );
       }
     });
@@ -3816,56 +3833,79 @@ function executarAcaoConfirmada(acao) {
     if (typeof atualizarUI === 'function') atualizarUI();
     addMsgAssistente(`Lançamento(s) excluído(s) com sucesso!`, 'ia');
   }
-}// Função nativa de lançamento ajustada para aceitar a data dinâmica
-function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'Despesa Fixa', categoria = 'Outros') {
+}
+
+// Função nativa de lançamento ajustada para sincronização completa com o aplicativo
+function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Contas') {
   try {
     if (typeof transacoes === 'undefined') {
       addMsgAssistente('Base transacoes não encontrada.', 'ia');
       return;
     }
 
-    // Se não for informada data, usa a data atual (YYYY-MM-DD)
     const hojeStr = new Date().toISOString().split('T')[0];
     const dataFinal = dataLancamento || hojeStr;
 
-    // Formata o valor de acordo com o tipo (receita positiva, despesa negativa)
-    const valorNum = (tipo.toLowerCase().includes('receita')) ? Math.abs(valor) : -Math.abs(valor);
+    let tipoFormatado = (tipo || 'despesa_fixa').toLowerCase();
+    if (tipoFormatado.includes('fixa')) tipoFormatado = 'despesa_fixa';
+    else if (tipoFormatado.includes('variavel') || tipoFormatado.includes('variável')) tipoFormatado = 'despesa_variavel';
+    else if (tipoFormatado.includes('receita')) tipoFormatado = 'receita';
+    else if (tipoFormatado.includes('cartao') || tipoFormatado.includes('cartão')) tipoFormatado = 'cartao';
+
+    const catFormatada = categoria ? (categoria.charAt(0).toUpperCase() + categoria.slice(1)) : 'Geral';
+
+    if (typeof categorias !== 'undefined' && Array.isArray(categorias)) {
+      if (!categorias.includes(catFormatada)) {
+        categorias.push(catFormatada);
+      }
+    }
+
+    const valorNum = (tipoFormatado === 'receita') ? Math.abs(valor) : -Math.abs(valor);
 
     transacoes.push({
-      id: Date.now(),
+      id: String(Date.now() + Math.random()),
       descricao: desc.substring(0, 60),
       valor: valorNum,
-      tipo: tipo,
+      tipo: tipoFormatado,
       data: dataFinal,
-      categoria: categoria,
+      categoria: catFormatada,
       pago: false
     });
 
     if (typeof salvarStorage === 'function') salvarStorage();
     if (typeof atualizarUI === 'function') atualizarUI();
 
-    // Formata data em pt-BR para confirmação visual no chat
     const [ano, mes, dia] = dataFinal.split('-');
-    const dataBr = `${dia}/${mes}/${ano}`;
-
-    addMsgAssistente(`Senhor(a), lançamento de R$ ${Math.abs(valor).toFixed(2)} referente a "${desc}" executado com sucesso em ${dataBr}.`, 'ia');
+    addMsgAssistente(`Senhor(a), lançamento de R$ ${Math.abs(valor).toFixed(2)} referente a "${desc}" executado com sucesso em ${dia}/${mes}/${ano}.`, 'ia');
   } catch (e) {
-    addMsgAssistente('Erro: ' + e.message, 'ia');
+    addMsgAssistente('Erro ao lançar: ' + e.message, 'ia');
   }
 }
-function gerarPDFExclusivoAssistente(mes){
-  try{
-    const {jsPDF}=window.jspdf;const doc=new jsPDF();let dados=[];
-    try{dados=transacoes.filter(t=>t.data&&t.data.startsWith(mes));}catch{}
-    doc.setFontSize(13);doc.text(`Relatório Exclusivo - ${mes}`,14,14);
-    doc.setFontSize(9);doc.text(`Exclusivo - dados da base - ${new Date().toLocaleString('pt-BR')}`,14,20);
-    const head=[["Data","Descrição","Tipo","Valor"]];
-    const body=dados.slice(0,100).map(t=>[t.data||'',(t.descricao||'').substring(0,35),t.tipo||'',(typeof formatarMoeda==='function'?formatarMoeda(t.valor):'R$ '+t.valor)]);
-    if(!body.length)body.push([mes,'Sem registros','-','-']);
-    doc.autoTable({startY:26,head,body,theme:'striped',headStyles:{fillColor:[16,185,129]},styles:{fontSize:8}});
+
+function gerarPDFExclusivoAssistente(mes) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let dados = [];
+    try { dados = transacoes.filter(t => t.data && t.data.startsWith(mes)); } catch {}
+    doc.setFontSize(13);
+    doc.text(`Relatório Exclusivo - ${mes}`, 14, 14);
+    doc.setFontSize(9);
+    doc.text(`Exclusivo - dados da base - ${new Date().toLocaleString('pt-BR')}`, 14, 20);
+    const head = [["Data", "Descrição", "Tipo", "Valor"]];
+    const body = dados.slice(0, 100).map(t => [
+      t.data || '',
+      (t.descricao || '').substring(0, 35),
+      t.tipo || '',
+      (typeof formatarMoeda === 'function' ? formatarMoeda(t.valor) : 'R$ ' + t.valor)
+    ]);
+    if (!body.length) body.push([mes, 'Sem registros', '-', '-']);
+    doc.autoTable({ startY: 26, head, body, theme: 'striped', headStyles: { fillColor: [16, 185, 129] }, styles: { fontSize: 8 } });
     doc.save(`Relatorio_Exclusivo_${mes}.pdf`);
-    addMsgAssistente(`Senhor(a), PDF de ${mes} gerado com ${dados.length} registro(s) exclusivos de sua base.`,'ia');
-  }catch(e){addMsgAssistente('Erro PDF: '+e.message,'ia');}
+    addMsgAssistente(`Senhor(a), PDF de ${mes} gerado com ${dados.length} registro(s) exclusivos de sua base.`, 'ia');
+  } catch (e) {
+    addMsgAssistente('Erro PDF: ' + e.message, 'ia');
+  }
 }
 </script>
 <!-- ===== FIM ASSISTENTE FORMAL ===== -->
