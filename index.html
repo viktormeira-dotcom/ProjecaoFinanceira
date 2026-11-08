@@ -3489,16 +3489,28 @@
 
 <button id="btn-chat-assistente" onclick="toggleChatAssistente()">💬</button>
 <div id="janela-chat">
-  <div id="chat-header"><span>Assistente - Atendimento Formal</span><button onclick="toggleChatAssistente()" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button></div>
-  <div id="chat-mensagens"><div class="msg-ia">Bom dia, senhor(a). Sou seu assistente financeiro formal. Posso lançar valores por foto, PDF ou áudio, realizar projeções e gerar relatórios em PDF utilizando exclusivamente dados de sua base. Como posso ajudá-lo(a) hoje, por gentileza?</div></div>
+  <div id="chat-header">
+    <span>Assistente - Atendimento Formal</span>
+    <button onclick="toggleChatAssistente()" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
+  </div>
+  <div id="chat-mensagens">
+    <div class="msg-ia">Bom dia, senhor(a). Sou seu assistente financeiro. Como posso ajudá-lo(a) hoje?</div>
+  </div>
   <div id="chat-input-area">
+    <!-- Botão de Anexo (Fotos e PDFs) -->
     <input type="file" id="input-foto-pdf-assistente" accept="image/*,.pdf" style="display:none" onchange="lerArquivoAssistente(this)">
-    <button onclick="document.getElementById('input-foto-pdf-assistente').click()" style="border:none;background:#f1f5f9;border-radius:10px;padding:0 11px;cursor:pointer">📎</button>
-    <input id="chat-input-assistente" placeholder="Ex: Lançar internet 90 reais" onkeypress="if(event.key==='Enter') enviarComandoAssistente()">
-    <button onclick="enviarComandoAssistente()" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:9px 14px;cursor:pointer">Enviar</button>
+    <button type="button" onclick="document.getElementById('input-foto-pdf-assistente').click()" title="Anexar Imagem ou PDF" style="border:none;background:#f1f5f9;border-radius:10px;padding:0 11px;cursor:pointer">📎</button>
+    
+    <!-- Botão de Gravação de Áudio -->
+    <button type="button" id="btn-audio-assistente" onclick="alternarGravacaoAudio()" title="Gravar Áudio" style="border:none;background:#f1f5f9;border-radius:10px;padding:0 11px;cursor:pointer">🎙️</button>
+    
+    <!-- Campo de Texto -->
+    <input id="chat-input-assistente" placeholder="Ex: Quanto gastei este mês?" onkeypress="if(event.key==='Enter') enviarComandoAssistente()">
+    
+    <!-- Botão de Enviar -->
+    <button type="button" onclick="enviarComandoAssistente()" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:9px 14px;cursor:pointer">Enviar</button>
   </div>
 </div>
-
 <div id="modal-confirmacao-assistente"><div id="modal-box-assistente">
   <h3 style="margin:0 0 10px;font-weight:800;color:#0f172a">Confirmação Necessária</h3>
   <p id="texto-confirmacao-assistente" style="font-size:14px;line-height:1.6;color:#334155;white-space:pre-line"></p>
@@ -3512,6 +3524,92 @@ let acaoPendenteAssistente=null;
 function toggleChatAssistente(){const j=document.getElementById('janela-chat');j.style.display=j.style.display==='flex'?'none':'flex';}
 function fecharModalAssistente(){document.getElementById('modal-confirmacao-assistente').style.display='none';acaoPendenteAssistente=null;}
 function addMsgAssistente(t,tp){const d=document.createElement('div');d.className=tp==='user'?'msg-user':'msg-ia';d.innerText=t;document.getElementById('chat-mensagens').appendChild(d);document.getElementById('chat-mensagens').scrollTop=99999;}
+let gravadorAudio = null;
+let gravando = false;
+
+// Envia a mensagem digitada pelo usuário
+function enviarComandoAssistente() {
+  const input = document.getElementById('chat-input-assistente');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  addMsgAssistente(texto, 'user');
+  input.value = '';
+  processarComandoFormalAssistente(texto);
+}
+
+// Processa o upload de arquivos/PDFs e envia para a IA
+function lerArquivoAssistente(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  
+  addMsgAssistente(`Anexo enviado: ${file.name}`, 'user');
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const conteudoTexto = `[Arquivo Anexado: ${file.name}] - O usuário enviou um documento. Analise as informações financeiras deste arquivo se possível.`;
+    processarComandoFormalAssistente(conteudoTexto);
+  };
+  reader.readAsText(file);
+}
+
+// Gravação de Áudio (Speech-to-Text do Navegador)
+function alternarGravacaoAudio() {
+  const btn = document.getElementById('btn-audio-assistente');
+  
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('O seu navegador não suporta reconhecimento de voz por áudio.');
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!gravando) {
+    gravadorAudio = new SpeechRecognition();
+    gravadorAudio.lang = 'pt-BR';
+    gravadorAudio.continuous = false;
+    gravadorAudio.interimResults = false;
+
+    gravadorAudio.onstart = function() {
+      gravando = true;
+      btn.style.background = '#ef4444';
+      btn.style.color = '#ffffff';
+    };
+
+    gravadorAudio.onresult = function(event) {
+      const textoTranscrito = event.results[0][0].transcript;
+      document.getElementById('chat-input-assistente').value = textoTranscrito;
+      enviarComandoAssistente();
+    };
+
+    gravadorAudio.onerror = function(event) {
+      console.error('Erro de áudio:', event.error);
+      pararGravacaoAudio();
+    };
+
+    gravadorAudio.onend = function() {
+      pararGravacaoAudio();
+    };
+
+    gravadorAudio.start();
+  } else {
+    pararGravacaoAudio();
+  }
+}
+
+function pararGravacaoAudio() {
+  gravando = false;
+  const btn = document.getElementById('btn-audio-assistente');
+  if (btn) {
+    btn.style.background = '#f1f5f9';
+    btn.style.color = '#000000';
+  }
+  if (gravadorAudio) {
+    try { gravadorAudio.stop(); } catch(e){}
+  }
+}
+
+// Função principal de comunicação com a Cloud Function do Gemini
 async function processarComandoFormalAssistente(cmdO) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
@@ -3530,10 +3628,10 @@ async function processarComandoFormalAssistente(cmdO) {
     if (data.resposta) {
       addMsgAssistente(data.resposta, 'ia');
     } else {
-      addMsgAssistente('Senhor(a), não foi possível obter uma resposta válida da IA no momento.', 'ia');
+      addMsgAssistente('Senhor(a), não foi possível obter uma resposta válida no momento.', 'ia');
     }
   } catch (error) {
-    console.error('Erro de conexão com o Gemini:', error);
+    console.error('Erro de conexão:', error);
     addMsgAssistente('Senhor(a), desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
