@@ -3472,8 +3472,7 @@
             atualizarUI();
         });
     </script>
-
-    <!-- ===== PARTE 1 - ASSISTENTE FORMAL ===== -->
+<!-- ===== PARTE 1 - ASSISTENTE FORMAL ===== -->
 <style>
 #btn-chat-assistente{position:fixed;right:20px;bottom:20px;z-index:9999;background:#10b981;color:#022c22;border:none;width:62px;height:62px;border-radius:50%;font-size:26px;cursor:pointer;box-shadow:0 6px 20px rgba(16,185,129,.4);display:flex;align-items:center;justify-content:center}
 #janela-chat{position:fixed;right:20px;bottom:92px;width:390px;max-width:92vw;height:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;display:none;flex-direction:column;z-index:9999;box-shadow:0 15px 40px rgba(0,0,0,.25)}
@@ -3482,7 +3481,7 @@
 .msg-user{align-self:flex-end;background:#0f172a;color:#fff;padding:9px 13px;border-radius:14px 14px 2px 14px;max-width:82%;font-size:13.5px}
 .msg-ia{align-self:flex-start;background:#fff;color:#1e293b;padding:9px 13px;border-radius:14px 14px 14px 2px;max-width:86%;font-size:13px;line-height:1.5;border:1px solid #e2e8f0}
 #chat-input-area{display:flex;padding:10px;border-top:1px solid #e2e8f0;gap:6px;background:#fff;border-radius:0 0 16px 16px}
-#chat-input-assistente{flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:9px 11px;font-size:13.5px}
+#chat-input-assistente{flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:99px 11px;font-size:13.5px}
 #modal-confirmacao-assistente{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:100000;padding:16px}
 #modal-box-assistente{background:#fff;padding:20px;border-radius:14px;width:100%;max-width:440px}
 </style>
@@ -3490,7 +3489,7 @@
 <button id="btn-chat-assistente" onclick="toggleChatAssistente()">💬</button>
 <div id="janela-chat">
   <div id="chat-header">
-    <span>Sua IA - Assistente Financeira</span>
+    <span>IA - Assistente Financeira</span>
     <button onclick="toggleChatAssistente()" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
   </div>
   <div id="chat-mensagens">
@@ -3511,13 +3510,13 @@
     <button type="button" onclick="enviarComandoAssistente()" style="background:#0f172a;color:#fff;border:none;border-radius:10px;padding:9px 14px;cursor:pointer">Enviar</button>
   </div>
 </div>
+
 <!-- Estrutura do Modal de Confirmação Interativo com Formulário de Edição -->
 <div id="modal-confirmacao-assistente" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:100000; align-items:center; justify-content:center; padding:16px;">
   <div id="modal-box-assistente" style="background:#fff; border-radius:14px; width:100%; max-width:550px; padding:20px; max-height:85vh; overflow-y:auto; color:#0f172a;">
     <h3 style="margin-top:0; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Conferir Lançamentos</h3>
     <p style="font-size:13px; color:#64748b;">Revise ou altere os campos abaixo antes de efetuar o registro no sistema:</p>
     
-    <!-- O JavaScript injetará aqui os campos de edição item a item -->
     <div id="lista-itens-confirmacao"></div>
 
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:18px;">
@@ -3526,17 +3525,20 @@
     </div>
   </div>
 </div>
-<script>
+
 <script>
 let acaoPendenteAssistente = null;
 
 function toggleChatAssistente() {
   const j = document.getElementById('janela-chat');
-  j.style.display = j.style.display === 'flex' ? 'none' : 'flex';
+  if (j) {
+    j.style.display = (j.style.display === 'flex') ? 'none' : 'flex';
+  }
 }
 
 function fecharModalAssistente() {
-  document.getElementById('modal-confirmacao-assistente').style.display = 'none';
+  const m = document.getElementById('modal-confirmacao-assistente');
+  if (m) m.style.display = 'none';
   acaoPendenteAssistente = null;
 }
 
@@ -3544,16 +3546,19 @@ function addMsgAssistente(t, tp) {
   const d = document.createElement('div');
   d.className = tp === 'user' ? 'msg-user' : 'msg-ia';
   d.innerText = t;
-  document.getElementById('chat-mensagens').appendChild(d);
-  document.getElementById('chat-mensagens').scrollTop = 99999;
+  const cont = document.getElementById('chat-mensagens');
+  if (cont) {
+    cont.appendChild(d);
+    cont.scrollTop = 99999;
+  }
 }
 
 let gravadorAudio = null;
 let gravando = false;
 
-// Envia a mensagem digitada pelo usuário
 function enviarComandoAssistente() {
   const input = document.getElementById('chat-input-assistente');
+  if (!input) return;
   const texto = input.value.trim();
   if (!texto) return;
 
@@ -3562,7 +3567,6 @@ function enviarComandoAssistente() {
   processarComandoFormalAssistente(texto);
 }
 
-// Processa o upload de arquivos/PDFs e imagens enviando em Base64 para a IA
 function lerArquivoAssistente(input) {
   if (!input.files || !input.files[0]) return;
   const file = input.files[0];
@@ -3584,7 +3588,6 @@ function lerArquivoAssistente(input) {
   reader.readAsDataURL(file);
 }
 
-// Gravação de Áudio (Speech-to-Text do Navegador)
 function alternarGravacaoAudio() {
   const btn = document.getElementById('btn-audio-assistente');
   
@@ -3643,18 +3646,15 @@ function pararGravacaoAudio() {
   }
 }
 
-// Comunicação principal com a Cloud Function com checagem rígida de autenticação
 async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    // Validação Rígida de Autenticação Real no Firebase Auth
     let estaLogado = false;
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
       estaLogado = true;
     }
     
-    // Se a tela de login estiver aberta, força status deslogado
     const telaLogin = document.getElementById('tela-login');
     if (telaLogin && !telaLogin.classList.contains('hidden')) {
       estaLogado = false;
@@ -3668,7 +3668,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
-    // Captura histórico recente do chat (últimas 6 mensagens)
     const historicoChat = [];
     const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
     const ultimasMsgs = Array.from(elementosMsgs).slice(-6);
@@ -3719,7 +3718,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   }
 }
 
-// Exibe os lançamentos (únicos ou múltiplos) em campos editáveis no modal
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
@@ -3736,7 +3734,6 @@ function solicitarConfirmacaoAcao(acao) {
     containerLista.innerHTML = '';
 
     itens.forEach((item, index) => {
-      // Normalização estrita do tipo de lançamento para os valores do <select>
       let tNorm = (item.tipoLancamento || 'despesa_fixa').toLowerCase();
       if (tNorm.includes('fixa')) tNorm = 'despesa_fixa';
       else if (tNorm.includes('variavel') || tNorm.includes('variável')) tNorm = 'despesa_variavel';
@@ -3801,7 +3798,6 @@ function solicitarConfirmacaoAcao(acao) {
   };
 }
 
-// Executa ações confirmadas com inserção correta dos tipos e inclusão de novas categorias
 function executarAcaoConfirmada(acao) {
   const { tipo, itens } = acao;
 
@@ -3835,7 +3831,6 @@ function executarAcaoConfirmada(acao) {
   }
 }
 
-// Função nativa de lançamento ajustada para sincronização completa com o aplicativo
 function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Contas') {
   try {
     if (typeof transacoes === 'undefined') {
@@ -3909,5 +3904,3 @@ function gerarPDFExclusivoAssistente(mes) {
 }
 </script>
 <!-- ===== FIM ASSISTENTE FORMAL ===== -->
-</body>
-</html>
