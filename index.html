@@ -3472,7 +3472,7 @@
             atualizarUI();
         });
     </script>
-<!-- ===== PARTE 1 - ASSISTENTE FORMAL ===== -->
+<!-- ===== PARTE 1 - ASSISTENTE FORMAL COM SUPORTE A CARTÃO & PARCELAMENTO ===== -->
 <style>
 #btn-chat-assistente {
   position: fixed;
@@ -3857,7 +3857,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
   const urlFunction = 'https://chatgemini-830415002227.southamerica-east1.run.app';
 
   try {
-    // 💡 VERIFICAÇÃO DE LOGIN CORRIGIDA: Usa a variável usuarioLogado e o estado da tela de login
     let estaLogado = typeof usuarioLogado !== 'undefined' ? usuarioLogado : false;
     
     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
@@ -3875,6 +3874,8 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     }
 
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
+    // 💡 CAPTURA OS CARTÕES CADASTRADOS NO SISTEMA
+    const cartoesEnvio = (typeof cartoes !== 'undefined' && Array.isArray(cartoes)) ? cartoes : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
     const historicoChat = [];
@@ -3901,6 +3902,7 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       body: JSON.stringify({
         mensagem: cmd0,
         transacoesContexto: transacoesEnvio,
+        cartoesContexto: cartoesEnvio,
         totaisTela: totaisPainel,
         usuarioAutenticado: true,
         arquivo: arquivoParam,
@@ -3946,6 +3948,10 @@ function solicitarConfirmacaoAcao(acao) {
       ? categorias
       : ['Renda', 'Moradia', 'Alimentação', 'Contas', 'Transporte', 'Lazer', 'Cartão de Crédito', 'Geral', 'Impostos'];
 
+    const listaCartoes = (typeof cartoes !== 'undefined' && Array.isArray(cartoes) && cartoes.length > 0)
+      ? cartoes.map(c => typeof c === 'string' ? c : (c.nome || c.cartaoNome))
+      : ['Generico'];
+
     itens.forEach((item, index) => {
       let tNorm = (item.tipoLancamento || item.tipo || 'despesa_fixa').toLowerCase();
       if (tNorm.includes('fixa')) tNorm = 'despesa_fixa';
@@ -3958,10 +3964,16 @@ function solicitarConfirmacaoAcao(acao) {
         listaCategorias.push(catAtual);
       }
 
+      const cartaoAtual = item.cartaoNome || item.cartao || listaCartoes[0] || 'Generico';
+      const numParcelas = item.parcelas || 1;
       const ePago = item.pago === true || String(item.pago).toLowerCase() === 'pago' || String(item.pago).toLowerCase() === 'true';
 
       const opcoesCategoriasHTML = listaCategorias.map(c => 
         `<option value="${c}" ${c.toLowerCase() === catAtual.toLowerCase() ? 'selected' : ''}>${c}</option>`
+      ).join('');
+
+      const opcoesCartoesHTML = listaCartoes.map(c => 
+        `<option value="${c}" ${c.toLowerCase() === cartaoAtual.toLowerCase() ? 'selected' : ''}>${c}</option>`
       ).join('');
 
       const itemDiv = document.createElement('div');
@@ -3981,13 +3993,26 @@ function solicitarConfirmacaoAcao(acao) {
             <input type="date" id="edit-data-${index}" value="${item.data || new Date().toISOString().split('T')[0]}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
           </label>
           <label style="font-size:11px; color:#475569;">Tipo / Origem:
-            <select id="edit-tipo-${index}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
+            <select id="edit-tipo-${index}" onchange="toggleCamposCartaoModal(${index})" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
               <option value="despesa_fixa" ${tNorm === 'despesa_fixa' ? 'selected' : ''}>Despesa Fixa</option>
               <option value="despesa_variavel" ${tNorm === 'despesa_variavel' ? 'selected' : ''}>Despesa Variável</option>
               <option value="receita" ${tNorm === 'receita' ? 'selected' : ''}>Receita</option>
               <option value="cartao" ${tNorm === 'cartao' ? 'selected' : ''}>Cartão de Crédito</option>
             </select>
           </label>
+
+          <!-- CAMPOS DINÂMICOS PARA CARTÃO DE CRÉDITO -->
+          <div id="box-cartao-especifico-${index}" style="display: ${tNorm === 'cartao' ? 'contents' : 'none'};">
+            <label style="font-size:11px; color:#475569;">Cartão Destino:
+              <select id="edit-cartao-${index}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
+                ${opcoesCartoesHTML}
+              </select>
+            </label>
+            <label style="font-size:11px; color:#475569;">Nº de Parcelas:
+              <input type="number" min="1" max="72" id="edit-parcelas-${index}" value="${numParcelas}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
+            </label>
+          </div>
+
           <label style="font-size:11px; color:#475569;">Categoria:
             <select id="edit-cat-${index}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
               ${opcoesCategoriasHTML}
@@ -4015,6 +4040,8 @@ function solicitarConfirmacaoAcao(acao) {
       const elTipo = document.getElementById(`edit-tipo-${index}`);
       const elCat = document.getElementById(`edit-cat-${index}`);
       const elStatus = document.getElementById(`edit-status-${index}`);
+      const elCartao = document.getElementById(`edit-cartao-${index}`);
+      const elParcelas = document.getElementById(`edit-parcelas-${index}`);
 
       return {
         ...item,
@@ -4023,7 +4050,9 @@ function solicitarConfirmacaoAcao(acao) {
         data: elData ? elData.value : item.data,
         tipoLancamento: elTipo ? elTipo.value : item.tipoLancamento,
         categoria: elCat ? elCat.value : item.categoria,
-        pago: elStatus ? (elStatus.value === 'pago') : item.pago
+        pago: elStatus ? (elStatus.value === 'pago') : item.pago,
+        cartaoNome: elCartao ? elCartao.value : item.cartaoNome,
+        parcelas: elParcelas ? parseInt(elParcelas.value) || 1 : 1
       };
     });
 
@@ -4032,20 +4061,47 @@ function solicitarConfirmacaoAcao(acao) {
   };
 }
 
+function toggleCamposCartaoModal(idx) {
+  const elTipo = document.getElementById(`edit-tipo-${idx}`);
+  const box = document.getElementById(`box-cartao-especifico-${idx}`);
+  if (elTipo && box) {
+    box.style.display = (elTipo.value === 'cartao') ? 'contents' : 'none';
+  }
+}
+
 function executarAcaoConfirmada(acao) {
   const { tipo, itens } = acao;
 
   if (tipo === 'CRIAR' && Array.isArray(itens)) {
     itens.forEach(item => {
-      if (typeof executarLancamentoAssistente === 'function') {
-        executarLancamentoAssistente(
-          item.descricao || 'Lançamento via IA',
-          item.valor || 0,
-          item.data,
-          item.tipoLancamento || 'despesa_fixa',
-          item.categoria || 'Geral',
-          item.pago
-        );
+      if (item.tipoLancamento === 'cartao') {
+        if (typeof lancarCompraParcelada === 'function') {
+          lancarCompraParcelada(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
+        } else if (typeof adicionarCompraCartao === 'function') {
+          adicionarCompraCartao(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
+        } else {
+          executarLancamentoAssistente(
+            item.descricao || 'Lançamento via IA',
+            item.valor || 0,
+            item.data,
+            'cartao',
+            item.categoria || 'Geral',
+            false,
+            item.cartaoNome || 'Generico',
+            item.parcelas || 1
+          );
+        }
+      } else {
+        if (typeof executarLancamentoAssistente === 'function') {
+          executarLancamentoAssistente(
+            item.descricao || 'Lançamento via IA',
+            item.valor || 0,
+            item.data,
+            item.tipoLancamento || 'despesa_fixa',
+            item.categoria || 'Geral',
+            item.pago
+          );
+        }
       }
     });
     addMsgAssistente(`Registrado(s) ${itens.length} lançamento(s) com sucesso no sistema!`, 'ia');
@@ -4064,6 +4120,11 @@ function executarAcaoConfirmada(acao) {
           if (item.tipoLancamento) transacoes[index].tipo = item.tipoLancamento;
           if (item.categoria) transacoes[index].categoria = item.categoria;
           if (item.pago !== undefined) transacoes[index].pago = item.pago;
+          if (item.cartaoNome) {
+            transacoes[index].cartaoNome = item.cartaoNome;
+            transacoes[index].cartao = item.cartaoNome;
+          }
+          if (item.parcelas) transacoes[index].parcelas = item.parcelas;
         }
       }
     });
@@ -4087,7 +4148,7 @@ function executarAcaoConfirmada(acao) {
   }
 }
 
-function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Geral', pago = false) {
+function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo = 'despesa_fixa', categoria = 'Geral', pago = false, cartaoNome = null, parcelas = 1) {
   try {
     if (typeof transacoes === 'undefined') {
       addMsgAssistente('Base transacoes não encontrada.', 'ia');
@@ -4111,10 +4172,9 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
       }
     }
 
-    // Mantém o valor como número positivo para bater com o padrão da interface
     const valorNum = Math.abs(valor);
 
-    transacoes.push({
+    const novoObjeto = {
       id: String(Date.now() + Math.random()),
       descricao: desc.substring(0, 60),
       valor: valorNum,
@@ -4122,7 +4182,15 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
       data: dataFinal,
       categoria: catFormatada,
       pago: pago === true || String(pago).toLowerCase() === 'pago'
-    });
+    };
+
+    if (tipoFormatado === 'cartao') {
+      novoObjeto.cartaoNome = cartaoNome || 'Generico';
+      novoObjeto.cartao = cartaoNome || 'Generico';
+      novoObjeto.parcelas = parcelas || 1;
+    }
+
+    transacoes.push(novoObjeto);
 
     if (typeof salvarStorage === 'function') salvarStorage();
     if (typeof atualizarUI === 'function') atualizarUI();
