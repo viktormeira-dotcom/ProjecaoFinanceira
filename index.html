@@ -3913,14 +3913,28 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
 
     const data = await response.json();
 
-    if (data.resposta) {
-      addMsgAssistente(data.resposta, 'ia');
+    // 🛡️ MELHORIA: Trata se a IA enviar a resposta em formato JSON bruto por texto
+    let respostaExibicao = data.resposta;
+    let acaoObjeto = data.acao;
+
+    if (typeof data.resposta === 'string' && data.resposta.trim().startsWith('{')) {
+      try {
+        const parsedInterno = JSON.parse(data.resposta);
+        if (parsedInterno.resposta) respostaExibicao = parsedInterno.resposta;
+        if (parsedInterno.acao) acaoObjeto = parsedInterno.acao;
+      } catch (e) {
+        console.warn('Resposta textual não é JSON estruturado:', e);
+      }
+    }
+
+    if (respostaExibicao) {
+      addMsgAssistente(respostaExibicao, 'ia');
     } else {
       addMsgAssistente('Desculpe, não foi possível obter uma resposta válida no momento.', 'ia');
     }
 
-    if (data.acao && data.acao.tipo) {
-      solicitarConfirmacaoAcao(data.acao);
+    if (acaoObjeto && acaoObjeto.tipo) {
+      solicitarConfirmacaoAcao(acaoObjeto);
     }
 
   } catch (error) {
@@ -3928,7 +3942,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
