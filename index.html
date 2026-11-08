@@ -3875,11 +3875,31 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       return;
     }
 
-    // Coleta transações, cartões E parcelamentos
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
     const cartoesEnvio = (typeof cartoes !== 'undefined' && Array.isArray(cartoes)) ? cartoes : [];
     const parcelamentosEnvio = (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) ? parcelamentos : [];
     const hojeIso = new Date().toISOString().split('T')[0];
+
+    // Mapeia o ID do cartão para o Nome do Cartão para facilitar a busca da IA no backend
+    const mapaCartoes = {};
+    cartoesEnvio.forEach(c => {
+      if (c && c.id) {
+        mapaCartoes[String(c.id)] = c.nome || c.cartaoNome || 'Cartão';
+      }
+    });
+
+    // Enriquece o array de parcelamentos injetando o nome do cartão de destino
+    const parcelamentosEnriquecidos = parcelamentosEnvio.map(p => {
+      const nomeCartao = mapaCartoes[String(p.cartaoId)] || p.cartaoNome || p.cartao || 'Desconhecido';
+      return {
+        ...p,
+        cartaoNome: nomeCartao,
+        cartao: nomeCartao
+      };
+    });
+
+    // Captura o mês atualmente selecionado na barra do aplicativo (ex: "Novembro De 2026")
+    const mesFiltroTela = document.querySelector('.selector-mes, select-mes, #mes-filtro, header span')?.innerText || '';
 
     const historicoChat = [];
     const elementosMsgs = document.querySelectorAll('#chat-mensagens > div');
@@ -3906,8 +3926,9 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         mensagem: cmd0,
         transacoesContexto: transacoesEnvio,
         cartoesContexto: cartoesEnvio,
-        parcelamentosContexto: parcelamentosEnvio, // <-- PARCELAMENTOS/FATURAS ADICIONADOS AQUI
+        parcelamentosContexto: parcelamentosEnriquecidos, // Envia com nome do cartão mapeado
         totaisTela: totaisPainel,
+        mesVisualizacao: mesFiltroTela,
         usuarioAutenticado: true,
         arquivo: arquivoParam,
         dataHoje: hojeIso,
@@ -3967,8 +3988,7 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     console.error('Erro de conexão:', error);
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
-}
-function solicitarConfirmacaoAcao(acao) {
+}function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
   const btnConfirmar = document.getElementById('btn-confirmar-assistente');
