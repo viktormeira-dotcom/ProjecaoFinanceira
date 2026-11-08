@@ -3961,6 +3961,8 @@ const data = await response.json();
     }
 
     if (acaoObjeto && acaoObjeto.tipo) {
+      solicitarConfirmacaoAcao(acaoObjeto);
+    }
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
@@ -3992,6 +3994,10 @@ function solicitarConfirmacaoAcao(acao) {
       else if (tNorm.includes('cartao') || tNorm.includes('cartão')) tNorm = 'cartao';
 
       const catAtual = item.categoria ? (item.categoria.charAt(0).toUpperCase() + item.categoria.slice(1)) : 'Geral';
+      if (!listaCategorias.includes(catAtual)) {
+        listaCategorias.push(catAtual);
+      }
+
       const cartaoAtual = item.cartaoNome || item.cartao || listaCartoes[0] || 'Generico';
       const numParcelas = item.parcelas || 1;
       const ePago = item.pago === true || String(item.pago).toLowerCase() === 'pago' || String(item.pago).toLowerCase() === 'true';
@@ -4029,6 +4035,7 @@ function solicitarConfirmacaoAcao(acao) {
             </select>
           </label>
 
+          <!-- CAMPOS DINÂMICOS PARA CARTÃO DE CRÉDITO -->
           <div id="box-cartao-especifico-${index}" style="display: ${tNorm === 'cartao' ? 'contents' : 'none'};">
             <label style="font-size:11px; color:#475569;">Cartão Destino:
               <select id="edit-cartao-${index}" style="width:100%; padding:5px 7px; border:1px solid #cbd5e1; border-radius:6px; background:#fff; color:#0f172a; font-size:12px;">
@@ -4100,19 +4107,12 @@ function executarAcaoConfirmada(acao) {
   const { tipo, itens } = acao;
 
   if (tipo === 'CRIAR' && Array.isArray(itens)) {
-    let gravadosComSucesso = 0;
-
     itens.forEach(item => {
-      let tNorm = (item.tipoLancamento || item.tipo || 'despesa_fixa').toLowerCase();
-      if (tNorm.includes('cartao') || tNorm.includes('cartão')) tNorm = 'cartao';
-
-      if (tNorm === 'cartao') {
+      if (item.tipoLancamento === 'cartao') {
         if (typeof lancarCompraParcelada === 'function') {
           lancarCompraParcelada(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
-          gravadosComSucesso++;
         } else if (typeof adicionarCompraCartao === 'function') {
           adicionarCompraCartao(item.cartaoNome, item.descricao, item.valor, item.parcelas, item.data, item.categoria);
-          gravadosComSucesso++;
         } else {
           executarLancamentoAssistente(
             item.descricao || 'Lançamento via IA',
@@ -4124,22 +4124,21 @@ function executarAcaoConfirmada(acao) {
             item.cartaoNome || 'Generico',
             item.parcelas || 1
           );
-          gravadosComSucesso++;
         }
       } else {
-        executarLancamentoAssistente(
-          item.descricao || 'Lançamento via IA',
-          item.valor || 0,
-          item.data,
-          item.tipoLancamento || 'despesa_fixa',
-          item.categoria || 'Geral',
-          item.pago
-        );
-        gravadosComSucesso++;
+        if (typeof executarLancamentoAssistente === 'function') {
+          executarLancamentoAssistente(
+            item.descricao || 'Lançamento via IA',
+            item.valor || 0,
+            item.data,
+            item.tipoLancamento || 'despesa_fixa',
+            item.categoria || 'Geral',
+            item.pago
+          );
+        }
       }
     });
-
-    addMsgAssistente(`Registrado(s) ${gravadosComSucesso} lançamento(s) com sucesso no sistema!`, 'ia');
+    addMsgAssistente(`Registrado(s) ${itens.length} lançamento(s) com sucesso no sistema!`, 'ia');
   } 
   else if (tipo === 'EDITAR' && Array.isArray(itens)) {
     itens.forEach(item => {
@@ -4229,10 +4228,14 @@ function executarLancamentoAssistente(desc, valor, dataLancamento = null, tipo =
 
     if (typeof salvarStorage === 'function') salvarStorage();
     if (typeof atualizarUI === 'function') atualizarUI();
+
+    const [ano, mes, dia] = dataFinal.split('-');
+    addMsgAssistente(`Lançamento de R$ ${valorNum.toFixed(2)} referente a "${desc}" executado com sucesso em ${dia}/${mes}/${ano}.`, 'ia');
   } catch (e) {
-    console.error('Erro ao lançar:', e);
+    addMsgAssistente('Erro ao lançar: ' + e.message, 'ia');
   }
 }
+
 function gerarPDFExclusivoAssistente(mes) {
   try {
     const { jsPDF } = window.jspdf;
