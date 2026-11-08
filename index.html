@@ -3879,50 +3879,40 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     const parcelamentosEnvio = (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) ? parcelamentos : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
-    // Mapa de IDs para Nomes de Cartão
-    const mapaCartoes = {};
+    // 💡 MONTA A VISÃO DE FATURAS EXATAMENTE COMO A SUA TELA FAZ
+    const faturasCalculadasDoSistema = [];
+    const anoAtual = dataAtual.getFullYear();
+    const mesAtual = dataAtual.getMonth(); // 0-indexed
+    const mesChave = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+
     cartoesEnvio.forEach(c => {
-      if (c && c.id) {
-        mapaCartoes[String(c.id)] = c.nome || c.cartaoNome || 'Cartão';
-      }
-    });
+      const comprasDoCartao = parcelamentosEnvio.filter(p => String(p.cartaoId) === String(c.id));
+      const itensFaturaMes = [];
 
-    // 1. EXTRAÇÃO DINÂMICA DAS FATURAS/PARCELAS DO MÊS ATUAL
-    // Se no seu sistema existir uma função nativa de cálculo de faturas (ex: obterFaturasDoMes ou calcularFaturas), usaremos ela.
-    // Caso contrário, faremos o cálculo exato das parcelas pertencentes ao mês atual:
-    const mesFiltroTela = document.querySelector('.selector-mes, .select-mes, #mes-filtro, header span')?.innerText || '';
-    
-    const itensFaturaCalculados = [];
+      comprasDoCartao.forEach(p => {
+        // Usa a sua função nativa do HTML para saber se a parcela está ativa
+        const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
+        if (infoP.ativa) {
+          itensFaturaMes.push({
+            descricao: p.descricao,
+            parcelaAtual: infoP.numeroParcela,
+            totalParcelas: p.totalParcelas,
+            rotuloParcela: `${infoP.numeroParcela}/${p.totalParcelas}`,
+            valorParcela: infoP.valorParcela,
+            categoria: p.categoria || 'Geral'
+          });
+        }
+      });
 
-    parcelamentosEnvio.forEach(p => {
-      const nomeCartao = mapaCartoes[String(p.cartaoId)] || p.cartaoNome || p.cartao || 'Cartão';
-      const dataInicio = new Date(p.dataInicio || p.data);
-      const totalParc = parseInt(p.totalParcelas || p.parcelas) || 1;
-      const vlrParc = parseFloat(p.valorParcela) || (parseFloat(p.valorTotal || p.valor) / totalParc) || 0;
-
-      // Gera a lista de parcelas com as datas de vencimento de cada mês
-      for (let i = 0; i < totalParc; i++) {
-        const dParcela = new Date(dataInicio);
-        dParcela.setMonth(dParcela.getMonth() + i);
-        const anoMes = dParcela.toISOString().substring(0, 7); // ex: "2026-11"
-
-        itensFaturaCalculados.push({
-          idParcela: `${p.id}_${i+1}`,
-          idOriginal: p.id,
-          cartaoId: p.cartaoId,
-          cartaoNome: nomeCartao,
-          cartao: nomeCartao,
-          descricao: p.descricao,
-          parcelaAtual: i + 1,
-          totalParcelas: totalParc,
-          identificadorParcela: `Parcela ${i + 1}/${totalParc}`,
-          valorParcela: vlrParc,
-          valor: vlrParc,
-          categoria: p.categoria || 'Cartão de Crédito',
-          dataVencimentoParcela: dParcela.toISOString().split('T')[0],
-          anoMes: anoMes
-        });
-      }
+      faturasCalculadasDoSistema.push({
+        cartaoId: String(c.id),
+        cartaoNome: c.nome,
+        fechamento: c.fechamento,
+        vencimento: c.vencimento,
+        mesReferencia: mesChave,
+        valorTotalFatura: itensFaturaMes.reduce((acc, item) => acc + item.valorParcela, 0),
+        itensFatura: itensFaturaMes
+      });
     });
 
     const historicoChat = [];
@@ -3951,9 +3941,9 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         transacoesContexto: transacoesEnvio,
         cartoesContexto: cartoesEnvio,
         parcelamentosContexto: parcelamentosEnvio,
-        faturasDetalhesContexto: itensFaturaCalculados, // <-- ENVIA TODAS AS PARCELAS CALCULADAS COM MÊS E NOME DO CARTÃO
+        faturasCalculadasContexto: faturasCalculadasDoSistema, // 👈 ENVIADO AQUI
         totaisTela: totaisPainel,
-        mesVisualizacao: mesFiltroTela,
+        mesVisualizacao: document.getElementById('label-mes-ano')?.innerText || '',
         usuarioAutenticado: true,
         arquivo: arquivoParam,
         dataHoje: hojeIso,
@@ -3969,7 +3959,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     if (typeof data.resposta === 'string' && (data.resposta.trim().startsWith('{') || data.resposta.includes('"acao":'))) {
       try {
         let jsonStr = data.resposta.trim();
-        
         if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
         if (jsonStr.startsWith('```')) jsonStr = jsonStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
 
@@ -4014,7 +4003,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
