@@ -3911,19 +3911,46 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       })
     });
 
-    const data = await response.json();
+const data = await response.json();
 
-    // 🛡️ MELHORIA: Trata se a IA enviar a resposta em formato JSON bruto por texto
     let respostaExibicao = data.resposta;
     let acaoObjeto = data.acao;
 
-    if (typeof data.resposta === 'string' && data.resposta.trim().startsWith('{')) {
+    // 🛡️ REPARO AUTOMÁTICO PARA ARQUIVOS MULTILANÇAMENTOS COM TEXTO TRUNCADO
+    if (typeof data.resposta === 'string' && (data.resposta.trim().startsWith('{') || data.resposta.includes('"acao":'))) {
       try {
-        const parsedInterno = JSON.parse(data.resposta);
-        if (parsedInterno.resposta) respostaExibicao = parsedInterno.resposta;
-        if (parsedInterno.acao) acaoObjeto = parsedInterno.acao;
+        let jsonStr = data.resposta.trim();
+        
+        // Remove tags de código se vierem soltas
+        if (jsonStr.startsWith('```json')) jsonStr = jsonStr.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        if (jsonStr.startsWith('```')) jsonStr = jsonStr.replace(/^```\s*/, '').replace(/\s*```$/, '');
+
+        // Tenta fazer o parse direto
+        try {
+          const parsedInterno = JSON.parse(jsonStr);
+          if (parsedInterno.resposta) respostaExibicao = parsedInterno.resposta;
+          if (parsedInterno.acao) acaoObjeto = parsedInterno.acao;
+        } catch (errParse) {
+          // Se o JSON foi cortado no meio por limite de tamanho, tenta reconstruir o array de itens válidos
+          const matchResposta = jsonStr.match(/"resposta"\s*:\s*"([^"]+)"/);
+          if (matchResposta && matchResposta[1]) respostaExibicao = matchResposta[1];
+
+          const matchItens = jsonStr.match(/"itens"\s*:\s*\[([\s\S]*)/);
+          if (matchItens && matchItens[1]) {
+            let conteudoItens = '[' + matchItens[1];
+            // Tenta fechar o array truncado na última vírgula válida
+            const ultimoObjetoFechado = conteudoItens.lastIndexOf('}');
+            if (ultimoObjetoFechado !== -1) {
+              conteudoItens = conteudoItens.substring(0, ultimoObjetoFechado + 1) + ']';
+              try {
+                const itensReconstruidos = JSON.parse(conteudoItens);
+                acaoObjeto = { tipo: 'CRIAR', itens: itensReconstruidos };
+              } catch (e2) {}
+            }
+          }
+        }
       } catch (e) {
-        console.warn('Resposta textual não é JSON estruturado:', e);
+        console.warn('Erro no tratamento defensivo do HTML:', e);
       }
     }
 
@@ -3936,12 +3963,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     if (acaoObjeto && acaoObjeto.tipo) {
       solicitarConfirmacaoAcao(acaoObjeto);
     }
-
-  } catch (error) {
-    console.error('Erro de conexão:', error);
-    addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
-  }
-}
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
