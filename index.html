@@ -3875,8 +3875,10 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
       return;
     }
 
+    // Coleta transações, cartões E parcelamentos
     const transacoesEnvio = (typeof transacoes !== 'undefined' && Array.isArray(transacoes)) ? transacoes : [];
     const cartoesEnvio = (typeof cartoes !== 'undefined' && Array.isArray(cartoes)) ? cartoes : [];
+    const parcelamentosEnvio = (typeof parcelamentos !== 'undefined' && Array.isArray(parcelamentos)) ? parcelamentos : [];
     const hojeIso = new Date().toISOString().split('T')[0];
 
     const historicoChat = [];
@@ -3904,6 +3906,7 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
         mensagem: cmd0,
         transacoesContexto: transacoesEnvio,
         cartoesContexto: cartoesEnvio,
+        parcelamentosContexto: parcelamentosEnvio, // <-- PARCELAMENTOS/FATURAS ADICIONADOS AQUI
         totaisTela: totaisPainel,
         usuarioAutenticado: true,
         arquivo: arquivoParam,
@@ -3965,7 +3968,6 @@ async function processarComandoFormalAssistente(cmd0, arquivoParam = null) {
     addMsgAssistente('Desculpe, ocorreu uma falha ao conectar com o serviço de inteligência artificial.', 'ia');
   }
 }
-
 function solicitarConfirmacaoAcao(acao) {
   const modal = document.getElementById('modal-confirmacao-assistente');
   const containerLista = document.getElementById('lista-itens-confirmacao');
