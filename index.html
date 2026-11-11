@@ -3332,15 +3332,37 @@
             const resultadoLiquidoMes = receitasMes - despesasMesTotais;
             const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
 
-            const pctComprometido = receitasMes > 0 ? Math.round((despesasMesTotais / receitasMes) * 100) : (despesasMesTotais > 0 ? 100 : 0);
+            // 1. Cálculo da % Comprometida sem a limitação do Math.min(..., 100)
+const pctComprometido = receitasMes > 0 
+    ? Math.round((despesasMesTotais / receitasMes) * 100) 
+    : (despesasMesTotais > 0 ? 100 : 0);
 
-            document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
-            document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
-            document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
-            document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
-            document.getElementById('kpi-economia').textContent = formatarMoeda(resultadoLiquidoMes);
-            document.getElementById('kpi-pct-comprometido').textContent = `${pctComprometido}%`;
-            document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
+document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
+document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
+document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
+document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
+
+// 2. Cor dinâmica do Resultado do Mês (Vermelho se negativo, Verde se positivo ou zero)
+const elEconomia = document.getElementById('kpi-economia');
+if (elEconomia) {
+    elEconomia.textContent = formatarMoeda(resultadoLiquidoMes);
+    elEconomia.className = `text-xl font-extrabold ${resultadoLiquidoMes < 0 ? 'text-rose-500' : 'text-emerald-400'}`;
+}
+
+// 3. Cor dinâmica da % Comprometida (Verde <= 80%, Amarelo <= 100%, Vermelho > 100%)
+const elPctComp = document.getElementById('kpi-pct-comprometido');
+if (elPctComp) {
+    elPctComp.textContent = `${pctComprometido}%`;
+    if (pctComprometido > 100) {
+        elPctComp.className = 'text-xl font-extrabold text-rose-500';
+    } else if (pctComprometido > 80) {
+        elPctComp.className = 'text-xl font-extrabold text-amber-400';
+    } else {
+        elPctComp.className = 'text-xl font-extrabold text-emerald-400';
+    }
+}
+
+document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
 
             const badge = document.getElementById('badge-saude');
             const txtSaude = document.getElementById('texto-saude');
