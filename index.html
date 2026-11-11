@@ -548,7 +548,12 @@
                         </form>
                     </div>
 
-                                                   <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
+                    <!-- Form Lançar Compra Parcelada -->
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
+                        <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
                                 <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
                             </div>
                             <div>
