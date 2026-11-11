@@ -526,7 +526,8 @@
             </h3>
         </div>
         <!-- CONTAINER DAS FATURAS (CARDS LADO A LADO) -->
-<div id="container-cartoes" class="space-y-6"></div>
+        <div id="container-cartoes" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </div>
 </div>
 
 <!-- Form Lançar Compra Parcelada (Desativado visualmente) -->
@@ -3134,17 +3135,6 @@
                     selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
 });
             }
-cartoes.forEach(cartao => {
-    // Filtra se existem compras para este cartão no mês visitado
-    const comprasDoCartao = transacoesDoMes.filter(t => String(t.cartaoId) === String(cartao.id));
-    
-    // SE NÃO TIVER COMPRAS E VOCÊ QUISER OCULTAR:
-    if (comprasDoCartao.length === 0) {
-        return; // Pula este cartão e não desenha na tela
-    }
-
-    // ... (restante do código que desenha a fatura normalmente)
-});
 
             const selMCartao = document.getElementById('m-cartao-id');
             const selCartao = document.getElementById('p-cartao');
@@ -4417,20 +4407,13 @@ function gerarPDFExclusivoAssistente(mes) {
     addMsgAssistente('Erro PDF: ' + e.message, 'ia');
   }
 }
-// ==========================================
-// CONTROLE DO MODAL DE CARTÕES DE CRÉDITO
-// ==========================================
+// INCLUÍDO: CONTROLE DO MODAL DE CARTÕES
 function abrirModalCartao() {
     document.getElementById('c-edit-id').value = '';
     document.getElementById('c-nome').value = '';
     document.getElementById('c-fechamento').value = '';
     document.getElementById('c-vencimento').value = '';
-    
-    const tituloModal = document.getElementById('card-form-title');
-    if (tituloModal) {
-        tituloModal.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão`;
-    }
-    
+    document.getElementById('card-form-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão`;
     document.getElementById('modal-cartao').classList.remove('hidden');
     if (window.lucide) lucide.createIcons();
 }
@@ -4440,10 +4423,8 @@ function fecharModalCartao() {
 }
 
 function salvarCartaoModal(e) {
-    if (typeof salvarCartao === 'function') {
-        salvarCartao(e);
-    }
-    fecharModalCartao();
+    salvarCartao(e); // Chama a sua função salvarCartao original
+    fecharModalCartao(); // Fecha a janela flutuante
 }
 
 // INCLUÍDO: AJUSTE NA FUNÇÃO DE EDITAR CARTÃO EXISTENTE
