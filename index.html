@@ -3323,8 +3323,12 @@
             const fixasPagas = fixasTotais.filter(t => t.pago);
             const fixasValorPago = fixasPagas.reduce((a, b) => a + b.valor, 0);
 
-            const varTotais = tDoMes.filter(t => t.tipo === 'despesa_variavel' && !t.isFaturaConsolidada);
-            const varValorTotal = varTotais.reduce((a, b) => a + b.valor, 0);
+// CÓDIGO CORRIGIDO (Inclui o Cartão de Crédito nas Despesas Variáveis):
+const varTotais = tDoMes.filter(t => t.tipo === 'despesa_variavel' && !t.isFaturaConsolidada);
+const varDiretaValorTotal = varTotais.reduce((a, b) => a + b.valor, 0);
+
+// As Despesas Variáveis do mês passam a contar as compras diretas + Faturas de Cartão
+const varValorTotal = varDiretaValorTotal + totalFaturasMesAtual;
             const varPagas = varTotais.filter(t => t.pago);
             const varValorPago = varPagas.reduce((a, b) => a + b.valor, 0);
 
