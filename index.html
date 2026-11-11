@@ -502,7 +502,7 @@
             </div>
         </div>
 
-<!-- TAB: CARTÕES & PARCELAS (REESTRUTURADA EM LARGURA TOTAL) -->
+<!-- TAB: CARTÕES & PARCELAS (LARGURA TOTAL 1 COLUNA) -->
 <div id="tab-cards" class="hidden space-y-6">
     <!-- Cabeçalho com Título + Botão de Ação -->
     <div class="border-b border-theme pb-4 flex justify-between items-center">
@@ -518,17 +518,17 @@
         </button>
     </div>
 
-    <!-- Painel Principal de Faturas em Largura Total -->
+    <!-- Painel Principal de Faturas em 1 Coluna em Largura Total -->
     <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
         <div class="flex justify-between items-center border-b border-theme pb-3">
             <h3 class="font-bold text-primary text-lg flex items-center gap-2">
                 <i data-lucide="calendar" class="w-5 h-5 text-purple-400"></i> Faturas do Mês Visitado (<span id="cartao-mes-rotulo"></span>)
             </h3>
         </div>
-        <!-- CONTAINER DAS FATURAS (CARDS LADO A LADO) -->
-<div id="container-cartoes" class="space-y-6"></div>
+        <!-- CONTAINER VERTICAL 100% -->
+        <div id="container-cartoes" class="space-y-6"></div>
+    </div>
 </div>
-
 <!-- Form Lançar Compra Parcelada (Desativado visualmente) -->
 <div class="hidden bg-card border border-theme rounded-2xl p-5 space-y-4">
     <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
@@ -3227,6 +3227,8 @@ cartoes.forEach(cartao => {
                 if (cartoes.length === 0) {
                     contCartoes.innerHTML = `<p class="text-muted text-sm">Nenhum cartão cadastrado.</p>`;
                 } else {
+                    let cartoesExibidos = 0;
+
                     cartoes.forEach(c => {
                         const idFatura = `fatura_${c.id}_${mesChave}`;
                         const faturaFechadaObj = faturasFechadas.find(f => String(f.id) === String(idFatura));
@@ -3234,10 +3236,13 @@ cartoes.forEach(cartao => {
                         let totalFaturaCartao = 0;
                         const compras = parcelamentos.filter(p => String(p.cartaoId) === String(c.id));
 
+                        let comprasAtivasNoMes = 0;
+
                         const comprasHTML = compras.map(p => {
                             const infoP = calcularParcelaAtivaNoMes(p, anoAtual, mesAtual);
                             if (infoP.ativa) {
                                 totalFaturaCartao += infoP.valorParcela;
+                                comprasAtivasNoMes++;
                                 return `
                                     <div class="flex justify-between items-center text-xs py-1.5 border-b border-theme/40 last:border-0">
                                         <div class="flex items-center gap-2">
@@ -3256,6 +3261,81 @@ cartoes.forEach(cartao => {
                             }
                             return '';
                         }).join('');
+
+                        // SE O CARTÃO NÃO POSSUI COMPRAS ATIVAS NEM FATURA FECHADA, ELE NÃO É RENDERIZADO NA TELA:
+                        if (comprasAtivasNoMes === 0 && !faturaFechadaObj) {
+                            return; 
+                        }
+
+                        cartoesExibidos++;
+
+                        if (faturaFechadaObj) {
+                            totalFaturasMesAtual += faturaFechadaObj.valor;
+                        } else {
+                            totalFaturasMesAtual += totalFaturaCartao;
+                        }
+
+                        let estadoFaturaHTML = '';
+                        if (!faturaFechadaObj) {
+                            estadoFaturaHTML = `
+                                <button onclick="fecharFaturaCartao('${c.id}', '${mesChave}', ${totalFaturaCartao})" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl transition flex items-center gap-1">
+                                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Fechar Fatura
+                                </button>
+                            `;
+                        } else if (!faturaFechadaObj.pago) {
+                            estadoFaturaHTML = `
+                                <div class="flex items-center gap-2">
+                                    <button onclick="alternarEstadoPagamentoFatura('${idFatura}', true)" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-gray-950 font-bold text-xs rounded-xl transition">
+                                        Pagar Fatura
+                                    </button>
+                                    <button onclick="reabrirFaturaCartao('${idFatura}')" class="px-2 py-1.5 bg-subcard border border-theme text-muted hover:text-primary text-xs rounded-xl" title="Reabrir Fatura">
+                                        <i data-lucide="unlock" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            estadoFaturaHTML = `
+                                <div class="flex items-center gap-2">
+                                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl font-bold text-xs flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Fatura Paga
+                                    </span>
+                                    <button onclick="alternarEstadoPagamentoFatura('${idFatura}', false)" class="px-2 py-1 text-xs text-amber-400 hover:underline">
+                                        Voltar a Pendente
+                                    </button>
+                                </div>
+                            `;
+                        }
+
+                        contCartoes.innerHTML += `
+                            <div class="bg-subcard border border-theme rounded-2xl p-5 space-y-4">
+                                <div class="flex flex-wrap justify-between items-center gap-3 border-b border-theme pb-3">
+                                    <div>
+                                        <h4 class="font-bold text-primary flex items-center gap-2 text-base">
+                                            ${c.nome}
+                                            <button onclick="editarCartao('${c.id}')" class="text-muted hover:text-sky-400" title="Editar Cartão"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                                        </h4>
+                                        <p class="text-xs text-muted">Fecha dia ${c.fechamento} | Vence dia ${c.vencimento}</p>
+                                    </div>
+                                    <div class="text-right flex items-center gap-4">
+                                        <div>
+                                            <p class="text-xs text-muted">Total Fatura</p>
+                                            <p class="font-extrabold text-purple-400 text-base">${formatarMoeda(faturaFechadaObj ? faturaFechadaObj.valor : totalFaturaCartao)}</p>
+                                        </div>
+                                        ${estadoFaturaHTML}
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    ${comprasHTML}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    if (cartoesExibidos === 0) {
+                        contCartoes.innerHTML = `<p class="text-muted text-sm border border-dashed border-theme p-4 rounded-xl text-center">Nenhum cartão possui lançamentos ou faturas neste mês.</p>`;
+                    }
+                }
+            }
 
                         if (faturaFechadaObj) {
                             totalFaturasMesAtual += faturaFechadaObj.valor;
