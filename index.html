@@ -548,40 +548,98 @@
                         </form>
                     </div>
 
-<!-- FORMULÁRIO LATERAL OCULTADO (OPERAÇÃO CENTRALIZADA NO MODAL PRINCIPAL DE LANÇAMENTOS)
-<div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
-    <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
-    <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
-            <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
-            <input type="text" id="p-descricao" placeholder="Ex: Notebook, Viagem" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Categoria da Compra</label>
-            <select id="p-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-medium text-muted mb-1">Valor Total (R$)</label>
-                <input type="number" step="0.01" id="p-valor" placeholder="1200.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+<!-- TAB: CARTÕES & PARCELAS -->
+        <div id="tab-cards" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-6 h-6 text-purple-400"></i> Cartões de Crédito & Faturas
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Gerencie os seus cartões, adicione parcelamentos e feche faturas mês a mês.</p>
+                </div>
             </div>
-            <div>
-                <label class="block text-xs font-medium text-muted mb-1">Nº Parcelas</label>
-                <input type="number" min="1" max="72" id="p-parcelas" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulários de Gestão -->
+                <div class="space-y-6">
+                    <!-- Form Cadastrar/Editar Cartão -->
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2" id="card-form-title">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão
+                        </h3>
+                        <form onsubmit="salvarCartao(event)" class="space-y-3">
+                            <input type="hidden" id="c-edit-id" value="">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Nome do Cartão</label>
+                                <input type="text" id="c-nome" placeholder="Ex: Nubank, Itaú" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Fechamento</label>
+                                    <input type="number" min="1" max="31" id="c-fechamento" placeholder="5" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Vencimento</label>
+                                    <input type="number" min="1" max="31" id="c-vencimento" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" id="btn-salvar-cartao" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                                    Adicionar Cartão
+                                </button>
+                                <button type="button" id="btn-cancelar-edit-cartao" onclick="cancelarEdicaoCartao()" class="hidden px-3 bg-subcard hover:bg-subcard/80 border border-theme text-muted font-bold rounded-xl text-xs transition">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- SOMENTE O FORMULÁRIO ABAIXO FOI COMENTADO PARA OCULTAR DA TELA -->
+                    <!-- Form Lançar Compra Parcelada (OCULTO)
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
+                        <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
+                                <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
+                                <input type="text" id="p-descricao" placeholder="Ex: Notebook, Viagem" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Categoria da Compra</label>
+                                <select id="p-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Valor Total (R$)</label>
+                                    <input type="number" step="0.01" id="p-valor" placeholder="1200.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Nº Parcelas</label>
+                                    <input type="number" min="1" max="72" id="p-parcelas" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Data da 1ª Parcela</label>
+                                <input type="date" id="p-data-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">Registrar Compra</button>
+                        </form>
+                    </div>
+                    -->
+                </div>
+
+                <!-- Painel de Cartões e Faturas (MANTIDO 100% INTACTO) -->
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center border-b border-theme pb-3">
+                        <h3 class="font-bold text-primary">Faturas do Mês Visitado (<span id="cartao-mes-rotulo"></span>)</h3>
+                    </div>
+                    <div id="container-cartoes" class="space-y-6"></div>
+                </div>
             </div>
         </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Data da 1ª Parcela</label>
-            <input type="date" id="p-data-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-        </div>
-        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">Registrar Compra</button>
-    </form>
-</div>
--->
 
                 <!-- Painel de Cartões e Faturas -->
                 <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
