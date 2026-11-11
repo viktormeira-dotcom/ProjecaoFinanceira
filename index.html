@@ -3323,37 +3323,60 @@
             const fixasPagas = fixasTotais.filter(t => t.pago);
             const fixasValorPago = fixasPagas.reduce((a, b) => a + b.valor, 0);
 
-// CÓDIGO CORRIGIDO (Inclui o Cartão de Crédito nas Despesas Variáveis):
+// 1. FILTRA AS DESPESAS VARIÁVEIS DIRETAS (Pix, dinheiro, boleto)
 const varTotais = tDoMes.filter(t => t.tipo === 'despesa_variavel' && !t.isFaturaConsolidada);
 const varDiretaValorTotal = varTotais.reduce((a, b) => a + b.valor, 0);
+const varDiretaPagas = varTotais.filter(t => t.pago);
+const varDiretaValorPago = varDiretaPagas.reduce((a, b) => a + b.valor, 0);
 
-// As Despesas Variáveis do mês passam a contar as compras diretas + Faturas de Cartão
+// 2. CALCULA O VALOR E QUANTIDADE DAS FATURAS DE CARTÃO PAGAS NO MÊS
+let totalFaturasPagasMesAtual = 0;
+let qtdFaturasPagas = 0;
+let qtdFaturasTotais = 0;
+
+cartoes.forEach(c => {
+    const idFatura = `fatura_${c.id}_${mesChave}`;
+    const faturaFechadaObj = faturasFechadas.find(f => String(f.id) === String(idFatura));
+    if (faturaFechadaObj) {
+        qtdFaturasTotais++;
+        if (faturaFechadaObj.pago) {
+            totalFaturasPagasMesAtual += faturaFechadaObj.valor;
+            qtdFaturasPagas++;
+        }
+    }
+});
+
+// 3. CONSOLIDA VALOR TOTAL, VALOR PAGO E CONTAGEM
 const varValorTotal = varDiretaValorTotal + totalFaturasMesAtual;
-            const varPagas = varTotais.filter(t => t.pago);
-            const varValorPago = varPagas.reduce((a, b) => a + b.valor, 0);
+const varValorPago = varDiretaValorPago + totalFaturasPagasMesAtual;
 
-            const despesasMesTotais = fixasValorTotal + varValorTotal + totalFaturasMesAtual;
-            const resultadoLiquidoMes = receitasMes - despesasMesTotais;
-            const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
+const totalItensVariaveis = varTotais.length + qtdFaturasTotais;
+const totalItensVariaveisPagos = varDiretaPagas.length + qtdFaturasPagas;
 
-            // 1. Cálculo da % Comprometida sem a limitação do Math.min(..., 100)
+// 4. TOTAL DESPESAS (fixas + variáveis já consolidadas com cartão)
+const despesasMesTotais = fixasValorTotal + varValorTotal;
+const resultadoLiquidoMes = receitasMes - despesasMesTotais;
+const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
+
+// 5. CÁLCULO DA % COMPROMETIDA (sem teto de 100%)
 const pctComprometido = receitasMes > 0 
     ? Math.round((despesasMesTotais / receitasMes) * 100) 
     : (despesasMesTotais > 0 ? 100 : 0);
 
+// 6. ATUALIZAÇÃO DAS KPIS DO DASHBOARD
 document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
 document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
 document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
 document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
 
-// 2. Cor dinâmica do Resultado do Mês (Vermelho se negativo, Verde se positivo ou zero)
+// Cor dinâmica do Resultado do Mês (Vermelho se negativo, Verde se positivo ou zero)
 const elEconomia = document.getElementById('kpi-economia');
 if (elEconomia) {
     elEconomia.textContent = formatarMoeda(resultadoLiquidoMes);
     elEconomia.className = `text-xl font-extrabold ${resultadoLiquidoMes < 0 ? 'text-rose-500' : 'text-emerald-400'}`;
 }
 
-// 3. Cor dinâmica da % Comprometida (Verde <= 80%, Amarelo <= 100%, Vermelho > 100%)
+// Cor dinâmica da % Comprometida (Verde <= 80%, Amarelo <= 100%, Vermelho > 100%)
 const elPctComp = document.getElementById('kpi-pct-comprometido');
 if (elPctComp) {
     elPctComp.textContent = `${pctComprometido}%`;
@@ -3365,7 +3388,6 @@ if (elPctComp) {
         elPctComp.className = 'text-xl font-extrabold text-emerald-400';
     }
 }
-
 document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
 
             const badge = document.getElementById('badge-saude');
