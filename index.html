@@ -502,66 +502,144 @@
             </div>
         </div>
 
-<!-- TAB: CARTÕES & PARCELAS -->
+        <!-- TAB: CARTÕES & PARCELAS -->
         <div id="tab-cards" class="hidden space-y-6">
-            <!-- Cabeçalho com Título + Botão de Ação -->
             <div class="border-b border-theme pb-4 flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
                         <i data-lucide="credit-card" class="w-6 h-6 text-purple-400"></i> Cartões de Crédito & Faturas
                     </h2>
-                    <p class="text-sm text-muted mt-1">Gerencie os seus cartões e acompanhe o fechamento das faturas mês a mês.</p>
+                    <p class="text-sm text-muted mt-1">Gerencie os seus cartões, adicione parcelamentos e feche faturas mês a mês.</p>
                 </div>
-                <!-- BOTÃO QUE ABRE O MODAL -->
-                <button onclick="abrirModalCartao()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Novo Cartão
-                </button>
             </div>
 
-            <!-- Painel Principal de Faturas em Largura Total -->
-            <div class="bg-card border border-theme rounded-2xl p-6 space-y-4">
-                <div class="flex justify-between items-center border-b border-theme pb-3">
-                    <h3 class="font-bold text-primary text-lg flex items-center gap-2">
-                        <i data-lucide="calendar" class="w-5 h-5 text-purple-400"></i> Faturas do Mês Visitado (<span id="cartao-mes-rotulo"></span>)
-                    </h3>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulários de Gestão -->
+                <div class="space-y-6">
+                    <!-- Form Cadastrar/Editar Cartão -->
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2" id="card-form-title">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão
+                        </h3>
+                        <form onsubmit="salvarCartao(event)" class="space-y-3">
+                            <input type="hidden" id="c-edit-id" value="">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Nome do Cartão</label>
+                                <input type="text" id="c-nome" placeholder="Ex: Nubank, Itaú" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Fechamento</label>
+                                    <input type="number" min="1" max="31" id="c-fechamento" placeholder="5" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Vencimento</label>
+                                    <input type="number" min="1" max="31" id="c-vencimento" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" id="btn-salvar-cartao" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                                    Adicionar Cartão
+                                </button>
+                                <button type="button" id="btn-cancelar-edit-cartao" onclick="cancelarEdicaoCartao()" class="hidden px-3 bg-subcard hover:bg-subcard/80 border border-theme text-muted font-bold rounded-xl text-xs transition">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+<!-- TAB: CARTÕES & PARCELAS -->
+        <div id="tab-cards" class="hidden space-y-6">
+            <div class="border-b border-theme pb-4 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-primary flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-6 h-6 text-purple-400"></i> Cartões de Crédito & Faturas
+                    </h2>
+                    <p class="text-sm text-muted mt-1">Gerencie os seus cartões, adicione parcelamentos e feche faturas mês a mês.</p>
                 </div>
-                <!-- CONTAINER DAS FATURAS ÚNICO -->
-                <div id="container-cartoes" class="space-y-6"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Formulários de Gestão -->
+                <div class="space-y-6">
+                    <!-- Form Cadastrar/Editar Cartão -->
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2" id="card-form-title">
+                            <i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão
+                        </h3>
+                        <form onsubmit="salvarCartao(event)" class="space-y-3">
+                            <input type="hidden" id="c-edit-id" value="">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Nome do Cartão</label>
+                                <input type="text" id="c-nome" placeholder="Ex: Nubank, Itaú" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Fechamento</label>
+                                    <input type="number" min="1" max="31" id="c-fechamento" placeholder="5" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Dia Vencimento</label>
+                                    <input type="number" min="1" max="31" id="c-vencimento" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <button type="submit" id="btn-salvar-cartao" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                                    Adicionar Cartão
+                                </button>
+                                <button type="button" id="btn-cancelar-edit-cartao" onclick="cancelarEdicaoCartao()" class="hidden px-3 bg-subcard hover:bg-subcard/80 border border-theme text-muted font-bold rounded-xl text-xs transition">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- SOMENTE O FORMULÁRIO ABAIXO FOI COMENTADO PARA OCULTAR DA TELA -->
+                    <!-- Form Lançar Compra Parcelada (OCULTO)
+                    <div class="bg-card border border-theme rounded-2xl p-5 space-y-4">
+                        <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
+                        <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
+                                <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
+                                <input type="text" id="p-descricao" placeholder="Ex: Notebook, Viagem" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Categoria da Compra</label>
+                                <select id="p-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Valor Total (R$)</label>
+                                    <input type="number" step="0.01" id="p-valor" placeholder="1200.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-muted mb-1">Nº Parcelas</label>
+                                    <input type="number" min="1" max="72" id="p-parcelas" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted mb-1">Data da 1ª Parcela</label>
+                                <input type="date" id="p-data-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">Registrar Compra</button>
+                        </form>
+                    </div>
+                    -->
+                </div>
+
+                <!-- Painel de Cartões e Faturas (MANTIDO 100% INTACTO) -->
+                <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
+                    <div class="flex justify-between items-center border-b border-theme pb-3">
+                        <h3 class="font-bold text-primary">Faturas do Mês Visitado (<span id="cartao-mes-rotulo"></span>)</h3>
+                    </div>
+                    <div id="container-cartoes" class="space-y-6"></div>
+                </div>
             </div>
         </div>
-<!-- Form Lançar Compra Parcelada (Desativado visualmente) -->
-<div class="hidden bg-card border border-theme rounded-2xl p-5 space-y-4">
-    <h3 class="font-bold text-primary flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-purple-400"></i> Lançar Compra / Parcelamento</h3>
-    <form onsubmit="lancarCompraParcelada(event)" class="space-y-3">
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Cartão Destino</label>
-            <select id="p-cartao" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Descrição</label>
-            <input type="text" id="p-descricao" placeholder="Ex: Notebook, Viagem" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Categoria da Compra</label>
-            <select id="p-categoria" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500"></select>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-            <div>
-                <label class="block text-xs font-medium text-muted mb-1">Valor Total (R$)</label>
-                <input type="number" step="0.01" id="p-valor" placeholder="1200.00" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-muted mb-1">Nº Parcelas</label>
-                <input type="number" min="1" max="72" id="p-parcelas" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-            </div>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-muted mb-1">Data da 1ª Parcela</label>
-            <input type="date" id="p-data-inicio" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-        </div>
-        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">Registrar Compra</button>
-    </form>
-</div>
 
                 <!-- Painel de Cartões e Faturas -->
                 <div class="lg:col-span-2 bg-card border border-theme rounded-2xl p-5 space-y-4">
@@ -1219,45 +1297,6 @@
             </form>
         </div>
     </div>
-<!-- MODAL CADASTRAR / EDITAR CARTÃO -->
-<div id="modal-cartao" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-card border border-theme rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center border-b border-theme pb-3">
-            <h3 class="font-bold text-lg text-primary flex items-center gap-2" id="card-form-title">
-                <i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão
-            </h3>
-            <button onclick="fecharModalCartao()" class="text-muted hover:text-primary transition">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-
-        <form onsubmit="salvarCartaoModal(event)" class="space-y-4">
-            <input type="hidden" id="c-edit-id" value="">
-            <div>
-                <label class="block text-xs font-medium text-muted mb-1">Nome do Cartão</label>
-                <input type="text" id="c-nome" placeholder="Ex: Nubank, Itaú" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-medium text-muted mb-1">Dia Fechamento</label>
-                    <input type="number" min="1" max="31" id="c-fechamento" placeholder="5" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-muted mb-1">Dia Vencimento</label>
-                    <input type="number" min="1" max="31" id="c-vencimento" placeholder="12" required class="w-full bg-subcard border border-theme rounded-xl px-3.5 py-2 text-sm text-primary focus:outline-none focus:border-purple-500">
-                </div>
-            </div>
-            <div class="flex gap-2 pt-2">
-                <button type="button" onclick="fecharModalCartao()" class="flex-1 bg-subcard hover:bg-subcard/80 border border-theme text-muted font-bold py-2.5 rounded-xl text-xs transition">
-                    Cancelar
-                </button>
-                <button type="submit" id="btn-salvar-cartao" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                    Salvar Cartão
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
     <!-- JAVASCRIPT LÓGICA COMPLETA -->
     <script>
@@ -1305,7 +1344,7 @@
             }
         }
 
-// Processa o Login ou o Cadastro via Firebase Authentication
+        // Processa o Login ou o Cadastro via Firebase Authentication
         async function fazerLoginEmail(e) {
             e.preventDefault();
 
@@ -1405,82 +1444,6 @@
                 }
             }
         }
-
-        // CLIENT ID DO GOOGLE IDENTITY SERVICES
-        const GOOGLE_CLIENT_ID = '830415002227-oi9u5s088isi9rni89eb3ejrqoqqel0a.apps.googleusercontent.com';
-
-        let dataAtual = new Date(); // Mês e ano vigentes do dispositivo
-        let temaAtual = localStorage.getItem('pf_tema') || 'dark';
-        let animacaoAtiva = localStorage.getItem('pf_animacao') !== 'false';
-
-        let evolucaoConfig = {
-            mesesQtd: 6,
-            tipoGrafico: 'bar',
-            exibirSaldo: false,
-            metricas: 'todas',
-            categoria: 'todas',
-            agrupamento: 'mensal'
-        };
-
-        const PADRAO_CATEGORIAS = ['Renda', 'Moradia', 'Alimentação', 'Contas', 'Transporte', 'Lazer', 'Cartão de Crédito', 'Geral'];
-        
-        const PADRAO_PERFIL = {
-            nome: 'Vitor Souza',
-            email: 'usuario@exemplo.com',
-            cargo: 'Planejador Financeiro',
-            metodoConexao: 'google',
-            armazenamento: 'Google Cloud Storage',
-            fotoUrl: ''
-        };
-
-        let usuarioLogado = localStorage.getItem('pf_logado') === 'true';
-        let faturasFechadas = JSON.parse(localStorage.getItem('pf_faturas_v13')) || [];
-        let categorias = JSON.parse(localStorage.getItem('pf_categorias_v13')) || [...PADRAO_CATEGORIAS];
-        let transacoes = JSON.parse(localStorage.getItem('pf_transacoes_v13')) || [];
-        let cartoes = JSON.parse(localStorage.getItem('pf_cartoes_v13')) || [];
-        let parcelamentos = JSON.parse(localStorage.getItem('pf_parcelamentos_v13')) || [];
-        let perfilUsuario = JSON.parse(localStorage.getItem('pf_perfil_v13')) || { ...PADRAO_PERFIL };
-
-        let relatorioDadosPrevia = [];
-        let dadosBrutosPlanilha = [];
-        let cabecalhosPlanilha = [];
-        let transacoesMapeadasPrevia = [];
-        let dadosBrutosCartao = [];
-        let cabecalhosCartao = [];
-        let comprasMapeadasPrevia = [];
-
-        let chartEvolucaoObj = null;
-        let chartCategoriaObj = null;
-
-        // ================= SINCRONIZAÇÃO FIRESTORE =================
-        firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                usuarioLogado = true;
-                localStorage.setItem('pf_logado', 'true');
-                document.getElementById('tela-login').classList.add('hidden');
-                
-                await carregarDadosFirestore(user.uid);
-            } else {
-                currentUser = null;
-                usuarioLogado = false;
-                localStorage.removeItem('pf_logado');
-                document.getElementById('tela-login').classList.remove('hidden');
-            }
-        });
-
-        async function carregarDadosFirestore(uid) {
-            try {
-                const docRef = db.collection('usuarios').doc(uid);
-                const docSnap = await docRef.get();
-
-                if (docSnap.exists) {
-                    const data = docSnap.data();
-                    if (data.transacoes) transacoes = data.transacoes;
-                    if (data.cartoes) cartoes = data.cartoes;
-                    if (data.parcelamentos) parcelamentos = data.parcelamentos;
-                    if (data.categorias) categorias = data.categorias;
-                    if (data.faturasFech
 
         // CLIENT ID DO GOOGLE IDENTITY SERVICES
         const GOOGLE_CLIENT_ID = '830415002227-oi9u5s088isi9rni89eb3ejrqoqqel0a.apps.googleusercontent.com';
@@ -3210,17 +3173,6 @@
                     selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
 });
             }
-cartoes.forEach(cartao => {
-    // Filtra se existem compras para este cartão no mês visitado
-    const comprasDoCartao = transacoesDoMes.filter(t => String(t.cartaoId) === String(cartao.id));
-    
-    // SE NÃO TIVER COMPRAS E VOCÊ QUISER OCULTAR:
-    if (comprasDoCartao.length === 0) {
-        return; // Pula este cartão e não desenha na tela
-    }
-
-    // ... (restante do código que desenha a fatura normalmente)
-});
 
             const selMCartao = document.getElementById('m-cartao-id');
             const selCartao = document.getElementById('p-cartao');
@@ -4492,47 +4444,5 @@ function gerarPDFExclusivoAssistente(mes) {
   } catch (e) {
     addMsgAssistente('Erro PDF: ' + e.message, 'ia');
   }
-}
-// ==========================================
-// CONTROLE DO MODAL DE CARTÕES DE CRÉDITO
-// ==========================================
-function abrirModalCartao() {
-    document.getElementById('c-edit-id').value = '';
-    document.getElementById('c-nome').value = '';
-    document.getElementById('c-fechamento').value = '';
-    document.getElementById('c-vencimento').value = '';
-    
-    const tituloModal = document.getElementById('card-form-title');
-    if (tituloModal) {
-        tituloModal.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão`;
-    }
-    
-    document.getElementById('modal-cartao').classList.remove('hidden');
-    if (window.lucide) lucide.createIcons();
-}
-
-function fecharModalCartao() {
-    document.getElementById('modal-cartao').classList.add('hidden');
-}
-
-function salvarCartaoModal(e) {
-    if (typeof salvarCartao === 'function') {
-        salvarCartao(e);
-    }
-    fecharModalCartao();
-}
-
-// INCLUÍDO: AJUSTE NA FUNÇÃO DE EDITAR CARTÃO EXISTENTE
-// (Caso você tenha uma função editarCartao, faça ela abrir o modal)
-function editarCartao(id) {
-    const c = cartoes.find(item => String(item.id) === String(id));
-    if (!c) return;
-    document.getElementById('c-edit-id').value = c.id;
-    document.getElementById('c-nome').value = c.nome;
-    document.getElementById('c-fechamento').value = c.fechamento;
-    document.getElementById('c-vencimento').value = c.vencimento;
-    document.getElementById('card-form-title').innerHTML = `<i data-lucide="edit" class="w-5 h-5 text-purple-400"></i> Editar Cartão`;
-    document.getElementById('modal-cartao').classList.remove('hidden');
-    if (window.lucide) lucide.createIcons();
 }
 </script>
