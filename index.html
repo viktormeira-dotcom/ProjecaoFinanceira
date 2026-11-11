@@ -3413,10 +3413,10 @@ document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(d
             document.getElementById('fixas-valor-total').textContent = `de ${formatarMoeda(fixasValorTotal)}`;
             document.getElementById('bar-fixas').style.width = `${fixasValorTotal > 0 ? (fixasValorPago / fixasValorTotal) * 100 : 0}%`;
 
-            document.getElementById('variaveis-status-count').textContent = `${varPagas.length}/${varTotais.length} Pagas`;
-            document.getElementById('variaveis-valor-pago').textContent = `${formatarMoeda(varValorPago)} pago`;
-            document.getElementById('variaveis-valor-total').textContent = `de ${formatarMoeda(varValorTotal)}`;
-            document.getElementById('bar-variaveis').style.width = `${varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0}%`;
+document.getElementById('variaveis-status-count').textContent = `${totalItensVariaveisPagos}/${totalItensVariaveis} Pagas`;
+document.getElementById('variaveis-valor-pago').textContent = `${formatarMoeda(varValorPago)} pago`;
+document.getElementById('variaveis-valor-total').textContent = `de ${formatarMoeda(varValorTotal)}`;
+document.getElementById('bar-variaveis').style.width = `${varValorTotal > 0 ? (varValorPago / varValorTotal) * 100 : 0}%`;
 
             const pendentes = tDoMes.filter(t => !t.pago && t.tipo !== 'receita').map(t => ({
                 id: String(t.id),
