@@ -1390,7 +1390,7 @@
         // CLIENT ID DO GOOGLE IDENTITY SERVICES
         const GOOGLE_CLIENT_ID = '830415002227-oi9u5s088isi9rni89eb3ejrqoqqel0a.apps.googleusercontent.com';
 
-        let dataAtual = new Date(2026, 9, 15); // Outubro 2026
+        let dataAtual = new Date(); // Mês e ano vigentes do dispositivo
         let temaAtual = localStorage.getItem('pf_tema') || 'dark';
         let animacaoAtiva = localStorage.getItem('pf_animacao') !== 'false';
 
@@ -3332,15 +3332,21 @@
             const resultadoLiquidoMes = receitasMes - despesasMesTotais;
             const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
 
-            const pctComprometido = receitasMes > 0 ? Math.min(Math.round((despesasMesTotais / receitasMes) * 100), 100) : 0;
+            // Resultado do Mês (Verde se positivo/zero, Vermelho se negativo)
+const elEconomia = document.getElementById('kpi-economia');
+elEconomia.textContent = formatarMoeda(resultadoLiquidoMes);
+elEconomia.className = `text-xl font-extrabold ${resultadoLiquidoMes < 0 ? 'text-rose-500' : 'text-emerald-400'}`;
 
-            document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
-            document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
-            document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
-            document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
-            document.getElementById('kpi-economia').textContent = formatarMoeda(resultadoLiquidoMes);
-            document.getElementById('kpi-pct-comprometido').textContent = `${pctComprometido}%`;
-            document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
+// % Comprometido (Verde <= 80%, Amarelo <= 100%, Vermelho > 100%)
+const elPctComp = document.getElementById('kpi-pct-comprometido');
+elPctComp.textContent = `${pctComprometido}%`;
+if (pctComprometido > 100) {
+    elPctComp.className = 'text-xl font-extrabold text-rose-500';
+} else if (pctComprometido > 80) {
+    elPctComp.className = 'text-xl font-extrabold text-amber-400';
+} else {
+    elPctComp.className = 'text-xl font-extrabold text-emerald-400';
+}
 
             const badge = document.getElementById('badge-saude');
             const txtSaude = document.getElementById('texto-saude');
