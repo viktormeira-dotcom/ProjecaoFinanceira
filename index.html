@@ -3332,21 +3332,15 @@
             const resultadoLiquidoMes = receitasMes - despesasMesTotais;
             const saldoFinalAcumulado = saldoAnteriorAcumulado + resultadoLiquidoMes;
 
-            // Resultado do Mês (Verde se positivo/zero, Vermelho se negativo)
-const elEconomia = document.getElementById('kpi-economia');
-elEconomia.textContent = formatarMoeda(resultadoLiquidoMes);
-elEconomia.className = `text-xl font-extrabold ${resultadoLiquidoMes < 0 ? 'text-rose-500' : 'text-emerald-400'}`;
+            const pctComprometido = receitasMes > 0 ? Math.round((despesasMesTotais / receitasMes) * 100) : (despesasMesTotais > 0 ? 100 : 0);
 
-// % Comprometido (Verde <= 80%, Amarelo <= 100%, Vermelho > 100%)
-const elPctComp = document.getElementById('kpi-pct-comprometido');
-elPctComp.textContent = `${pctComprometido}%`;
-if (pctComprometido > 100) {
-    elPctComp.className = 'text-xl font-extrabold text-rose-500';
-} else if (pctComprometido > 80) {
-    elPctComp.className = 'text-xl font-extrabold text-amber-400';
-} else {
-    elPctComp.className = 'text-xl font-extrabold text-emerald-400';
-}
+            document.getElementById('kpi-receitas').textContent = formatarMoeda(receitasMes);
+            document.getElementById('kpi-despesas').textContent = formatarMoeda(despesasMesTotais);
+            document.getElementById('kpi-saldo').textContent = formatarMoeda(saldoFinalAcumulado);
+            document.getElementById('sub-saldo-anterior').textContent = `Inclui saldo anterior: ${formatarMoeda(saldoAnteriorAcumulado)}`;
+            document.getElementById('kpi-economia').textContent = formatarMoeda(resultadoLiquidoMes);
+            document.getElementById('kpi-pct-comprometido').textContent = `${pctComprometido}%`;
+            document.getElementById('sub-pct-comprometido').textContent = `${formatarMoeda(despesasMesTotais)} de ${formatarMoeda(receitasMes)}`;
 
             const badge = document.getElementById('badge-saude');
             const txtSaude = document.getElementById('texto-saude');
