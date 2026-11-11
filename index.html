@@ -4417,13 +4417,20 @@ function gerarPDFExclusivoAssistente(mes) {
     addMsgAssistente('Erro PDF: ' + e.message, 'ia');
   }
 }
-// INCLUÍDO: CONTROLE DO MODAL DE CARTÕES
+// ==========================================
+// CONTROLE DO MODAL DE CARTÕES DE CRÉDITO
+// ==========================================
 function abrirModalCartao() {
     document.getElementById('c-edit-id').value = '';
     document.getElementById('c-nome').value = '';
     document.getElementById('c-fechamento').value = '';
     document.getElementById('c-vencimento').value = '';
-    document.getElementById('card-form-title').innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão`;
+    
+    const tituloModal = document.getElementById('card-form-title');
+    if (tituloModal) {
+        tituloModal.innerHTML = `<i data-lucide="plus-circle" class="w-5 h-5 text-purple-400"></i> Cadastrar Cartão`;
+    }
+    
     document.getElementById('modal-cartao').classList.remove('hidden');
     if (window.lucide) lucide.createIcons();
 }
@@ -4433,8 +4440,10 @@ function fecharModalCartao() {
 }
 
 function salvarCartaoModal(e) {
-    salvarCartao(e); // Chama a sua função salvarCartao original
-    fecharModalCartao(); // Fecha a janela flutuante
+    if (typeof salvarCartao === 'function') {
+        salvarCartao(e);
+    }
+    fecharModalCartao();
 }
 
 // INCLUÍDO: AJUSTE NA FUNÇÃO DE EDITAR CARTÃO EXISTENTE
