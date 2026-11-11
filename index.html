@@ -526,8 +526,7 @@
             </h3>
         </div>
         <!-- CONTAINER DAS FATURAS (CARDS LADO A LADO) -->
-        <div id="container-cartoes" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-    </div>
+<div id="container-cartoes" class="space-y-6"></div>
 </div>
 
 <!-- Form Lançar Compra Parcelada (Desativado visualmente) -->
@@ -3135,6 +3134,17 @@
                     selRepCat.innerHTML += `<option value="${c}">${c}</option>`;
 });
             }
+cartoes.forEach(cartao => {
+    // Filtra se existem compras para este cartão no mês visitado
+    const comprasDoCartao = transacoesDoMes.filter(t => String(t.cartaoId) === String(cartao.id));
+    
+    // SE NÃO TIVER COMPRAS E VOCÊ QUISER OCULTAR:
+    if (comprasDoCartao.length === 0) {
+        return; // Pula este cartão e não desenha na tela
+    }
+
+    // ... (restante do código que desenha a fatura normalmente)
+});
 
             const selMCartao = document.getElementById('m-cartao-id');
             const selCartao = document.getElementById('p-cartao');
